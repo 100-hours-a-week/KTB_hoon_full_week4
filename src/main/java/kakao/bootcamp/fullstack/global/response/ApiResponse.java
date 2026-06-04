@@ -13,6 +13,10 @@ public record ApiResponse<T>(
         return new ApiResponse<>(code.getMessage(), code.getCode(), data);
     }
 
+    public static <T> ApiResponse<T> success(BaseCode code) {
+        return new ApiResponse<>(code.getMessage(), code.getCode(), null);
+    }
+
     public static ApiResponse<Void> error(BaseCode code) {
         return new ApiResponse<>(code.getMessage(), code.getCode(), null);
     }

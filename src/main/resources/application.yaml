@@ -1,3 +1,6 @@
 spring:
   application:
     name: fullstack
+
+  profiles:
+    active: in-memory
