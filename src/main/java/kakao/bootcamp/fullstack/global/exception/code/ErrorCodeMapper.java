@@ -1,25 +1,25 @@
 package kakao.bootcamp.fullstack.global.exception.code;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Stream;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 
-public final class ErrorCodeMapper {
+public class ErrorCodeMapper {
 
     private ErrorCodeMapper() {
     }
 
-    public static BaseCode from(String code) {
+    public static Optional<BaseCode> from(String code) {
         return Stream.of(
-                        MemberErrorCode.values(),
-                        PostErrorCode.values()
+                        Arrays.stream(MemberErrorCode.values()),
+                        Arrays.stream(PostErrorCode.values()),
+                        Arrays.stream(CommonErrorCode.values())
                 )
-                .flatMap(Arrays::stream)
+                .flatMap(stream -> stream)
+                .map(errorCode -> (BaseCode) errorCode)
                 .filter(errorCode -> errorCode.getCode().equals(code))
-                .findFirst()
-                .orElseThrow(() ->
-                        new IllegalStateException("정의되지 않은 ValidationCode입니다: " + code)
-                );
+                .findFirst();
     }
 }

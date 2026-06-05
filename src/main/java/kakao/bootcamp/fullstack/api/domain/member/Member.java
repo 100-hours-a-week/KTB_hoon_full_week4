@@ -33,6 +33,7 @@ public class Member extends BaseEntity {
         this.id = id;
     }
 
+    // TODO : 도메인에서 필드 유효성 검사 필요
     public static Member create(
             String email,
             String encodedPassword,

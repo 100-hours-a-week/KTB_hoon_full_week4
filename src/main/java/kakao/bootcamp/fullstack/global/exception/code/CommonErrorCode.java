@@ -8,12 +8,17 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum ErrorCode {
+public enum CommonErrorCode implements BaseCode{
 
     INTERNAL_SERVER_ERROR(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "INTERNAL_SERVER_ERROR",
             "internal_server_error"
+    ),
+    INVALID_IMAGE_URL(
+            HttpStatus.BAD_REQUEST,
+            "INVALID_IMAGE_URL",
+            "invalid_image_url"
     )
     ;
 
@@ -21,7 +26,7 @@ public enum ErrorCode {
     private final String code;
     private final String message;
 
-    public static ErrorCode from(String code) {
+    public static CommonErrorCode from(String code) {
         return Arrays.stream(values())
                 .filter(errorCode -> errorCode.code.equals(code))
                 .findFirst()
