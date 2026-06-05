@@ -3,4 +3,8 @@ spring:
     name: fullstack
 
   profiles:
-    active: in-memory
+    active: local
+
+jwt:
+  secret: "my-secret-key-my-secret-key-my-secret-key-123456"
+  access-token-expire-seconds: 3600

@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("in-memory")
+@Profile("local")
 public class InMemoryMemberRepository implements MemberRepository {
 
     private final IdGenerator idGenerator = new AtomicLongIdGenerator();
@@ -33,6 +33,14 @@ public class InMemoryMemberRepository implements MemberRepository {
     @Override
     public boolean existsById(Long id) {
         return members.containsKey(id);
+    }
+
+    @Override
+    public Optional<Member> findByEmail(String email) {
+        return members.values()
+                .stream()
+                .filter(member -> member.getEmail().equals(email))
+                .findFirst();
     }
 
     @Override

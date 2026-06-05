@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum SuccessCode implements BaseCode{
-    SIGNUP_SUCCESS(HttpStatus.CREATED, "SUCCESS", "signup_success")
+    SIGNUP_SUCCESS(HttpStatus.CREATED, "SUCCESS", "signup_success"),
+    LOGIN_SUCCESS(HttpStatus.OK, "SUCCESS", "login_success"),
+    LOGOUT_SUCCESS(HttpStatus.OK, "SUCCESS", "logout_success"),
     ;
 
     private final HttpStatus httpStatus;

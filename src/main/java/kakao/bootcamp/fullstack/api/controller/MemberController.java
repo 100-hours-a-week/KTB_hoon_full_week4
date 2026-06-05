@@ -6,7 +6,6 @@ import kakao.bootcamp.fullstack.api.service.MemberService;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,4 +25,6 @@ public class MemberController {
         return ResponseEntity.status(SuccessCode.SIGNUP_SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(SuccessCode.SIGNUP_SUCCESS));
     }
+
+
 }

@@ -20,8 +20,9 @@ public enum MemberErrorCode implements BaseCode {
 
     PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "PASSWORD_CONFIRM_MISMATCH", "pw_confirm_mismatch"),
     EMAIL_DUPLICATED(HttpStatus.CONFLICT, "EMAIL_DUPLICATED", "email_duplicated"),
-    NICKNAME_DUPLICATED(HttpStatus.CONFLICT, "NICKNAME_DUPLICATED", "nickname_duplicated");
+    NICKNAME_DUPLICATED(HttpStatus.CONFLICT, "NICKNAME_DUPLICATED", "nickname_duplicated"),
 
+    ;
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
