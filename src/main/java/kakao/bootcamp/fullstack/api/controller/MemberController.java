@@ -1,16 +1,24 @@
 package kakao.bootcamp.fullstack.api.controller;
 
 import jakarta.validation.Valid;
+import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
+import kakao.bootcamp.fullstack.api.dto.request.PasswordUpdateReqDto;
+import kakao.bootcamp.fullstack.api.dto.request.ProfileUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.SignupReqDto;
+import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
 import kakao.bootcamp.fullstack.api.service.MemberService;
-import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
+import kakao.bootcamp.fullstack.global.jwt.annotation.LoginMember;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static kakao.bootcamp.fullstack.global.exception.code.SuccessCode.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,9 +30,32 @@ public class MemberController {
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestBody SignupReqDto request) {
         memberService.signup(request);
-        return ResponseEntity.status(SuccessCode.SIGNUP_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SuccessCode.SIGNUP_SUCCESS));
+        return ResponseEntity.status(SIGNUP_SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SIGNUP_SUCCESS));
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<MemberProfileResDto>> getProfile(@LoginMember AuthMember authMember) {
+        System.out.println(authMember.memberId());
+        MemberProfileResDto response = memberService.getMemberProfile(authMember.memberId());
+        return ResponseEntity.status(PROFILE_GET_SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(PROFILE_GET_SUCCESS, response));
+    }
 
+    @PatchMapping("/profile")
+    public ResponseEntity<ApiResponse<Void>> updateProfile(
+            @LoginMember AuthMember authMember,
+            @Valid @RequestBody ProfileUpdateReqDto request) {
+        memberService.updateMemberProfile(authMember.memberId(), request);
+        return ResponseEntity.status(PROFILE_UPDATE_SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(PROFILE_UPDATE_SUCCESS));
+    }
+
+    @PatchMapping("/profile/pw")
+    public ResponseEntity<ApiResponse<Void>> updateProfilePw(
+            @LoginMember AuthMember authMember, @Valid @RequestBody PasswordUpdateReqDto request){
+        memberService.updatePassword(authMember.memberId(), request);
+        return ResponseEntity.status(PASSWORD_UPDATE_SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(PASSWORD_UPDATE_SUCCESS));
+    }
 }

@@ -14,6 +14,7 @@ public class Member extends BaseEntity {
     private String email;
     private String encodedPassword;
     private String profileImgUrl;
+    private Role role = Role.ROLE_USER;
 
     private Member(String email, String encodedPassword, String nickname, String profileImgUrl) {
         this.email = email;
@@ -31,6 +32,15 @@ public class Member extends BaseEntity {
             throw new IllegalStateException("이미 ID가 할당된 회원입니다.");
         }
         this.id = id;
+    }
+
+    public void updateProfile(String nickname, String profileImgUrl){
+        this.profileImgUrl = profileImgUrl;
+        this.nickname = nickname;
+    }
+
+    public void updatePassword(String encodedPassword){
+        this.encodedPassword = encodedPassword;
     }
 
     // TODO : 도메인에서 필드 유효성 검사 필요

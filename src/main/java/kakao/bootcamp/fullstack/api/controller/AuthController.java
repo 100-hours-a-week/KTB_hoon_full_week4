@@ -5,17 +5,19 @@ import jakarta.validation.Valid;
 import kakao.bootcamp.fullstack.api.dto.request.LoginReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.LoginResDto;
 import kakao.bootcamp.fullstack.api.service.AuthService;
-import kakao.bootcamp.fullstack.global.constants.JwtConstants;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
+import kakao.bootcamp.fullstack.global.utils.TokenExtractor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -33,8 +35,9 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
-            @RequestAttribute(JwtConstants.ACCESS_TOKEN_ATTRIBUTE) String accessToken
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader
     ) {
+        String accessToken = TokenExtractor.extractBearerToken(authorizationHeader);
         authService.logout(accessToken);
         return ResponseEntity
                 .status(SuccessCode.LOGOUT_SUCCESS.getHttpStatus())
