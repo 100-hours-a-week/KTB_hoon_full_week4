@@ -11,6 +11,7 @@ import kakao.bootcamp.fullstack.global.jwt.annotation.LoginMember;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,5 +58,12 @@ public class MemberController {
         memberService.updatePassword(authMember.memberId(), request);
         return ResponseEntity.status(PASSWORD_UPDATE_SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(PASSWORD_UPDATE_SUCCESS));
+    }
+
+    @DeleteMapping("/profile")
+    public ResponseEntity<ApiResponse<Void>> withdrawal(@LoginMember AuthMember authMember) {
+        memberService.deleteMember(authMember.memberId());
+        return ResponseEntity.status(MEMBER_DELETE_SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(MEMBER_DELETE_SUCCESS));
     }
 }

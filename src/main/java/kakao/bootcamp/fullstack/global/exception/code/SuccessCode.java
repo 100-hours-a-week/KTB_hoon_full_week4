@@ -13,6 +13,7 @@ public enum SuccessCode implements BaseCode{
     PROFILE_GET_SUCCESS(HttpStatus.OK, "SUCCESS", "profile_search_success"),
     PROFILE_UPDATE_SUCCESS(HttpStatus.OK, "SUCCESS", "profile_update_success"),
     PASSWORD_UPDATE_SUCCESS(HttpStatus.OK, "SUCCESS", "password_update_success"),
+    MEMBER_DELETE_SUCCESS(HttpStatus.OK, "SUCCESS", "member_delete_success"),
     ;
 
     private final HttpStatus httpStatus;

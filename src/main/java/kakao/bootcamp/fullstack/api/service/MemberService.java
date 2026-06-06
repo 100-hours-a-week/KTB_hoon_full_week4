@@ -43,6 +43,11 @@ public class MemberService {
         );
     }
 
+    public void deleteMember(Long id){
+        Member member = loadMemberOrThrow(id);
+        member.delete();
+    }
+
     public void updateMemberProfile(Long id, ProfileUpdateReqDto request){
         Member member = loadMemberOrThrow(id);
         member.updateProfile(request.nickname(), request.imageUrl());
@@ -51,7 +56,7 @@ public class MemberService {
     public void updatePassword(Long id, PasswordUpdateReqDto request){
         Member member = loadMemberOrThrow(id);
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
-        member.updatePassword(passwordHasher.hash(password));
+        member.updatePassword(passwordHasher.hash(request.password()));
     }
 
     private Member loadMemberOrThrow(Long id) {
