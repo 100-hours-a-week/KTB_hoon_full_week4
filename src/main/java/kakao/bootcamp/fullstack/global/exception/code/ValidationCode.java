@@ -20,4 +20,9 @@ public class ValidationCode {
 
     public static final String TITLE_REQUIRED = "TITLE_REQUIRED";
     public static final String CONTENT_REQUIRED = "CONTENT_REQUIRED";
+
+    public static final String COMMENT_REQUIRED = "COMMENT_REQUIRED";
+
+    public static final String REPORT_REASON_REQUIRED = "REPORT_REASON_REQUIRED";
+    public static final String REPORT_TARGET_REQUIRED = "REPORT_TARGET_REQUIRED";
 }

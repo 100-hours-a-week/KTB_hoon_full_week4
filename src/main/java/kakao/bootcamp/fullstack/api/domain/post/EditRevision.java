@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class EditRevision extends BaseEntity {
 
     private Long id;
-    private RevisionTargetType targetType;
+    private TargetType targetType;
     private Long targetId;
     private Long writerId;
     private String title;
@@ -18,7 +18,7 @@ public class EditRevision extends BaseEntity {
     private String imageUrl;
 
     private EditRevision(
-            RevisionTargetType targetType,
+            TargetType targetType,
             Long targetId,
             Long writerId,
             String title,
@@ -46,9 +46,9 @@ public class EditRevision extends BaseEntity {
 
     public static EditRevision fromPost(Post post) {
         return new EditRevision(
-                RevisionTargetType.POST,
+                TargetType.POST,
                 post.getId(),
-                post.getWriterId(),
+                post.getWriter().getId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getImageUrl()
@@ -57,9 +57,9 @@ public class EditRevision extends BaseEntity {
 
     public static EditRevision fromComment(Comment comment) {
         return new EditRevision(
-                RevisionTargetType.COMMENT,
+                TargetType.COMMENT,
                 comment.getId(),
-                comment.getWriterId(),
+                comment.getWriter().getId(),
                 null,
                 comment.getContent(),
                 null

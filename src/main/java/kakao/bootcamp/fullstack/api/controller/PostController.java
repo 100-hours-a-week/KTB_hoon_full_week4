@@ -4,8 +4,13 @@ package kakao.bootcamp.fullstack.api.controller;
 import jakarta.validation.Valid;
 import java.util.List;
 import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
+import kakao.bootcamp.fullstack.api.dto.request.CommentCreateReqDto;
+import kakao.bootcamp.fullstack.api.dto.request.CommentUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostCreateReqDto;
+import kakao.bootcamp.fullstack.api.dto.request.PostReportReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostUpdateReqDto;
+import kakao.bootcamp.fullstack.api.dto.response.CommentCreateResDto;
+import kakao.bootcamp.fullstack.api.dto.response.PostCreateResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDetailsResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostLikeResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostSummaryResDto;
@@ -54,12 +59,12 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> createPost(
+    public ResponseEntity<ApiResponse<PostCreateResDto>> createPost(
             @LoginMember AuthMember authMember,
             @Valid @RequestBody PostCreateReqDto request){
-        postService.createPost(authMember.memberId(), request);
+        PostCreateResDto response = postService.createPost(authMember.memberId(), request);
         return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SuccessCode.SUCCESS));
+                .body(ApiResponse.success(SuccessCode.SUCCESS, response));
     }
 
     @PatchMapping("/{postId}")
@@ -97,5 +102,36 @@ public class PostController {
         PostLikeResDto response = postService.postUnLike(authMember.memberId(), postId);
         return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(SuccessCode.SUCCESS,response));
+    }
+
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<ApiResponse<CommentCreateResDto>> createComment(
+            @LoginMember AuthMember authMember,
+            @PathVariable Long postId,
+            @Valid @RequestBody CommentCreateReqDto request){
+        CommentCreateResDto response = postService.createComment(authMember.memberId(), postId, request);
+        return ResponseEntity.status(SuccessCode.COMMENT_CREATED_SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.COMMENT_CREATED_SUCCESS, response));
+    }
+
+    @PatchMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<ApiResponse<Void>> updateComment(
+            @LoginMember AuthMember authMember,
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @Valid @RequestBody CommentUpdateReqDto request){
+        postService.updateComment(authMember.memberId(), postId, commentId, request);
+        return ResponseEntity.status(SuccessCode.COMMENT_UPDATED_SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.COMMENT_UPDATED_SUCCESS));
+    }
+
+    @DeleteMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<ApiResponse<Void>> deleteComment(
+            @LoginMember AuthMember authMember,
+            @PathVariable Long postId,
+            @PathVariable Long commentId){
+        postService.deleteComment(authMember.memberId(), postId, commentId);
+        return ResponseEntity.status(SuccessCode.COMMENT_DELETED_SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.COMMENT_DELETED_SUCCESS));
     }
 }

@@ -7,15 +7,17 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PostReport extends BaseEntity {
+public class Report extends BaseEntity {
 
     private Long id;
-    private Long postId;
+    private Long targetId;
+    private TargetType targetType;
     private Long memberId;
     private ReportReason reason;
 
-    private PostReport(Long postId, Long memberId, ReportReason reason) {
-        this.postId = postId;
+    private Report(Long targetId, TargetType targetType, Long memberId, ReportReason reason) {
+        this.targetId = targetId;
+        this.targetType = targetType;
         this.memberId = memberId;
         this.reason = reason;
     }
@@ -31,7 +33,7 @@ public class PostReport extends BaseEntity {
         this.id = id;
     }
 
-    public static PostReport create(Long postId, Long memberId, ReportReason reason) {
-        return new PostReport(postId, memberId, reason);
+    public static Report create(Long targetId, TargetType targetType, Long memberId, ReportReason reason) {
+        return new Report(targetId, targetType, memberId, reason);
     }
 }

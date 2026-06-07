@@ -1,5 +1,6 @@
 package kakao.bootcamp.fullstack.api.domain.post;
 
+import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.global.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,8 +14,7 @@ public class Post extends BaseEntity {
     private String title;
     private String content;
     private String imageUrl;
-    private Long writerId;
-    private String writerNickname;
+    private Member writer;
     private long likeCount = 0L;
     private long commentCount = 0L;
     private long viewCount = 0L;
@@ -22,13 +22,11 @@ public class Post extends BaseEntity {
     private boolean edited = false;
     private boolean blinded = false;
 
-    private Post(Long writerId, String title, String content, String imageUrl,
-            String writerNickname) {
-        this.writerId = writerId;
+    private Post(Member writer, String title, String content, String imageUrl) {
+        this.writer = writer;
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
-        this.writerNickname = writerNickname;
     }
 
     public boolean isNew() {
@@ -56,6 +54,11 @@ public class Post extends BaseEntity {
         return likeCount;
     }
 
+    public long increaseReportCount(){
+        this.reportCount++;
+        return reportCount;
+    }
+
     public void updatePost(String title, String content, String imageUrl){
         this.title = title;
         this.content = content;
@@ -66,10 +69,10 @@ public class Post extends BaseEntity {
     }
 
     public boolean isWriter(Long memberId){
-        return writerId.equals(memberId);
+        return writer.getId().equals(memberId);
     }
 
-    public static Post create(Long writerId, String title, String content, String imageUrl, String writerNickname){
-        return new Post(writerId, title, content, imageUrl, writerNickname);
+    public static Post create(Member writer, String title, String content, String imageUrl){
+        return new Post(writer, title, content, imageUrl);
     }
 }

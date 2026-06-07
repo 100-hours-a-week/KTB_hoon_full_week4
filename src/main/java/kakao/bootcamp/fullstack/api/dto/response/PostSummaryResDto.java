@@ -24,8 +24,8 @@ public record PostSummaryResDto(
                 post.getViewCount(),
                 post.isEdited(),
                 post.isBlinded(),
-                post.getWriterId(),
-                post.getWriterNickname(),
+                post.getWriter().getId(),
+                post.getWriter().getNickname(),
                 post.getCreatedAt()
         );
     }

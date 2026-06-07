@@ -15,8 +15,8 @@ public record CommentResDto(
         return new CommentResDto(
                 comment.getId(),
                 comment.getContent(),
-                comment.getWriterId(),
-                comment.getWriterNickname(),
+                comment.getWriter().getId(),
+                comment.getWriter().getNickname(),
                 isMine,
                 comment.getCreatedAt()
         );
