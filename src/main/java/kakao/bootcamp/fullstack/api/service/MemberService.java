@@ -7,7 +7,7 @@ import kakao.bootcamp.fullstack.api.dto.request.PasswordUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.ProfileUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.SignupReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
-import kakao.bootcamp.fullstack.api.repository.MemberRepository;
+import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.global.config.PasswordHasher;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;

@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.repository;
+package kakao.bootcamp.fullstack.api.repository.post;
 
 import java.time.LocalDateTime;
 import java.util.List;

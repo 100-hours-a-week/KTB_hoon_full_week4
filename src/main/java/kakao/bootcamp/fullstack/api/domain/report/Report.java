@@ -1,5 +1,6 @@
-package kakao.bootcamp.fullstack.api.domain.post;
+package kakao.bootcamp.fullstack.api.domain.report;
 
+import kakao.bootcamp.fullstack.api.domain.post.TargetType;
 import kakao.bootcamp.fullstack.global.BaseEntity;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.repository;
+package kakao.bootcamp.fullstack.api.repository.post;
 
 import java.util.Comparator;
 import java.util.List;

@@ -1,6 +1,6 @@
-package kakao.bootcamp.fullstack.api.repository;
+package kakao.bootcamp.fullstack.api.repository.report;
 
-import kakao.bootcamp.fullstack.api.domain.post.Report;
+import kakao.bootcamp.fullstack.api.domain.report.Report;
 import kakao.bootcamp.fullstack.api.domain.post.TargetType;
 
 public interface ReportRepository {
