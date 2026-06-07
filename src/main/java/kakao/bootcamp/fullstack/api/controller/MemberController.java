@@ -31,16 +31,16 @@ public class MemberController {
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestBody SignupReqDto request) {
         memberService.signup(request);
-        return ResponseEntity.status(SIGNUP_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SIGNUP_SUCCESS));
+        return ResponseEntity.status(CREATED.getHttpStatus())
+                .body(ApiResponse.success(CREATED));
     }
 
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<MemberProfileResDto>> getProfile(@LoginMember AuthMember authMember) {
         System.out.println(authMember.memberId());
         MemberProfileResDto response = memberService.getMemberProfile(authMember.memberId());
-        return ResponseEntity.status(PROFILE_GET_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(PROFILE_GET_SUCCESS, response));
+        return ResponseEntity.status(SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SUCCESS, response));
     }
 
     @PatchMapping("/profile")
@@ -48,22 +48,22 @@ public class MemberController {
             @LoginMember AuthMember authMember,
             @Valid @RequestBody ProfileUpdateReqDto request) {
         memberService.updateMemberProfile(authMember.memberId(), request);
-        return ResponseEntity.status(PROFILE_UPDATE_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(PROFILE_UPDATE_SUCCESS));
+        return ResponseEntity.status(SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SUCCESS));
     }
 
     @PatchMapping("/profile/pw")
     public ResponseEntity<ApiResponse<Void>> updateProfilePw(
             @LoginMember AuthMember authMember, @Valid @RequestBody PasswordUpdateReqDto request){
         memberService.updatePassword(authMember.memberId(), request);
-        return ResponseEntity.status(PASSWORD_UPDATE_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(PASSWORD_UPDATE_SUCCESS));
+        return ResponseEntity.status(SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SUCCESS));
     }
 
     @DeleteMapping("/profile")
     public ResponseEntity<ApiResponse<Void>> withdrawal(@LoginMember AuthMember authMember) {
         memberService.deleteMember(authMember.memberId());
-        return ResponseEntity.status(MEMBER_DELETE_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(MEMBER_DELETE_SUCCESS));
+        return ResponseEntity.status(SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SUCCESS));
     }
 }

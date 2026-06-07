@@ -34,8 +34,8 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public MemberProfileResDto getMemberProfile(Long id){
-        Member member = loadMemberOrThrow(id);
+    public MemberProfileResDto getMemberProfile(Long memberId){
+        Member member = loadMemberOrThrow(memberId);
         return new MemberProfileResDto(
                 member.getEmail(),
                 member.getNickname(),
@@ -43,24 +43,26 @@ public class MemberService {
         );
     }
 
-    public void deleteMember(Long id){
-        Member member = loadMemberOrThrow(id);
+    public void deleteMember(Long memberId){
+        Member member = loadMemberOrThrow(memberId);
         member.delete();
     }
 
-    public void updateMemberProfile(Long id, ProfileUpdateReqDto request){
-        Member member = loadMemberOrThrow(id);
+    public void updateMemberProfile(Long memberId, ProfileUpdateReqDto request){
+        Member member = loadMemberOrThrow(memberId);
         member.updateProfile(request.nickname(), request.imageUrl());
+        memberRepository.save(member);
     }
 
-    public void updatePassword(Long id, PasswordUpdateReqDto request){
-        Member member = loadMemberOrThrow(id);
+    public void updatePassword(Long memberId, PasswordUpdateReqDto request){
+        Member member = loadMemberOrThrow(memberId);
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
         member.updatePassword(passwordHasher.hash(request.password()));
+        memberRepository.save(member);
     }
 
-    private Member loadMemberOrThrow(Long id) {
-        return memberRepository.findById(id)
+    private Member loadMemberOrThrow(Long memberId) {
+        return memberRepository.findById(memberId)
                 .orElseThrow(() -> new NotFoundException(AuthErrorCode.MEMBER_NOT_FOUND));
     }
 

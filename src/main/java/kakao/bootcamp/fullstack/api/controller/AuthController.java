@@ -29,8 +29,8 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResDto>> login(@Valid @RequestBody LoginReqDto request){
         LoginResDto response = authService.login(request);
         return ResponseEntity
-                .status(SuccessCode.LOGIN_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SuccessCode.LOGIN_SUCCESS, response));
+                .status(SuccessCode.SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.SUCCESS, response));
     }
 
     @PostMapping("/logout")
@@ -40,7 +40,7 @@ public class AuthController {
         String accessToken = TokenExtractor.extractBearerToken(authorizationHeader);
         authService.logout(accessToken);
         return ResponseEntity
-                .status(SuccessCode.LOGOUT_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SuccessCode.LOGOUT_SUCCESS));
+                .status(SuccessCode.SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.SUCCESS));
     }
 }
