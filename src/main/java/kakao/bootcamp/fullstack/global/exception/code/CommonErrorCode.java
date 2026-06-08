@@ -10,26 +10,12 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum CommonErrorCode implements BaseCode{
 
-    INTERNAL_SERVER_ERROR(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            "INTERNAL_SERVER_ERROR",
-            "internal_server_error"
-    ),
-    INVALID_IMAGE_URL(
-            HttpStatus.BAD_REQUEST,
-            "INVALID_IMAGE_URL",
-            "invalid_image_url"
-    )
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "internal_server_error"),
+    INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "INVALID_IMAGE_URL", "invalid_image_url"),
+    ALREADY_ASSIGNED_ID(HttpStatus.INTERNAL_SERVER_ERROR, "ALREADY_ASSIGNED_ID", "already_assigned_id")
     ;
 
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
-
-    public static CommonErrorCode from(String code) {
-        return Arrays.stream(values())
-                .filter(errorCode -> errorCode.code.equals(code))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Not Defined Error Code: " + code));
-    }
 }

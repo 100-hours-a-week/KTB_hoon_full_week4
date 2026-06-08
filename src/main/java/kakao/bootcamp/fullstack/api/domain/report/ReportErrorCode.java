@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.domain.post;
+package kakao.bootcamp.fullstack.api.domain.report;
 
 import kakao.bootcamp.fullstack.global.exception.code.BaseCode;
 import lombok.AllArgsConstructor;

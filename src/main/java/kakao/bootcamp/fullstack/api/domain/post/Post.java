@@ -2,6 +2,9 @@ package kakao.bootcamp.fullstack.api.domain.post;
 
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.global.BaseEntity;
+import kakao.bootcamp.fullstack.global.constants.PostConstants;
+import kakao.bootcamp.fullstack.global.exception.BusinessException;
+import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +38,7 @@ public class Post extends BaseEntity {
 
     public void assignId(Long id) {
         if (!isNew()) {
-            throw new IllegalStateException("이미 ID가 할당된 게시글입니다.");
+            throw new BusinessException(CommonErrorCode.ALREADY_ASSIGNED_ID);
         }
         this.id = id;
     }
@@ -54,9 +57,15 @@ public class Post extends BaseEntity {
         return likeCount;
     }
 
-    public long increaseReportCount(){
+    public void increaseReportCount(){
         this.reportCount++;
-        return reportCount;
+        if (!blinded && reportCount >= PostConstants.BLIND_THRESHOLD) {
+            this.blinded = true;
+        }
+    }
+
+    public boolean isWriterWithdrawn(){
+        return writer.isDeleted();
     }
 
     public void updatePost(String title, String content, String imageUrl){

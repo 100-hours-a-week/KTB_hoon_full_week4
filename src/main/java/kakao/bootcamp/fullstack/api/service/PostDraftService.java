@@ -1,0 +1,79 @@
+package kakao.bootcamp.fullstack.api.service;
+
+import java.util.List;
+import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
+import kakao.bootcamp.fullstack.api.domain.member.Member;
+import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
+import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraftErrorCode;
+import kakao.bootcamp.fullstack.api.dto.request.PostDraftCreateReqDto;
+import kakao.bootcamp.fullstack.api.dto.request.PostDraftUpdateReqDto;
+import kakao.bootcamp.fullstack.api.dto.response.PostDraftDetailsResDto;
+import kakao.bootcamp.fullstack.api.dto.response.PostDraftSaveResDto;
+import kakao.bootcamp.fullstack.api.dto.response.PostDraftsSummaryResDto;
+import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
+import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
+import kakao.bootcamp.fullstack.global.exception.ForbiddenException;
+import kakao.bootcamp.fullstack.global.exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class PostDraftService {
+
+    private final PostDraftRepository postDraftRepository;
+    private final MemberRepository memberRepository;
+
+    public List<PostDraftsSummaryResDto> getPostDrafts(Long memberId) {
+        Member member = loadMemberOrThrow(memberId);
+        List<PostDraft> postDrafts = postDraftRepository.getPostDraftsByMemberId(memberId);
+        return PostDraftsSummaryResDto.fromDomains(postDrafts);
+    }
+
+    public PostDraftDetailsResDto getPostDraft(Long memberId, Long postDraftId) {
+        Member member = loadMemberOrThrow(memberId);
+        PostDraft postDraft = loadPostDraftOrThrow(postDraftId);
+        checkPostDraftWriter(memberId, postDraft);
+        return PostDraftDetailsResDto.from(postDraft);
+    }
+
+    public PostDraftSaveResDto createPostDraft(Long memberId, PostDraftCreateReqDto request) {
+        Member member = loadMemberOrThrow(memberId);
+        PostDraft postDraft = PostDraft.create(memberId, request.title(), request.content(), request.imageUrl());
+        postDraftRepository.save(postDraft);
+        return PostDraftSaveResDto.from(postDraft);
+    }
+
+    public PostDraftSaveResDto updatePostDraft(Long memberId, Long postDraftId, PostDraftUpdateReqDto request) {
+        Member member = loadMemberOrThrow(memberId);
+        PostDraft postDraft = loadPostDraftOrThrow(postDraftId);
+        checkPostDraftWriter(memberId, postDraft);
+        postDraft.update(request.title(), request.content(), request.imageUrl());
+        postDraftRepository.save(postDraft);
+        return PostDraftSaveResDto.from(postDraft);
+    }
+
+    public void deletePostDraft(Long memberId, Long postDraftId) {
+        Member member = loadMemberOrThrow(memberId);
+        PostDraft postDraft = loadPostDraftOrThrow(postDraftId);
+        checkPostDraftWriter(memberId, postDraft);
+        postDraft.delete();
+        postDraftRepository.save(postDraft);
+    }
+
+    private static void checkPostDraftWriter(Long memberId, PostDraft postDraft) {
+        if(!postDraft.isWriter(memberId)){
+            throw new ForbiddenException(PostDraftErrorCode.NOT_POST_DRAFT_WRITER);
+        }
+    }
+
+    private PostDraft loadPostDraftOrThrow(Long postDraftId) {
+        return postDraftRepository.findActiveById(postDraftId)
+                .orElseThrow(() -> new NotFoundException(PostDraftErrorCode.POST_DRAFT_NOT_FOUND));
+    }
+
+    private Member loadMemberOrThrow(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundException(AuthErrorCode.MEMBER_NOT_FOUND));
+    }
+}

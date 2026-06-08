@@ -1,7 +1,9 @@
 package kakao.bootcamp.fullstack.api.domain.report;
 
-import kakao.bootcamp.fullstack.api.domain.post.TargetType;
+import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.global.BaseEntity;
+import kakao.bootcamp.fullstack.global.exception.BusinessException;
+import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,7 +31,7 @@ public class Report extends BaseEntity {
 
     public void assignId(Long id) {
         if (!isNew()) {
-            throw new IllegalStateException("이미 ID가 할당된 신고 기록입니다.");
+            throw new BusinessException(CommonErrorCode.ALREADY_ASSIGNED_ID);
         }
         this.id = id;
     }

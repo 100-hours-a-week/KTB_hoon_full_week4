@@ -1,5 +1,8 @@
 package kakao.bootcamp.fullstack.api.dto.response;
 
+import static kakao.bootcamp.fullstack.global.constants.PostConstants.BLINDED_POST;
+import static kakao.bootcamp.fullstack.global.constants.PostConstants.UNKNOWN_WRITER;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
@@ -20,17 +23,18 @@ public record PostDetailsResDto(
         List<CommentResDto> comments
 ) {
     public static PostDetailsResDto from(Post post, boolean isMine, boolean isLikedByMe, List<CommentResDto> comments) {
+        boolean blinded = post.isBlinded();
         return new PostDetailsResDto(
                 post.getId(),
-                post.getTitle(),
-                post.getContent(),
+                blinded ? BLINDED_POST : post.getTitle(),
+                blinded ? BLINDED_POST : post.getContent(),
                 post.getLikeCount(),
                 post.getViewCount(),
                 post.getWriter().getId(),
-                post.getWriter().getNickname(),
-                post.getImageUrl(),
+                post.isWriterWithdrawn() ? UNKNOWN_WRITER : post.getWriter().getNickname(),
+                blinded ? null : post.getImageUrl(),
                 isMine,
-                post.isBlinded(),
+                blinded,
                 isLikedByMe,
                 post.getCreatedAt(),
                 comments

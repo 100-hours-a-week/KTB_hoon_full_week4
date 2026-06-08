@@ -1,15 +1,15 @@
 package kakao.bootcamp.fullstack.api.service;
 
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
-import kakao.bootcamp.fullstack.api.domain.post.Comment;
-import kakao.bootcamp.fullstack.api.domain.post.CommentErrorCode;
+import kakao.bootcamp.fullstack.api.domain.comment.Comment;
+import kakao.bootcamp.fullstack.api.domain.comment.CommentErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 import kakao.bootcamp.fullstack.api.domain.report.Report;
-import kakao.bootcamp.fullstack.api.domain.post.ReportErrorCode;
-import kakao.bootcamp.fullstack.api.domain.post.TargetType;
+import kakao.bootcamp.fullstack.api.domain.report.ReportErrorCode;
+import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.dto.request.PostReportReqDto;
-import kakao.bootcamp.fullstack.api.repository.post.CommentRepository;
+import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import kakao.bootcamp.fullstack.api.repository.report.ReportRepository;
@@ -42,7 +42,7 @@ public class ReportService {
     }
 
     private Post loadPostOrThrow(Long request) {
-        return postRepository.findById(request)
+        return postRepository.findActiveById(request)
                 .orElseThrow(() -> new NotFoundException(PostErrorCode.POST_NOT_FOUND));
     }
 
@@ -60,7 +60,7 @@ public class ReportService {
     }
 
     private Comment loadCommentOrThrow(Long targetId) {
-        return commentRepository.findById(targetId)
+        return commentRepository.findActiveById(targetId)
                 .orElseThrow(() -> new NotFoundException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 

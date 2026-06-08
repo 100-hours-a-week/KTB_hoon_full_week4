@@ -1,7 +1,7 @@
 package kakao.bootcamp.fullstack.api.dto.response;
 
 import java.time.LocalDateTime;
-import kakao.bootcamp.fullstack.api.domain.post.Comment;
+import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 
 public record CommentResDto(
         Long commentId,

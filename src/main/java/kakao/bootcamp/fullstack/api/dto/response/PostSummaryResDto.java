@@ -1,5 +1,8 @@
 package kakao.bootcamp.fullstack.api.dto.response;
 
+import static kakao.bootcamp.fullstack.global.constants.PostConstants.BLINDED_POST;
+import static kakao.bootcamp.fullstack.global.constants.PostConstants.UNKNOWN_WRITER;
+
 import java.time.LocalDateTime;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 
@@ -18,14 +21,14 @@ public record PostSummaryResDto(
     public static PostSummaryResDto from(Post post) {
         return new PostSummaryResDto(
                 post.getId(),
-                post.getTitle(),
+                post.isBlinded() ? BLINDED_POST : post.getTitle(),
                 post.getLikeCount(),
                 post.getCommentCount(),
                 post.getViewCount(),
                 post.isEdited(),
                 post.isBlinded(),
                 post.getWriter().getId(),
-                post.getWriter().getNickname(),
+                post.isWriterWithdrawn() ? UNKNOWN_WRITER : post.getWriter().getNickname(),
                 post.getCreatedAt()
         );
     }

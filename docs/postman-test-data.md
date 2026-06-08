@@ -17,7 +17,7 @@
 | 4        | dave@example.com        | 데이브   | Password1!  |
 | 5        | leedonghoon@example.com | donghoon | Test1234!   |
 
-> 게시글 ID는 1~6, 댓글 ID는 1~10이 시드 데이터로 생성됩니다.
+> 게시글 ID는 1~6, 댓글 ID는 1~10, 임시글 ID는 1~3이 시드 데이터로 생성됩니다. 임시글 3건은 모두 donghoon(memberId=5) 소유입니다.
 
 ## Postman Environment 변수 예시
 
@@ -389,7 +389,165 @@ pm.environment.set("accessToken", body.data.accessToken);
 
 ---
 
-## 6. 추천 테스트 시나리오
+## 6. 신고
+
+### 6-1. 신고 등록 — `POST /api/v1/report`
+
+- Header: `Authorization: Bearer {{accessToken}}`
+- `targetType` : `POST` | `COMMENT`
+- `reportReason` : `SPAM` | `ABUSE` | `INAPPROPRIATE` | `ADVERTISEMENT` | `ETC`
+
+성공 요청 (타인 게시글 신고)
+```json
+{
+  "targetId": 1,
+  "targetType": "POST",
+  "reportReason": "SPAM"
+}
+```
+201 응답
+```json
+{ "message": "report_created_success", "code": "SUCCESS", "data": null }
+```
+
+실패 시나리오
+```json
+{ "targetId": null, "targetType": "POST", "reportReason": "SPAM" }
+```
+→ 400 `REPORT_TARGET_REQUIRED`
+
+```json
+{ "targetId": 1, "targetType": "POST", "reportReason": null }
+```
+→ 400 `REPORT_REASON_REQUIRED`
+
+- 본인이 작성한 글 신고 → 400 `SELF_REPORT_NOT_ALLOWED`
+- 동일 대상 두 번 신고 → 409 `ALREADY_REPORTED`
+- 존재하지 않는 게시글 → 404 `POST_NOT_FOUND`
+
+> 동일 게시글이 5회 이상 신고되면 자동 블라인드 처리되어 이후 조회 시 `isBlind: true`, 제목/본문은 "숨김 처리된 게시글"로 응답됩니다.
+
+---
+
+## 7. 임시저장
+
+모든 임시저장 API는 `Authorization: Bearer {{accessToken}}` 헤더가 필요하며, donghoon 계정으로 로그인하면 시드 임시글(`draftId` 1~3)을 바로 확인할 수 있습니다.
+
+### 7-1. 임시글 목록 — `GET /api/v1/posts/drafts`
+
+200 응답 (donghoon 기준)
+```json
+{
+  "message": "success",
+  "code": "SUCCESS",
+  "data": [
+    { "draftId": 1, "title": "auto-save 시작한 글" },
+    { "draftId": 2, "title": "JWT 리프레시 토큰 운영 후기" },
+    { "draftId": 3, "title": "ConcurrentHashMap 기반 인메모리 저장소 설계" }
+  ]
+}
+```
+
+### 7-2. 임시글 상세 — `GET /api/v1/posts/drafts/{draftId}`
+
+- 예: `GET /api/v1/posts/drafts/2`
+
+200 응답
+```json
+{
+  "message": "success",
+  "code": "SUCCESS",
+  "data": {
+    "draftId": 2,
+    "title": "JWT 리프레시 토큰 운영 후기",
+    "content": "Access는 짧게, Refresh는 HttpOnly 쿠키로 분리한 뒤로 운영 비용이 줄었습니다. 다음 글에서 블랙리스트 정책 정리 예정.",
+    "imageUrl": null
+  }
+}
+```
+
+실패 시나리오
+- 존재하지 않거나 삭제된 임시글 → 404 `POST_DRAFT_NOT_FOUND`
+- 타인 임시글 조회 → 401 `NOT_POST_DRAFT_WRITER`
+
+### 7-3. 임시글 생성 — `POST /api/v1/posts/drafts`
+
+성공 요청
+```json
+{
+  "title": "작성 중인 새 글",
+  "content": "초안 내용입니다.",
+  "imageUrl": "https://picsum.photos/seed/new-draft/600/400"
+}
+```
+
+본문/이미지는 선택값이라 제목만 보내도 됩니다.
+```json
+{ "title": "제목만 있는 자동 저장", "content": null, "imageUrl": null }
+```
+
+200 응답
+```json
+{
+  "message": "post_draft_created_success",
+  "code": "SUCCESS",
+  "data": { "draftId": 4 }
+}
+```
+
+실패 시나리오
+```json
+{ "title": "", "content": "내용만", "imageUrl": null }
+```
+→ 400 `TITLE_REQUIRED`
+
+```json
+{ "title": "0123456789012345678901234567890", "content": null, "imageUrl": null }
+```
+→ 400 `TITLE_LENGTH_EXCEEDED` (제목 30자 초과)
+
+### 7-4. 임시글 수정 — `PATCH /api/v1/posts/drafts/{draftId}`
+
+성공 요청 (본인 임시글)
+```json
+{
+  "title": "수정한 임시글 제목",
+  "content": "갱신된 본문",
+  "imageUrl": null
+}
+```
+
+200 응답
+```json
+{
+  "message": "post_draft_saved_success",
+  "code": "SUCCESS",
+  "data": { "draftId": 1 }
+}
+```
+
+실패 시나리오
+- 제목 누락 → 400 `TITLE_REQUIRED`
+- 제목 30자 초과 → 400 `TITLE_LENGTH_EXCEEDED`
+- 타인 임시글 수정 → 401 `NOT_POST_DRAFT_WRITER`
+- 존재하지 않거나 이미 삭제된 임시글 → 404 `POST_DRAFT_NOT_FOUND`
+
+### 7-5. 임시글 삭제 — `DELETE /api/v1/posts/drafts/{draftId}`
+
+- Body: 없음
+
+200 응답
+```json
+{ "message": "post_draft_deleted_success", "code": "SUCCESS", "data": null }
+```
+
+실패 시나리오
+- 타인 임시글 삭제 → 401 `NOT_POST_DRAFT_WRITER`
+- 이미 삭제되었거나 없는 임시글 → 404 `POST_DRAFT_NOT_FOUND`
+
+---
+
+## 8. 추천 테스트 시나리오
 
 1. `POST /login` (donghoon) → accessToken 저장
 2. `GET /profile` → 본인 정보 확인
@@ -402,4 +560,9 @@ pm.environment.set("accessToken", body.data.accessToken);
 9. `PATCH /posts/1/comments/1` (타인 댓글) → **403 NOT_COMMENT_WRITER**
 10. `DELETE /posts/1/comments/{commentId}` → 200
 11. `POST /posts` 신규 작성 → 본인 글 수정/삭제까지 확인
-12. `POST /logout` → 이후 보호 API 호출 시 401 확인
+12. `POST /report` `{ "targetId": 1, "targetType": "POST", "reportReason": "SPAM" }` → 201, 같은 요청 재전송 → **409 ALREADY_REPORTED**
+13. `GET /posts/drafts` → 시드 임시글 3건 확인 (donghoon 로그인 시)
+14. `POST /posts/drafts` 신규 임시글 작성 → 응답 `draftId` 메모
+15. `PATCH /posts/drafts/{draftId}` → 본문/이미지 갱신 확인
+16. `DELETE /posts/drafts/{draftId}` → 200, 동일 ID 재조회 시 **404 POST_DRAFT_NOT_FOUND**
+17. `POST /logout` → 이후 보호 API 호출 시 401 확인

@@ -1,6 +1,8 @@
-package kakao.bootcamp.fullstack.api.domain.post;
+package kakao.bootcamp.fullstack.api.domain.post_draft;
 
 import kakao.bootcamp.fullstack.global.BaseEntity;
+import kakao.bootcamp.fullstack.global.exception.BusinessException;
+import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,9 +32,20 @@ public class PostDraft extends BaseEntity {
 
     public void assignId(Long id) {
         if (!isNew()) {
-            throw new IllegalStateException("이미 ID가 할당된 임시글입니다.");
+            throw new BusinessException(CommonErrorCode.ALREADY_ASSIGNED_ID);
         }
         this.id = id;
+    }
+
+    public boolean isWriter(Long memberId) {
+        return writerId.equals(memberId);
+    }
+
+    public void update(String title, String content, String imageUrl) {
+        this.title = title;
+        this.content = content;
+        this.imageUrl = imageUrl;
+        updateModifiedTime();
     }
 
     public static PostDraft create(Long writerId, String title, String content, String imageUrl) {

@@ -18,6 +18,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
+        log.error(e.getMessage(), e);
         BaseCode code = e.getCode();
         return ResponseEntity
                 .status(code.getHttpStatus())
@@ -26,18 +27,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.error(e.getMessage(), e);
         String validationCode = e.getBindingResult()
                 .getAllErrors()
                 .stream()
                 .findFirst()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .orElse(CommonErrorCode.INTERNAL_SERVER_ERROR.getCode());
+
         BaseCode errorCode = ErrorCodeMapper.from(validationCode)
                 .orElse(CommonErrorCode.INTERNAL_SERVER_ERROR);
+
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
                 .body(ApiResponse.error(errorCode));
     }
-
-
 }

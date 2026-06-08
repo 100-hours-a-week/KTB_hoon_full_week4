@@ -2,7 +2,6 @@ package kakao.bootcamp.fullstack.api.controller;
 
 
 import jakarta.validation.Valid;
-import java.util.List;
 import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
 import kakao.bootcamp.fullstack.api.dto.request.CommentCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.CommentUpdateReqDto;
@@ -13,7 +12,7 @@ import kakao.bootcamp.fullstack.api.dto.response.CommentCreateResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostCreateResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDetailsResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostLikeResDto;
-import kakao.bootcamp.fullstack.api.dto.response.PostSummaryResDto;
+import kakao.bootcamp.fullstack.api.dto.response.PostSummaryPageResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostUpdateResDto;
 import kakao.bootcamp.fullstack.api.service.PostService;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
@@ -39,12 +38,12 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PostSummaryResDto>>> getPosts(
+    public ResponseEntity<ApiResponse<PostSummaryPageResDto>> getPosts(
             @LoginMember AuthMember authMember,
-            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") Long size
     ) {
-        List<PostSummaryResDto> response = postService.getPostSummariesList(authMember.memberId(), cursor, size);
+        PostSummaryPageResDto response = postService.getPostSummariesList(authMember.memberId(), cursor, size);
         return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(SuccessCode.SUCCESS, response));
     }
@@ -63,8 +62,8 @@ public class PostController {
             @LoginMember AuthMember authMember,
             @Valid @RequestBody PostCreateReqDto request){
         PostCreateResDto response = postService.createPost(authMember.memberId(), request);
-        return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SuccessCode.SUCCESS, response));
+        return ResponseEntity.status(SuccessCode.CREATED.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.CREATED, response));
     }
 
     @PatchMapping("/{postId}")
@@ -110,8 +109,8 @@ public class PostController {
             @PathVariable Long postId,
             @Valid @RequestBody CommentCreateReqDto request){
         CommentCreateResDto response = postService.createComment(authMember.memberId(), postId, request);
-        return ResponseEntity.status(SuccessCode.COMMENT_CREATED_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SuccessCode.COMMENT_CREATED_SUCCESS, response));
+        return ResponseEntity.status(SuccessCode.CREATED.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.CREATED, response));
     }
 
     @PatchMapping("/{postId}/comments/{commentId}")
@@ -121,8 +120,8 @@ public class PostController {
             @PathVariable Long commentId,
             @Valid @RequestBody CommentUpdateReqDto request){
         postService.updateComment(authMember.memberId(), postId, commentId, request);
-        return ResponseEntity.status(SuccessCode.COMMENT_UPDATED_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SuccessCode.COMMENT_UPDATED_SUCCESS));
+        return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.SUCCESS));
     }
 
     @DeleteMapping("/{postId}/comments/{commentId}")
@@ -131,7 +130,7 @@ public class PostController {
             @PathVariable Long postId,
             @PathVariable Long commentId){
         postService.deleteComment(authMember.memberId(), postId, commentId);
-        return ResponseEntity.status(SuccessCode.COMMENT_DELETED_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SuccessCode.COMMENT_DELETED_SUCCESS));
+        return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.SUCCESS));
     }
 }

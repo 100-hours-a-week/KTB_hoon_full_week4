@@ -1,12 +1,15 @@
-package kakao.bootcamp.fullstack.global.config;
+package kakao.bootcamp.fullstack.global.init;
 
 import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
-import kakao.bootcamp.fullstack.api.domain.post.Comment;
+import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
-import kakao.bootcamp.fullstack.api.repository.post.CommentRepository;
+import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
+import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
+import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
+import kakao.bootcamp.fullstack.global.config.PasswordHasher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -22,6 +25,7 @@ public class DataInitializer implements CommandLineRunner {
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final PostDraftRepository postDraftRepository;
     private final PasswordHasher passwordHasher;
 
     @Override
@@ -77,7 +81,23 @@ public class DataInitializer implements CommandLineRunner {
         );
         comments.forEach(commentRepository::save);
 
-        log.info("[DataInitializer] seeded members={}, posts={}, comments={}",
-                members.size(), posts.size(), comments.size());
+        List<PostDraft> drafts = List.of(
+                PostDraft.create(donghoon.getId(),
+                        "auto-save 시작한 글",
+                        null,
+                        null),
+                PostDraft.create(donghoon.getId(),
+                        "JWT 리프레시 토큰 운영 후기",
+                        "Access는 짧게, Refresh는 HttpOnly 쿠키로 분리한 뒤로 운영 비용이 줄었습니다. 다음 글에서 블랙리스트 정책 정리 예정.",
+                        null),
+                PostDraft.create(donghoon.getId(),
+                        "ConcurrentHashMap 기반 인메모리 저장소 설계",
+                        "초기 프로토타입에서는 ConcurrentHashMap 하나로 충분합니다. ID 생성기는 AtomicLong으로 분리해두면 추후 DB 전환 시 변경 폭을 좁힐 수 있어요.",
+                        "https://picsum.photos/seed/draft3/600/400")
+        );
+        drafts.forEach(postDraftRepository::save);
+
+        log.info("[DataInitializer] seeded members={}, posts={}, comments={}, drafts={}",
+                members.size(), posts.size(), comments.size(), drafts.size());
     }
 }

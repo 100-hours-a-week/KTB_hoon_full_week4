@@ -1,12 +1,12 @@
-package kakao.bootcamp.fullstack.api.domain.post;
+package kakao.bootcamp.fullstack.api.domain.comment;
 
 import kakao.bootcamp.fullstack.global.exception.code.BaseCode;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum CommentErrorCode implements BaseCode {
 
     COMMENT_REQUIRED(HttpStatus.BAD_REQUEST, "COMMENT_REQUIRED", "comment_required"),

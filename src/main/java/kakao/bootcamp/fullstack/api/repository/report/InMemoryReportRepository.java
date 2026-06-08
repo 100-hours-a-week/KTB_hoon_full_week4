@@ -4,12 +4,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import kakao.bootcamp.fullstack.api.domain.report.Report;
-import kakao.bootcamp.fullstack.api.domain.post.TargetType;
+import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.global.generator.AtomicLongIdGenerator;
 import kakao.bootcamp.fullstack.global.generator.IdGenerator;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("local")
 public class InMemoryReportRepository implements ReportRepository {
 
     private final IdGenerator idGenerator = new AtomicLongIdGenerator();

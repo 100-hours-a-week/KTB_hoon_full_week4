@@ -4,9 +4,10 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
-import kakao.bootcamp.fullstack.api.domain.post.CommentErrorCode;
+import kakao.bootcamp.fullstack.api.domain.comment.CommentErrorCode;
+import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraftErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
-import kakao.bootcamp.fullstack.api.domain.post.ReportErrorCode;
+import kakao.bootcamp.fullstack.api.domain.report.ReportErrorCode;
 
 public class ErrorCodeMapper {
 
@@ -17,6 +18,7 @@ public class ErrorCodeMapper {
         return Stream.of(
                         Arrays.stream(MemberErrorCode.values()),
                         Arrays.stream(PostErrorCode.values()),
+                        Arrays.stream(PostDraftErrorCode.values()),
                         Arrays.stream(CommentErrorCode.values()),
                         Arrays.stream(ReportErrorCode.values()),
                         Arrays.stream(CommonErrorCode.values())

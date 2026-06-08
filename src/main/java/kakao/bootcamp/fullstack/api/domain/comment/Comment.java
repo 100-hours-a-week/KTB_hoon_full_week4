@@ -1,7 +1,9 @@
-package kakao.bootcamp.fullstack.api.domain.post;
+package kakao.bootcamp.fullstack.api.domain.comment;
 
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.global.BaseEntity;
+import kakao.bootcamp.fullstack.global.exception.BusinessException;
+import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,19 +15,13 @@ public class Comment extends BaseEntity {
     private Long id;
     private Long postId;
     private Member writer;
-    private Long parentCommentId;
     private String content;
     private boolean edited;
-    private boolean deleted;
 
     private Comment(Long postId, Member writer, String content) {
         this.postId = postId;
         this.writer = writer;
         this.content = content;
-    }
-
-    public static Comment create(Long postId, Member writer, String content) {
-        return new Comment(postId, writer, content);
     }
 
     public boolean isNew() {
@@ -34,7 +30,7 @@ public class Comment extends BaseEntity {
 
     public void assignId(Long id) {
         if (!isNew()) {
-            throw new IllegalStateException("이미 ID가 할당된 댓글입니다.");
+            throw new BusinessException(CommonErrorCode.ALREADY_ASSIGNED_ID);
         }
         this.id = id;
     }
@@ -50,9 +46,7 @@ public class Comment extends BaseEntity {
         return writer.getId().equals(memberId);
     }
 
-    @Override
-    public void delete() {
-        super.delete();
-        this.deleted = true;
+    public static Comment create(Long postId, Member writer, String content) {
+        return new Comment(postId, writer, content);
     }
 }

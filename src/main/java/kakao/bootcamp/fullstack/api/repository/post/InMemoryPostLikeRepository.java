@@ -7,9 +7,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import kakao.bootcamp.fullstack.api.domain.post.PostLike;
 import kakao.bootcamp.fullstack.global.generator.AtomicLongIdGenerator;
 import kakao.bootcamp.fullstack.global.generator.IdGenerator;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("local")
 public class InMemoryPostLikeRepository implements PostLikeRepository {
 
     private final Map<Long, PostLike> likes = new ConcurrentHashMap<>();

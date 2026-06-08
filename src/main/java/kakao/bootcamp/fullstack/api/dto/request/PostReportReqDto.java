@@ -2,7 +2,7 @@ package kakao.bootcamp.fullstack.api.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import kakao.bootcamp.fullstack.api.domain.report.ReportReason;
-import kakao.bootcamp.fullstack.api.domain.post.TargetType;
+import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.global.exception.code.ValidationCode;
 
 public record PostReportReqDto(

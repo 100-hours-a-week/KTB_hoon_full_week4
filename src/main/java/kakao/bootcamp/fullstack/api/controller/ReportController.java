@@ -3,7 +3,6 @@ package kakao.bootcamp.fullstack.api.controller;
 import jakarta.validation.Valid;
 import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
 import kakao.bootcamp.fullstack.api.dto.request.PostReportReqDto;
-import kakao.bootcamp.fullstack.api.dto.response.ReportCreateResDto;
 import kakao.bootcamp.fullstack.api.service.ReportService;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
 import kakao.bootcamp.fullstack.global.jwt.annotation.LoginMember;
@@ -27,7 +26,7 @@ public class ReportController {
             @LoginMember AuthMember authMember,
             @Valid @RequestBody PostReportReqDto request){
         reportService.report(authMember.memberId(), request);
-        return ResponseEntity.status(SuccessCode.REPORT_CREATED_SUCCESS.getHttpStatus())
-                .body(ApiResponse.success(SuccessCode.REPORT_CREATED_SUCCESS));
+        return ResponseEntity.status(SuccessCode.CREATED.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.CREATED));
     }
 }
