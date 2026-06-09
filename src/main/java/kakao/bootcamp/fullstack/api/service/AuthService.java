@@ -5,7 +5,9 @@ import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.dto.request.LoginReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.LoginResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
-import kakao.bootcamp.fullstack.global.hasher.PasswordHasher;
+import kakao.bootcamp.fullstack.global.exception.NotFoundException;
+import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
+import kakao.bootcamp.fullstack.global.hasher.PasswordEncoder;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.jwt.TokenBlacklist;
 import kakao.bootcamp.fullstack.global.jwt.provider.JwtProvider;
@@ -17,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final MemberRepository memberRepository;
-    private final PasswordHasher passwordHasher;
+    private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final TokenBlacklist tokenBlacklist;
 
@@ -36,12 +38,12 @@ public class AuthService {
 
     private Member loadMemberOrThrow(LoginReqDto request) {
         return memberRepository.findByEmail(request.email())
-                .orElseThrow(() -> new BusinessException(AuthErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(AuthErrorCode.MEMBER_NOT_FOUND));
     }
 
     private void validatePasswordMatches(String rawPassword, String encodedPassword) {
-        if (!passwordHasher.matches(rawPassword, encodedPassword)) {
-            throw new BusinessException(AuthErrorCode.PASSWORD_MISMATCH);
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new UnauthorizedException(AuthErrorCode.PASSWORD_MISMATCH);
         }
     }
 }

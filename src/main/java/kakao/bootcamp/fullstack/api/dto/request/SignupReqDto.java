@@ -19,7 +19,6 @@ public record SignupReqDto(
         String password,
         @NotBlank(message = ValidationCode.PASSWORD_CONFIRM_REQUIRED)
         String passwordConfirm,
-        @URL(message = ValidationCode.INVALID_IMAGE_URL)
         @NotBlank(message = ValidationCode.IMAGE_REQUIRED)
         String imageUrl
 ) {

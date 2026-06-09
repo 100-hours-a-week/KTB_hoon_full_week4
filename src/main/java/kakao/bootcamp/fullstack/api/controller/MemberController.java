@@ -37,7 +37,6 @@ public class MemberController {
 
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<MemberProfileResDto>> getProfile(@LoginMember AuthMember authMember) {
-        System.out.println(authMember.memberId());
         MemberProfileResDto response = memberService.getMemberProfile(authMember.memberId());
         return ResponseEntity.status(SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(SUCCESS, response));

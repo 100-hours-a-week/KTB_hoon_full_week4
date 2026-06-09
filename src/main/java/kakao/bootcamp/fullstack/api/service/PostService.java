@@ -116,7 +116,7 @@ public class PostService {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
         checkAlreadyLiked(memberId, postId);
-        PostLike postLike = PostLike.create(memberId, postId);
+        PostLike postLike = PostLike.create(postId, memberId);
         long postLikeCount = post.increaseLikeCount();
         postLikeRepository.save(postLike);
         postRepository.save(post);

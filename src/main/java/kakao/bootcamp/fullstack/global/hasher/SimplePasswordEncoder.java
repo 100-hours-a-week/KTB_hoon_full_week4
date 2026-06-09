@@ -6,8 +6,10 @@ import java.util.HexFormat;
 import kakao.bootcamp.fullstack.global.constants.PasswordConstants;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
+import org.springframework.stereotype.Component;
 
-public class SimplePasswordHasher implements PasswordHasher {
+@Component
+public class SimplePasswordEncoder implements PasswordEncoder {
 
     @Override
     public String hash(String rawPassword) {
@@ -25,7 +27,6 @@ public class SimplePasswordHasher implements PasswordHasher {
         if (rawPassword == null || hashedPassword == null) {
             return false;
         }
-
         return hash(rawPassword).equals(hashedPassword);
     }
 }

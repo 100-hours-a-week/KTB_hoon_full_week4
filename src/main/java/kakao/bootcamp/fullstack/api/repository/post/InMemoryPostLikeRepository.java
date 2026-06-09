@@ -35,39 +35,10 @@ public class InMemoryPostLikeRepository implements PostLikeRepository {
 
     @Override
     public boolean existsByPostIdAndMemberId(Long postId, Long memberId) {
-        return likes.values().stream()
+        return likes.values()
+                .stream()
                 .anyMatch(like ->
                         like.getPostId().equals(postId) && like.getMemberId().equals(memberId)
                 );
-    }
-
-    @Override
-    public long countByPostId(Long postId) {
-        return likes.values().stream()
-                .filter(like -> like.getPostId().equals(postId))
-                .count();
-    }
-
-    @Override
-    public Optional<PostLike> findByPostIdAndMemberId(Long postId, Long memberId) {
-        return likes.values().stream()
-                .filter(like ->
-                        like.getPostId().equals(postId) && like.getMemberId().equals(memberId)
-                )
-                .findFirst();
-    }
-
-    @Override
-    public List<PostLike> findAllByPostId(Long postId) {
-        return likes.values().stream()
-                .filter(like -> like.getPostId().equals(postId))
-                .toList();
-    }
-
-    @Override
-    public List<PostLike> findAllByMemberId(Long memberId) {
-        return likes.values().stream()
-                .filter(like -> like.getMemberId().equals(memberId))
-                .toList();
     }
 }

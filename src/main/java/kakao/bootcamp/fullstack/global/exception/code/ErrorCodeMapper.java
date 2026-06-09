@@ -8,11 +8,11 @@ import kakao.bootcamp.fullstack.api.domain.comment.CommentErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraftErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 import kakao.bootcamp.fullstack.api.domain.report.ReportErrorCode;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ErrorCodeMapper {
-
-    private ErrorCodeMapper() {
-    }
 
     public static Optional<BaseCode> from(String code) {
         return Stream.of(

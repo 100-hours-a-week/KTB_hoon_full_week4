@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Profile("local")
 public class InMemoryPostRateLimiter implements RateLimiter {
 
-    private static final long WINDOW_MINUTES = 1;
+    private static final long WINDOW_MINUTES = 1; // fixed window 방식 사용
     private static final int LIMIT = 3;
 
     private final Map<Long, Window> windows = new HashMap<>();

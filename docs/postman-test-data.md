@@ -17,7 +17,7 @@
 | 4        | dave@example.com        | 데이브   | Password1!  |
 | 5        | leedonghoon@example.com | donghoon | Test1234!   |
 
-> 게시글 ID는 1~6, 댓글 ID는 1~10, 임시글 ID는 1~3이 시드 데이터로 생성됩니다. 임시글 3건은 모두 donghoon(memberId=5) 소유입니다.
+> 게시글 ID는 1~6, 댓글 ID는 1~10, 임시글 ID는 1~8이 시드 데이터로 생성됩니다. 임시글 5건(ID 1~5)은 donghoon(memberId=5) 소유, 나머지 3건(ID 6~8)은 각각 alice, bob, carol 소유입니다. donghoon 임시글 5건은 1분 내 4번째 publish 시 429를 검증하는 용도로도 사용할 수 있습니다.
 
 ## Postman Environment 변수 예시
 
@@ -443,7 +443,9 @@ pm.environment.set("accessToken", body.data.accessToken);
   "data": [
     { "draftId": 1, "title": "auto-save 시작한 글" },
     { "draftId": 2, "title": "JWT 리프레시 토큰 운영 후기" },
-    { "draftId": 3, "title": "ConcurrentHashMap 기반 인메모리 저장소 설계" }
+    { "draftId": 3, "title": "ConcurrentHashMap 기반 인메모리 저장소 설계" },
+    { "draftId": 4, "title": "Rate Limiter 도배 방지 메모" },
+    { "draftId": 5, "title": "조회수 24시간 윈도우 적용 후기" }
   ]
 }
 ```
@@ -545,6 +547,46 @@ pm.environment.set("accessToken", body.data.accessToken);
 - 타인 임시글 삭제 → 401 `NOT_POST_DRAFT_WRITER`
 - 이미 삭제되었거나 없는 임시글 → 404 `POST_DRAFT_NOT_FOUND`
 
+### 7-6. 임시글 게시 — `POST /api/v1/posts/drafts/{draftId}/publish`
+
+- Header: `Authorization: Bearer {{accessToken}}`
+- 임시글은 저장 시 제목/본문/이미지에 제약이 없지만, 게시 시점에는 `POST /api/v1/posts`와 동일한 필수값 검증이 적용됩니다. 클라이언트는 최종 게시 페이로드를 바디로 전달해야 합니다.
+- 성공 시 해당 임시글은 `PUBLISHED` 상태로 마킹되어 목록·상세 조회에서 제외되며, 게시글 생성 도배 방지(1분에 3건) Rate Limiter가 동일하게 적용됩니다.
+- 임시글 자체는 덮어쓰지 않습니다(마지막 PATCH 상태 그대로 보관).
+
+성공 요청
+```json
+{
+  "title": "JWT 리프레시 토큰 운영 후기",
+  "content": "Access는 짧게, Refresh는 HttpOnly 쿠키로 분리한 뒤로 운영 비용이 줄었습니다.",
+  "imageUrl": "https://picsum.photos/seed/publish/600/400"
+}
+```
+
+201 응답
+```json
+{
+  "message": "created",
+  "code": "SUCCESS",
+  "data": { "postId": 7 }
+}
+```
+
+실패 시나리오
+```json
+{ "title": "", "content": "본문만", "imageUrl": "https://picsum.photos/seed/x/600/400" }
+```
+→ 400 `TITLE_REQUIRED`
+
+```json
+{ "title": "제목", "content": "본문", "imageUrl": "" }
+```
+→ 400 `IMAGE_REQUIRED`
+
+- 타인 임시글 게시 → 401 `NOT_POST_DRAFT_WRITER`
+- 이미 게시했거나 삭제된 임시글 → 404 `POST_DRAFT_NOT_FOUND`
+- 1분 내 게시글 4회째 생성(임시글 게시 포함) → 429 `POST_RATE_LIMIT_EXCEEDED`
+
 ---
 
 ## 8. 추천 테스트 시나리오
@@ -565,4 +607,5 @@ pm.environment.set("accessToken", body.data.accessToken);
 14. `POST /posts/drafts` 신규 임시글 작성 → 응답 `draftId` 메모
 15. `PATCH /posts/drafts/{draftId}` → 본문/이미지 갱신 확인
 16. `DELETE /posts/drafts/{draftId}` → 200, 동일 ID 재조회 시 **404 POST_DRAFT_NOT_FOUND**
-17. `POST /logout` → 이후 보호 API 호출 시 401 확인
+17. `POST /posts/drafts/{draftId}/publish` → 201 + `postId` 반환, 목록 재조회 시 해당 draft 사라짐 확인, 동일 ID 재호출 시 **404 POST_DRAFT_NOT_FOUND**
+18. `POST /logout` → 이후 보호 API 호출 시 401 확인

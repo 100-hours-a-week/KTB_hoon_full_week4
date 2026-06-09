@@ -9,7 +9,7 @@ import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
-import kakao.bootcamp.fullstack.global.hasher.PasswordHasher;
+import kakao.bootcamp.fullstack.global.hasher.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -26,7 +26,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PostDraftRepository postDraftRepository;
-    private final PasswordHasher passwordHasher;
+    private final PasswordEncoder passwordHasher;
 
     @Override
     public void run(String... args) {
@@ -93,7 +93,27 @@ public class DataInitializer implements CommandLineRunner {
                 PostDraft.create(donghoon.getId(),
                         "ConcurrentHashMap 기반 인메모리 저장소 설계",
                         "초기 프로토타입에서는 ConcurrentHashMap 하나로 충분합니다. ID 생성기는 AtomicLong으로 분리해두면 추후 DB 전환 시 변경 폭을 좁힐 수 있어요.",
-                        "https://picsum.photos/seed/draft3/600/400")
+                        "https://picsum.photos/seed/draft3/600/400"),
+                PostDraft.create(donghoon.getId(),
+                        "Rate Limiter 도배 방지 메모",
+                        "1분 3건 fixed window. 임시글 publish도 동일 제한을 받는다.",
+                        null),
+                PostDraft.create(donghoon.getId(),
+                        "조회수 24시간 윈도우 적용 후기",
+                        "PostViewLog upsert로 같은 사용자 새로고침 시 조회수 동결. 첫 호출 시점부터 24h 경과해야 재카운트.",
+                        "https://picsum.photos/seed/draft5/600/400"),
+                PostDraft.create(alice.getId(),
+                        "Spring Security 적용 시도기",
+                        "필터 체인을 처음 들여다보는 중인데 생각보다 진입장벽이 있네요. 정리해서 올릴 예정입니다.",
+                        null),
+                PostDraft.create(bob.getId(),
+                        "쿠키 vs 로컬스토리지 토큰 저장 비교",
+                        "보안 측면에서 어느 쪽이 더 나은지, 실제로 운영하면서 느낀 점을 정리 중.",
+                        "https://picsum.photos/seed/draft-bob/600/400"),
+                PostDraft.create(carol.getId(),
+                        "DDD 전술 패턴 정리 (작성 중)",
+                        null,
+                        null)
         );
         drafts.forEach(postDraftRepository::save);
 

@@ -16,7 +16,7 @@ public enum MemberErrorCode implements BaseCode {
     EMAIL_REQUIRED(HttpStatus.BAD_REQUEST, "EMAIL_REQUIRED", "email_required"),
     PASSWORD_REQUIRED(HttpStatus.BAD_REQUEST, "PASSWORD_REQUIRED", "pw_required"),
     NICKNAME_REQUIRED(HttpStatus.BAD_REQUEST, "NICKNAME_REQUIRED", "nickname_required"),
-    PROFILE_IMG_REQUIRED(HttpStatus.BAD_REQUEST, "PROFILE_IMG_REQUIRED", "profile_img_required"),
+    IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "IMAGE_REQUIRED", "img_required"),
 
     PASSWORD_CONFIRM_MISMATCH(HttpStatus.BAD_REQUEST, "PASSWORD_CONFIRM_MISMATCH", "pw_confirm_mismatch"),
     EMAIL_DUPLICATED(HttpStatus.CONFLICT, "EMAIL_DUPLICATED", "email_duplicated"),

@@ -48,6 +48,11 @@ public class PostDraft extends BaseEntity {
         updateModifiedTime();
     }
 
+    public void publish() {
+        this.status = DraftStatus.PUBLISHED;
+        updateModifiedTime();
+    }
+
     public static PostDraft create(Long writerId, String title, String content, String imageUrl) {
         return new PostDraft(writerId, title, content, imageUrl);
     }

@@ -25,14 +25,13 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
 
     public void report(Long memberId, PostReportReqDto request) {
         checkMemberExists(memberId);
-        validateTargetExists(request.targetId(), request.targetType());
         checkNotAlreadyReported(request.targetId(), request.targetType(), memberId);
         Report report = Report.create(request.targetId(), request.targetType(), memberId, request.reportReason());
         reportRepository.save(report);
+
         // TODO : targetType이 늘어날때마다 같이 늘어나는 분기문. 어떻게 하지...
         if (request.targetType().equals(TargetType.POST)) {
             Post post = loadPostOrThrow(request.targetId());
@@ -50,18 +49,6 @@ public class ReportService {
         if (!memberRepository.existsById(memberId)) {
             throw new NotFoundException(AuthErrorCode.MEMBER_NOT_FOUND);
         }
-    }
-
-    private void validateTargetExists(Long targetId, TargetType targetType) {
-        switch (targetType) {
-            case POST -> loadPostOrThrow(targetId);
-            case COMMENT -> loadCommentOrThrow(targetId);
-        }
-    }
-
-    private Comment loadCommentOrThrow(Long targetId) {
-        return commentRepository.findActiveById(targetId)
-                .orElseThrow(() -> new NotFoundException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 
     private void checkNotAlreadyReported(Long targetId, TargetType targetType, Long memberId) {

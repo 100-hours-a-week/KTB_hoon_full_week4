@@ -3,8 +3,10 @@ package kakao.bootcamp.fullstack.api.controller;
 import jakarta.validation.Valid;
 import java.util.List;
 import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
+import kakao.bootcamp.fullstack.api.dto.request.PostCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostDraftCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostDraftUpdateReqDto;
+import kakao.bootcamp.fullstack.api.dto.response.PostCreateResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDraftDetailsResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDraftSaveResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDraftsSummaryResDto;
@@ -64,6 +66,16 @@ public class PostDraftController {
         PostDraftSaveResDto response = postDraftService.updatePostDraft(authMember.memberId(), draftId, request);
         return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(SuccessCode.SUCCESS, response));
+    }
+
+    @PostMapping("/{draftId}/publish")
+    public ResponseEntity<ApiResponse<PostCreateResDto>> publishPostDraft(
+            @LoginMember AuthMember authMember,
+            @PathVariable Long draftId,
+            @Valid @RequestBody PostCreateReqDto request) {
+        PostCreateResDto response = postDraftService.publishPostDraft(authMember.memberId(), draftId, request);
+        return ResponseEntity.status(SuccessCode.CREATED.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.CREATED, response));
     }
 
     @DeleteMapping("/{draftId}")

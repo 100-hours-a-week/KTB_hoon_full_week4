@@ -8,7 +8,7 @@ import kakao.bootcamp.fullstack.api.dto.request.ProfileUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.SignupReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
-import kakao.bootcamp.fullstack.global.hasher.PasswordHasher;
+import kakao.bootcamp.fullstack.global.hasher.PasswordEncoder;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final PasswordHasher passwordHasher;
+    private final PasswordEncoder passwordHasher;
 
     public void signup(SignupReqDto request){
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
@@ -50,6 +50,9 @@ public class MemberService {
 
     public void updateMemberProfile(Long memberId, ProfileUpdateReqDto request){
         Member member = loadMemberOrThrow(memberId);
+        if (!member.getNickname().equals(request.nickname())) {
+            checkNicknameDuplicated(request.nickname());
+        }
         member.updateProfile(request.nickname(), request.imageUrl());
         memberRepository.save(member);
     }
