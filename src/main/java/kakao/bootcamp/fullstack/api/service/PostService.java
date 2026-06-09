@@ -32,7 +32,6 @@ import kakao.bootcamp.fullstack.global.exception.ConflictException;
 import kakao.bootcamp.fullstack.global.exception.ForbiddenException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import kakao.bootcamp.fullstack.global.exception.TooManyRequestsException;
-import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.rate_limiter.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -64,8 +63,7 @@ public class PostService {
     public PostDetailsResDto getPostDetails(Long memberId, Long postId) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
-        PostViewLog viewLog = postViewLogRepository.findByPostIdAndMemberId(postId, memberId)
-                .orElseGet(() -> PostViewLog.create(postId, memberId));
+        PostViewLog viewLog = loadPostViewLogOrCreate(memberId, postId);
         if (viewLog.isNew() || viewLog.canCountAsNewView()) {
             post.increaseViewCount();
             if (!viewLog.isNew()) {
@@ -197,5 +195,10 @@ public class PostService {
         if(!postLikeRepository.existsByPostIdAndMemberId(postId, memberId)){
             throw new ConflictException(PostErrorCode.POST_ALREADY_UNLIKED);
         }
+    }
+
+    private PostViewLog loadPostViewLogOrCreate(Long memberId, Long postId) {
+        return postViewLogRepository.findByPostIdAndMemberId(postId, memberId)
+                .orElseGet(() -> PostViewLog.create(postId, memberId));
     }
 }

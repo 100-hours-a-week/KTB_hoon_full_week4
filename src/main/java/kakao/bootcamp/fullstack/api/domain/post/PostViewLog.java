@@ -42,7 +42,8 @@ public class PostViewLog extends BaseEntity {
     }
 
     public boolean canCountAsNewView() {
-        return viewedAt.plusHours(VIEW_COUNT_INTERVAL_HOURS).isBefore(LocalDateTime.now());
+        return viewedAt.plusHours(VIEW_COUNT_INTERVAL_HOURS)
+                .isBefore(LocalDateTime.now());
     }
 
     public void refreshViewedAt() {
