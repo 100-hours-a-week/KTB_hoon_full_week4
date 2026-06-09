@@ -1,9 +1,11 @@
-package kakao.bootcamp.fullstack.global.config;
+package kakao.bootcamp.fullstack.global.hasher;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import kakao.bootcamp.fullstack.global.constants.PasswordConstants;
+import kakao.bootcamp.fullstack.global.exception.BusinessException;
+import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 
 public class SimplePasswordHasher implements PasswordHasher {
 
@@ -14,7 +16,7 @@ public class SimplePasswordHasher implements PasswordHasher {
             byte[] hashedBytes = digest.digest(rawPassword.getBytes());
             return HexFormat.of().formatHex(hashedBytes);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("비밀번호 해시 처리 중 알고리즘을 찾을 수 없습니다.", e);
+            throw new BusinessException(CommonErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 

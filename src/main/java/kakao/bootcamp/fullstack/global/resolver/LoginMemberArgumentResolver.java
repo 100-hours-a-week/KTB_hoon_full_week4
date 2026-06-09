@@ -32,9 +32,10 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
             NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
         String token = TokenExtractor.extractBearerToken(request.getHeader("Authorization"));
-        if (token == null || !jwtProvider.validateToken(token)) {
+        if (token == null) {
             throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
         }
+        jwtProvider.validateToken(token);
         Long memberId = jwtProvider.getMemberId(token);
         String email = jwtProvider.getEmail(token);
         return new AuthMember(memberId, email);

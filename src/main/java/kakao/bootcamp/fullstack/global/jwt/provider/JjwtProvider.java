@@ -7,6 +7,8 @@ import io.jsonwebtoken.security.Keys;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
+import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
+import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.properties.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -35,14 +37,12 @@ public class JjwtProvider implements JwtProvider {
                 .compact();
     }
 
-    // TODO : 예외 처리 필요
     @Override
-    public boolean validateToken(String token) {
+    public void validateToken(String token) {
         try {
             parseClaims(token);
-            return true;
         } catch (JwtException | IllegalArgumentException e) {
-            return false;
+            throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
         }
     }
 

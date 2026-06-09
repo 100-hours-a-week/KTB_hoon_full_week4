@@ -9,7 +9,7 @@ import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
-import kakao.bootcamp.fullstack.global.config.PasswordHasher;
+import kakao.bootcamp.fullstack.global.hasher.PasswordHasher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

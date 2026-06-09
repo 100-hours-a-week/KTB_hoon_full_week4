@@ -17,11 +17,4 @@ public enum ReportReason {
 
     private final int code;
     private final String label;
-
-    // TODO : 예외처리 + Optional 처리 필요
-    public static Optional<ReportReason> from(int code) {
-        return Arrays.stream(values())
-                .filter(r -> r.code == code)
-                .findFirst();
-    }
 }
