@@ -1,20 +1,19 @@
 package kakao.bootcamp.fullstack.api.service;
 
+import jakarta.annotation.PostConstruct;
+import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
-import kakao.bootcamp.fullstack.api.domain.comment.Comment;
-import kakao.bootcamp.fullstack.api.domain.comment.CommentErrorCode;
-import kakao.bootcamp.fullstack.api.domain.post.Post;
-import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
+import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.domain.report.Report;
 import kakao.bootcamp.fullstack.api.domain.report.ReportErrorCode;
-import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.dto.request.PostReportReqDto;
-import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
-import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import kakao.bootcamp.fullstack.api.repository.report.ReportRepository;
+import kakao.bootcamp.fullstack.api.service.report.ReportTargetHandler;
 import kakao.bootcamp.fullstack.global.exception.ConflictException;
+import kakao.bootcamp.fullstack.global.exception.InternalServerException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
+import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,25 +23,43 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
-    private final PostRepository postRepository;
+    private final List<ReportTargetHandler> handlers;
+
+    // 주의 : GlobalExceptionHandler가 예외를 잡을 수 없음
+    @PostConstruct
+    void verifyAllTargetTypesHandled() {
+        for (TargetType type : TargetType.values()) {
+            boolean covered = handlers.stream()
+                    .anyMatch(handler -> handler.supports(type));
+            if (!covered) {
+                throw new InternalServerException(
+                        CommonErrorCode.HANDLER_NOT_FOUND,
+                        "No ReportTargetHandler registered for: " + type);
+            }
+        }
+    }
 
     public void report(Long memberId, PostReportReqDto request) {
         checkMemberExists(memberId);
         checkNotAlreadyReported(request.targetId(), request.targetType(), memberId);
-        Report report = Report.create(request.targetId(), request.targetType(), memberId, request.reportReason());
+        Report report = Report.create(
+                request.targetId(),
+                request.targetType(),
+                memberId,
+                request.reportReason()
+        );
         reportRepository.save(report);
-
-        // TODO : targetType이 늘어날때마다 같이 늘어나는 분기문. 어떻게 하지...
-        if (request.targetType().equals(TargetType.POST)) {
-            Post post = loadPostOrThrow(request.targetId());
-            post.increaseReportCount();
-            postRepository.save(post);
-        }
+        resolveHandler(request.targetType())
+                .handleReported(request.targetId());
     }
 
-    private Post loadPostOrThrow(Long request) {
-        return postRepository.findActiveById(request)
-                .orElseThrow(() -> new NotFoundException(PostErrorCode.POST_NOT_FOUND));
+    private ReportTargetHandler resolveHandler(TargetType targetType) {
+        return handlers.stream()
+                .filter(h -> h.supports(targetType))
+                .findFirst()
+                .orElseThrow(() -> new InternalServerException(
+                        CommonErrorCode.HANDLER_NOT_FOUND,
+                        "No ReportTargetHandler registered for: " + targetType));
     }
 
     private void checkMemberExists(Long memberId) {

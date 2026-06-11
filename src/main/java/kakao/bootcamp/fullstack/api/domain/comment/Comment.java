@@ -2,6 +2,7 @@ package kakao.bootcamp.fullstack.api.domain.comment;
 
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.global.BaseEntity;
+import kakao.bootcamp.fullstack.global.constants.CommentConstants;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
@@ -17,6 +18,8 @@ public class Comment extends BaseEntity {
     private Member writer;
     private String content;
     private boolean edited;
+    private long reportCount = 0L;
+    private boolean blinded = false;
 
     private Comment(Long postId, Member writer, String content) {
         this.postId = postId;
@@ -39,6 +42,13 @@ public class Comment extends BaseEntity {
         this.content = content;
         if (!edited) {
             this.edited = true;
+        }
+    }
+
+    public void increaseReportCount() {
+        this.reportCount++;
+        if (!blinded && reportCount >= CommentConstants.BLIND_THRESHOLD) {
+            this.blinded = true;
         }
     }
 
