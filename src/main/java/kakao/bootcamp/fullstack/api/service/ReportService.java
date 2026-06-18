@@ -12,7 +12,7 @@ import kakao.bootcamp.fullstack.api.repository.report.ReportRepository;
 import kakao.bootcamp.fullstack.api.service.report.ReportTargetHandler;
 import kakao.bootcamp.fullstack.global.exception.ConflictException;
 import kakao.bootcamp.fullstack.global.exception.InternalServerException;
-import kakao.bootcamp.fullstack.global.exception.NotFoundException;
+import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -64,7 +64,7 @@ public class ReportService {
 
     private void checkMemberExists(Long memberId) {
         if (!memberRepository.existsById(memberId)) {
-            throw new NotFoundException(AuthErrorCode.MEMBER_NOT_FOUND);
+            throw new UnauthorizedException(AuthErrorCode.MEMBER_NOT_FOUND);
         }
     }
 

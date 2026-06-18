@@ -10,7 +10,7 @@ import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.global.hasher.PasswordEncoder;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
-import kakao.bootcamp.fullstack.global.exception.NotFoundException;
+import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +46,7 @@ public class MemberService {
     public void deleteMember(Long memberId){
         Member member = loadMemberOrThrow(memberId);
         member.delete();
+        memberRepository.save(member);
     }
 
     public void updateMemberProfile(Long memberId, ProfileUpdateReqDto request){
@@ -65,8 +66,8 @@ public class MemberService {
     }
 
     private Member loadMemberOrThrow(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(() -> new NotFoundException(AuthErrorCode.MEMBER_NOT_FOUND));
+        return memberRepository.findActiveById(memberId)
+                .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.MEMBER_NOT_FOUND));
     }
 
     private void validatePasswordConfirmMatch(String password, String passwordConfirm) {

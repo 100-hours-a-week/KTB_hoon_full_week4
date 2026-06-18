@@ -1,5 +1,6 @@
 package kakao.bootcamp.fullstack.api.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import kakao.bootcamp.fullstack.global.constants.PostConstants;
@@ -11,6 +12,6 @@ public record PostCreateReqDto(
         String title,
         @NotEmpty(message = ValidationCode.CONTENT_REQUIRED)
         String content,
-        @NotEmpty(message = ValidationCode.IMAGE_REQUIRED)
+        @NotBlank(message = ValidationCode.IMAGE_REQUIRED)
         String imageUrl
 ) {}

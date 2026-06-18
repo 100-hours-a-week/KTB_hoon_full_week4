@@ -5,7 +5,6 @@ import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.dto.request.LoginReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.LoginResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
-import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.hasher.PasswordEncoder;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
@@ -37,8 +36,8 @@ public class AuthService {
     }
 
     private Member loadMemberOrThrow(LoginReqDto request) {
-        return memberRepository.findByEmail(request.email())
-                .orElseThrow(() -> new NotFoundException(AuthErrorCode.MEMBER_NOT_FOUND));
+        return memberRepository.findActiveByEmail(request.email())
+                .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.MEMBER_NOT_FOUND));
     }
 
     private void validatePasswordMatches(String rawPassword, String encodedPassword) {

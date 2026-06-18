@@ -32,6 +32,7 @@ import kakao.bootcamp.fullstack.global.exception.ConflictException;
 import kakao.bootcamp.fullstack.global.exception.ForbiddenException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import kakao.bootcamp.fullstack.global.exception.TooManyRequestsException;
+import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.rate_limiter.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -135,7 +136,9 @@ public class PostService {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
         Comment comment = Comment.create(postId, member, request.content());
+        post.increaseCommentCount();
         commentRepository.save(comment);
+        postRepository.save(post);
         return CommentCreateResDto.from(comment.getId());
     }
 
@@ -151,16 +154,18 @@ public class PostService {
 
     public void deleteComment(Long memberId, Long postId, Long commentId) {
         loadMemberOrThrow(memberId);
-        loadPostOrThrow(postId);
+        Post post = loadPostOrThrow(postId);
         Comment comment = loadCommentOrThrow(commentId);
         checkCommentWriter(memberId, comment);
         comment.delete();
+        post.decreaseCommentCount();
         commentRepository.save(comment);
+        postRepository.save(post);
     }
 
     private Member loadMemberOrThrow(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(() -> new NotFoundException(AuthErrorCode.MEMBER_NOT_FOUND));
+        return memberRepository.findActiveById(memberId)
+                .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.MEMBER_NOT_FOUND));
     }
 
     private Post loadPostOrThrow(Long postId) {

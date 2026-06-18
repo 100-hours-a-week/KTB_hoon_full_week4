@@ -26,8 +26,11 @@ public class InMemoryMemberRepository implements MemberRepository {
     }
 
     @Override
-    public Optional<Member> findById(Long id) {
-        return Optional.ofNullable(members.get(id));
+    public Optional<Member> findActiveById(Long id) {
+        return members.values().stream()
+                .filter(member -> !member.isDeleted())
+                .filter(m -> m.getId().equals(id))
+                .findFirst();
     }
 
     @Override
@@ -36,7 +39,7 @@ public class InMemoryMemberRepository implements MemberRepository {
     }
 
     @Override
-    public Optional<Member> findByEmail(String email) {
+    public Optional<Member> findActiveByEmail(String email) {
         return members.values()
                 .stream()
                 .filter(member -> member.getEmail().equals(email))

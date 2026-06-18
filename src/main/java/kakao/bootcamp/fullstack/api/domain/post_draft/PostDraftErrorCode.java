@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum PostDraftErrorCode implements BaseCode {
 
     POST_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "POST_DRAFT_NOT_FOUND", "post_draft_not_found"),
-    NOT_POST_DRAFT_WRITER(HttpStatus.UNAUTHORIZED, "NOT_POST_DRAFT_WRITER", "not_post_draft_writer"),
+    NOT_POST_DRAFT_WRITER(HttpStatus.FORBIDDEN, "NOT_POST_DRAFT_WRITER", "not_post_draft_writer"),
     TITLE_LENGTH_EXCEEDED(HttpStatus.BAD_REQUEST, "TITLE_LENGTH_EXCEEDED", "title_length_exceeded"),
     ;
 

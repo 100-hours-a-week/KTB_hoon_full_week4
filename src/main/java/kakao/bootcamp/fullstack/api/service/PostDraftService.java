@@ -20,6 +20,7 @@ import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
 import kakao.bootcamp.fullstack.global.exception.ForbiddenException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import kakao.bootcamp.fullstack.global.exception.TooManyRequestsException;
+import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.rate_limiter.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -96,7 +97,7 @@ public class PostDraftService {
     }
 
     private Member loadMemberOrThrow(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(() -> new NotFoundException(AuthErrorCode.MEMBER_NOT_FOUND));
+        return memberRepository.findActiveById(memberId)
+                .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.MEMBER_NOT_FOUND));
     }
 }

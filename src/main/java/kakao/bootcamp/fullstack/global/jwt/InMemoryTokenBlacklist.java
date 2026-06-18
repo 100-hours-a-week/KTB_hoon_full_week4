@@ -16,4 +16,9 @@ public class InMemoryTokenBlacklist implements TokenBlacklist {
     public void add(String jti, long tokenExpiresAt) {
         blacklist.put(jti, tokenExpiresAt);
     }
+
+    @Override
+    public boolean exists(String jti) {
+        return blacklist.containsKey(jti);
+    }
 }

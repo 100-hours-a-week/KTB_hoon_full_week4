@@ -56,6 +56,10 @@ public class Comment extends BaseEntity {
         return writer.getId().equals(memberId);
     }
 
+    public boolean isWriterWithdrawn(){
+        return writer.isDeleted();
+    }
+
     public static Comment create(Long postId, Member writer, String content) {
         return new Comment(postId, writer, content);
     }

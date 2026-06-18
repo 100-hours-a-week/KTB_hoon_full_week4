@@ -47,13 +47,12 @@ public class Post extends BaseEntity {
         this.viewCount++;
     }
 
-    public long increaseLikeCount(){
-        this.likeCount++;
-        return likeCount;
+    public void increaseCommentCount(){
+        this.commentCount++;
     }
 
-    public long decreaseLikeCount(){
-        this.likeCount--;
+    public long increaseLikeCount(){
+        this.likeCount++;
         return likeCount;
     }
 
@@ -62,6 +61,15 @@ public class Post extends BaseEntity {
         if (!blinded && reportCount >= PostConstants.BLIND_THRESHOLD) {
             this.blinded = true;
         }
+    }
+
+    public long decreaseLikeCount(){
+        this.likeCount--;
+        return likeCount;
+    }
+
+    public void decreaseCommentCount(){
+        this.commentCount--;
     }
 
     public boolean isWriterWithdrawn(){

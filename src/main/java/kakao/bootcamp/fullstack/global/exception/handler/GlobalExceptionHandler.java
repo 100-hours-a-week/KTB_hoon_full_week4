@@ -1,5 +1,7 @@
 package kakao.bootcamp.fullstack.global.exception.handler;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.code.BaseCode;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
@@ -47,9 +49,21 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(
             HttpMessageNotReadableException e) {
         log.warn(e.getMessage(), e);
+        BaseCode code = resolveRequestBodyErrorCode(e.getCause());
         return ResponseEntity
-                .status(CommonErrorCode.INVALID_ENUM_VALUE.getHttpStatus())
-                .body(ApiResponse.error(CommonErrorCode.INVALID_ENUM_VALUE));
+                .status(code.getHttpStatus())
+                .body(ApiResponse.error(code));
+    }
+
+    private BaseCode resolveRequestBodyErrorCode(Throwable cause) {
+        if (cause instanceof InvalidFormatException ife && ife.getTargetType() != null
+                && ife.getTargetType().isEnum()) {
+            return CommonErrorCode.INVALID_ENUM_VALUE;
+        }
+        if (cause instanceof MismatchedInputException) {
+            return CommonErrorCode.INVALID_REQUEST_BODY;
+        }
+        return CommonErrorCode.MALFORMED_REQUEST_BODY;
     }
 
     @ExceptionHandler(Exception.class)

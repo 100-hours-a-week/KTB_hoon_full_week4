@@ -5,6 +5,7 @@ import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
 import kakao.bootcamp.fullstack.global.constants.JwtConstants;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
+import kakao.bootcamp.fullstack.global.jwt.TokenBlacklist;
 import kakao.bootcamp.fullstack.global.jwt.annotation.LoginMember;
 import kakao.bootcamp.fullstack.global.jwt.provider.JwtProvider;
 import kakao.bootcamp.fullstack.global.utils.TokenExtractor;
@@ -21,6 +22,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
 
     private final JwtProvider jwtProvider;
+    private final TokenBlacklist tokenBlacklist;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -35,6 +37,9 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
         String token = TokenExtractor.extractBearerToken(request.getHeader(JwtConstants.TOKEN_HEADER));
         if (token == null) {
             throw new UnauthorizedException(AuthErrorCode.TOKEN_EMPTY);
+        }
+        if (tokenBlacklist.exists(jwtProvider.getJti(token))){
+            throw new UnauthorizedException(AuthErrorCode.TOKEN_BLACKLISTED);
         }
         jwtProvider.validateToken(token);
         Long memberId = jwtProvider.getMemberId(token);
