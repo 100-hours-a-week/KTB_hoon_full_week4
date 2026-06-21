@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
+import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.global.BaseEntity;
 import kakao.bootcamp.fullstack.global.constants.CommentConstants;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
@@ -28,9 +29,6 @@ public class Comment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "post_id", nullable = false)
-    private Long postId;
-
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
@@ -43,13 +41,18 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     private boolean blinded = false;
 
+    // optional = false : 연관된 엔티티가 반드시 존재해야 한다는 설정
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
-    private Member writer;
+    private Member member;
 
-    private Comment(Long postId, Member writer, String content) {
-        this.postId = postId;
-        this.writer = writer;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
+
+    private Comment(Post post, Member member, String content) {
+        this.post = post;
+        this.member = member;
         this.content = content;
     }
 
@@ -79,14 +82,14 @@ public class Comment extends BaseEntity {
     }
 
     public boolean isWriter(Long memberId) {
-        return writer.getId().equals(memberId);
+        return member.getId().equals(memberId);
     }
 
     public boolean isWriterWithdrawn(){
-        return writer.isDeleted();
+        return member.isDeleted();
     }
 
-    public static Comment create(Long postId, Member writer, String content) {
-        return new Comment(postId, writer, content);
+    public static Comment create(Post post, Member writer, String content) {
+        return new Comment(post, writer, content);
     }
 }

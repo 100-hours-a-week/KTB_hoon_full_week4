@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import kakao.bootcamp.fullstack.global.BaseEntity;
+import kakao.bootcamp.fullstack.global.constants.PostConstants;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
@@ -20,8 +21,6 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostViewLog extends BaseEntity {
-
-    private static final int VIEW_COUNT_INTERVAL_HOURS = 24;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,7 +57,8 @@ public class PostViewLog extends BaseEntity {
     }
 
     public boolean canCountAsNewView() {
-        return viewedAt.plusHours(VIEW_COUNT_INTERVAL_HOURS)
+        return viewedAt
+                .plusHours(PostConstants.VIEW_COUNT_INTERVAL_HOURS)
                 .isBefore(LocalDateTime.now());
     }
 

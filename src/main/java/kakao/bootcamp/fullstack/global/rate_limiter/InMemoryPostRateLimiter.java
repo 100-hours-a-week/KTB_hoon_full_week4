@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("local")
+@Profile({"local","prod"})
 public class InMemoryPostRateLimiter implements RateLimiter {
 
     private static final long WINDOW_MINUTES = 1; // fixed window 방식 사용

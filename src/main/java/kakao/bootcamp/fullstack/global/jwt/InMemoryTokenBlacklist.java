@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@Profile("local")
+@Profile({"local","prod"})
 public class InMemoryTokenBlacklist implements TokenBlacklist {
 
     private final Map<String, Long> blacklist = new ConcurrentHashMap<>();

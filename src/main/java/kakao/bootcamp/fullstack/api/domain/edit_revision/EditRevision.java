@@ -18,9 +18,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Entity
 @Table(name = "edit_revisions")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EditRevision extends BaseEntity {
 
@@ -78,7 +78,7 @@ public class EditRevision extends BaseEntity {
         return new EditRevision(
                 TargetType.POST,
                 post.getId(),
-                post.getWriter().getId(),
+                post.getMember().getId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getImageUrl()
@@ -89,7 +89,7 @@ public class EditRevision extends BaseEntity {
         return new EditRevision(
                 TargetType.COMMENT,
                 comment.getId(),
-                comment.getWriter().getId(),
+                comment.getMember().getId(),
                 null,
                 comment.getContent(),
                 null

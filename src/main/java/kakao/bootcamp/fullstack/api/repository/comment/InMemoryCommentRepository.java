@@ -39,7 +39,7 @@ public class InMemoryCommentRepository implements CommentRepository {
         return comments.values()
                 .stream()
                 .filter(comment -> !comment.isDeleted())
-                .filter(comment -> Objects.equals(comment.getPostId(), postId))
+                .filter(comment -> Objects.equals(comment.getPost().getId(), postId))
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .toList();
     }

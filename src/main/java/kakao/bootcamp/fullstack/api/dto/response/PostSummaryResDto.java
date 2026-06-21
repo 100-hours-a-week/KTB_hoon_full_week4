@@ -27,8 +27,8 @@ public record PostSummaryResDto(
                 post.getViewCount(),
                 post.isEdited(),
                 post.isBlinded(),
-                post.getWriter().getId(),
-                post.isWriterWithdrawn() ? UNKNOWN_WRITER : post.getWriter().getNickname(),
+                post.getMember().getId(),
+                post.isWriterWithdrawn() ? UNKNOWN_WRITER : post.getMember().getNickname(),
                 post.getCreatedAt()
         );
     }

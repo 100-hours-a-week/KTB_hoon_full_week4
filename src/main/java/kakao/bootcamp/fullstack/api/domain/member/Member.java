@@ -34,7 +34,7 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String encodedPassword;
 
-    @Column
+    @Column(nullable = false)
     private String profileImgUrl;
 
     @Enumerated(EnumType.STRING)

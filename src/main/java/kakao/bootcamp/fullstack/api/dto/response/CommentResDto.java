@@ -17,8 +17,8 @@ public record CommentResDto(
         return new CommentResDto(
                 comment.getId(),
                 comment.getContent(),
-                comment.getWriter().getId(),
-                comment.isWriterWithdrawn() ? UNKNOWN_WRITER : comment.getWriter().getNickname(), // UNKNOWN_WRITER가 현재 PostConstant에서 가져옴
+                comment.getMember().getId(),
+                comment.isWriterWithdrawn() ? UNKNOWN_WRITER : comment.getMember().getNickname(), // UNKNOWN_WRITER가 현재 PostConstant에서 가져옴
                 isMine,
                 comment.getCreatedAt()
         );

@@ -1,8 +1,8 @@
 package kakao.bootcamp.fullstack.global.init;
 
 import java.util.List;
-import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
+import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
 import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
@@ -15,28 +15,37 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@Profile("local")
+@Profile("prod")
 @RequiredArgsConstructor
-public class DataInitializer implements CommandLineRunner {
+public class JpaDataInitializer implements CommandLineRunner {
+
+    private static final String SEED_GUARD_EMAIL = "alice@example.com";
 
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PostDraftRepository postDraftRepository;
-    private final PasswordEncoder passwordHasher;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public void run(String... args) {
-        String encodedPassword = passwordHasher.hash("Password1!");
+        if (memberRepository.existsByEmail(SEED_GUARD_EMAIL)) {
+            log.info("[JpaDataInitializer] skip — already seeded");
+            return;
+        }
 
-        Member alice = Member.create("alice@example.com", encodedPassword, "앨리스", "https://picsum.photos/seed/alice/200");
+        String encodedPassword = passwordEncoder.hash("Password1!");
+
+        Member alice = Member.create(SEED_GUARD_EMAIL, encodedPassword, "앨리스", "https://picsum.photos/seed/alice/200");
         Member bob = Member.create("bob@example.com", encodedPassword, "밥", "https://picsum.photos/seed/bob/200");
         Member carol = Member.create("carol@example.com", encodedPassword, "캐롤", "https://picsum.photos/seed/carol/200");
         Member dave = Member.create("dave@example.com", encodedPassword, "데이브", "https://picsum.photos/seed/dave/200");
-        Member donghoon = Member.create("leedonghoon@example.com", passwordHasher.hash("Test1234!"), "donghoon", "https://cdn.example.com/profile.jpg");
+        Member donghoon = Member.create("leedonghoon@example.com", passwordEncoder.hash("Test1234!"), "donghoon", "https://cdn.example.com/profile.jpg");
         List<Member> members = List.of(alice, bob, carol, dave, donghoon);
         members.forEach(memberRepository::save);
 
@@ -117,7 +126,7 @@ public class DataInitializer implements CommandLineRunner {
         );
         drafts.forEach(postDraftRepository::save);
 
-        log.info("[DataInitializer] seeded members={}, posts={}, comments={}, drafts={}",
+        log.info("[JpaDataInitializer] seeded members={}, posts={}, comments={}, drafts={}",
                 members.size(), posts.size(), comments.size(), drafts.size());
     }
 }

@@ -135,7 +135,7 @@ public class PostService {
     public CommentCreateResDto createComment(Long memberId, Long postId, CommentCreateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
-        Comment comment = Comment.create(postId, member, request.content());
+        Comment comment = Comment.create(post, member, request.content());
         post.increaseCommentCount();
         commentRepository.save(comment);
         postRepository.save(post);

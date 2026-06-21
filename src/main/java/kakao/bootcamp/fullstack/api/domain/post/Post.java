@@ -37,10 +37,6 @@ public class Post extends BaseEntity {
     @Column
     private String imageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member writer;
-
     @Column(nullable = false)
     private long likeCount = 0L;
 
@@ -59,8 +55,12 @@ public class Post extends BaseEntity {
     @Column(nullable = false)
     private boolean blinded = false;
 
-    private Post(Member writer, String title, String content, String imageUrl) {
-        this.writer = writer;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    private Post(Member member, String title, String content, String imageUrl) {
+        this.member = member;
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
@@ -107,7 +107,7 @@ public class Post extends BaseEntity {
     }
 
     public boolean isWriterWithdrawn(){
-        return writer.isDeleted();
+        return member.isDeleted();
     }
 
     public void updatePost(String title, String content, String imageUrl){
@@ -120,7 +120,7 @@ public class Post extends BaseEntity {
     }
 
     public boolean isWriter(Long memberId){
-        return writer.getId().equals(memberId);
+        return member.getId().equals(memberId);
     }
 
     public static Post create(Member writer, String title, String content, String imageUrl){
