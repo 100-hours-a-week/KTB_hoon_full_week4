@@ -24,15 +24,15 @@ public class JpaPostRepositoryAdapter implements PostRepository {
 
     @Override
     public Optional<Post> findActiveById(Long id) {
-        return jpaPostRepository.findByIdAndDeletedFalse(id);
+        return jpaPostRepository.findActiveById(id);
     }
 
     @Override
     public List<Post> findPage(Long cursor, Long size) {
         Pageable pageable = PageRequest.of(0, size.intValue());
         if (cursor == null) {
-            return jpaPostRepository.findByDeletedFalseOrderByIdDesc(pageable);
+            return jpaPostRepository.findActivePage(pageable);
         }
-        return jpaPostRepository.findByIdLessThanAndDeletedFalseOrderByIdDesc(cursor, pageable);
+        return jpaPostRepository.findActivePageBeforeCursor(cursor, pageable);
     }
 }

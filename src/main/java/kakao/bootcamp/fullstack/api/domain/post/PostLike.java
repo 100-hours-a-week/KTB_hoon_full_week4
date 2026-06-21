@@ -16,10 +16,12 @@ import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
 
-@Entity
-@Table(name = "post_likes")
 @Getter
+@Entity
+@SQLDelete(sql = "UPDATE post_likes SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+@Table(name = "post_likes")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostLike extends BaseEntity {
 

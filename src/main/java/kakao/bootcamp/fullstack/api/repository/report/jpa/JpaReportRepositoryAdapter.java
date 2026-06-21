@@ -21,6 +21,6 @@ public class JpaReportRepositoryAdapter implements ReportRepository {
 
     @Override
     public boolean existsByTargetAndMember(Long targetId, TargetType targetType, Long memberId) {
-        return jpaReportRepository.existsByTargetIdAndTargetTypeAndMemberId(targetId, targetType, memberId);
+        return jpaReportRepository.existsByTargetAndMember(targetId, targetType, memberId);
     }
 }

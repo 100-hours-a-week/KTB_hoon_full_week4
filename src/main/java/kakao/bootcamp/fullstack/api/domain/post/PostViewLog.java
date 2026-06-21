@@ -13,12 +13,16 @@ import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
 
 import java.time.LocalDateTime;
 
+// TODO : 추후 리팩토링 검토
+//  - (postId, memberId) 복합키(@EmbeddedId)로 전환하여 대체 키 제거
+//  - 단순 조회 기록용이므로 BaseEntity 상속 및 soft delete 적용이 적합한지 재검토
+@Getter
 @Entity
 @Table(name = "post_view_logs")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostViewLog extends BaseEntity {
 
@@ -41,10 +45,6 @@ public class PostViewLog extends BaseEntity {
         this.viewedAt = LocalDateTime.now();
     }
 
-    public static PostViewLog create(Long postId, Long memberId) {
-        return new PostViewLog(postId, memberId);
-    }
-
     public boolean isNew() {
         return id == null;
     }
@@ -64,5 +64,9 @@ public class PostViewLog extends BaseEntity {
 
     public void refreshViewedAt() {
         this.viewedAt = LocalDateTime.now();
+    }
+
+    public static PostViewLog create(Long postId, Long memberId) {
+        return new PostViewLog(postId, memberId);
     }
 }

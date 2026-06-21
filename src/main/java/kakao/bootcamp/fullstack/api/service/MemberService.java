@@ -8,6 +8,7 @@ import kakao.bootcamp.fullstack.api.dto.request.ProfileUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.SignupReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
+import kakao.bootcamp.fullstack.global.exception.BadRequestException;
 import kakao.bootcamp.fullstack.global.hasher.PasswordEncoder;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
@@ -50,7 +51,6 @@ public class MemberService {
     public void deleteMember(Long memberId){
         Member member = loadMemberOrThrow(memberId);
         member.delete();
-        memberRepository.save(member);
     }
 
     @Transactional
@@ -60,7 +60,6 @@ public class MemberService {
             checkNicknameDuplicated(request.nickname());
         }
         member.updateProfile(request.nickname(), request.imageUrl());
-        memberRepository.save(member);
     }
 
     @Transactional
@@ -68,7 +67,6 @@ public class MemberService {
         Member member = loadMemberOrThrow(memberId);
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
         member.updatePassword(passwordEncoder.hash(request.password()));
-        memberRepository.save(member);
     }
 
     private Member loadMemberOrThrow(Long memberId) {
@@ -78,19 +76,19 @@ public class MemberService {
 
     private void validatePasswordConfirmMatch(String password, String passwordConfirm) {
         if(!password.equals(passwordConfirm)){
-            throw new BusinessException(MemberErrorCode.PASSWORD_CONFIRM_MISMATCH);
+            throw new BadRequestException(MemberErrorCode.PASSWORD_CONFIRM_MISMATCH);
         }
     }
 
     private void checkEmailDuplicated(String email) {
         if(memberRepository.existsByEmail(email)){
-            throw new BusinessException(MemberErrorCode.EMAIL_DUPLICATED);
+            throw new BadRequestException(MemberErrorCode.EMAIL_DUPLICATED);
         }
     }
 
     private void checkNicknameDuplicated(String nickname) {
         if(memberRepository.existsByNickname(nickname)){
-            throw new BusinessException(MemberErrorCode.NICKNAME_DUPLICATED);
+            throw new BadRequestException(MemberErrorCode.NICKNAME_DUPLICATED);
         }
     }
 }

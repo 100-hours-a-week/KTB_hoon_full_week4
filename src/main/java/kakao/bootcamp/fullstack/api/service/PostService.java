@@ -63,6 +63,7 @@ public class PostService {
         return new PostSummaryPageResDto(summaries, nextCursor, hasNext);
     }
 
+    @Transactional
     public PostDetailsResDto getPostDetails(Long memberId, Long postId) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
@@ -73,7 +74,6 @@ public class PostService {
                 viewLog.refreshViewedAt();
             }
             postViewLogRepository.save(viewLog);
-            postRepository.save(post);
         }
         List<CommentResDto> commentResDtos = commentRepository
                 .findByPostId(postId)
@@ -103,7 +103,6 @@ public class PostService {
         checkPostWriter(memberId, post);
         editRevisionRepository.save(EditRevision.fromPost(post));
         post.updatePost(request.title(), request.content(), request.imageUrl());
-        postRepository.save(post);
         return PostUpdateResDto.from(post);
     }
 
@@ -113,7 +112,6 @@ public class PostService {
         Post post = loadPostOrThrow(postId);
         checkPostWriter(memberId, post);
         post.delete();
-        postRepository.save(post);
     }
 
     @Transactional
@@ -124,7 +122,6 @@ public class PostService {
         PostLike postLike = PostLike.create(post, member);
         long postLikeCount = post.increaseLikeCount();
         postLikeRepository.save(postLike);
-        postRepository.save(post);
         return PostLikeResDto.from(postLikeCount, true);
     }
 
@@ -132,10 +129,9 @@ public class PostService {
     public PostLikeResDto postUnLike(Long memberId, Long postId) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
-        checkNotAlreadyLiked(memberId, postId);
+        PostLike postLike = loadActivePostLikeOrThrow(postId, memberId);
         long postLikeCount = post.decreaseLikeCount();
-        postLikeRepository.delete(postId, memberId);
-        postRepository.save(post);
+        postLike.delete();
         return PostLikeResDto.from(postLikeCount, false);
     }
 
@@ -146,7 +142,6 @@ public class PostService {
         Comment comment = Comment.create(post, member, request.content());
         post.increaseCommentCount();
         commentRepository.save(comment);
-        postRepository.save(post);
         return CommentCreateResDto.from(comment.getId());
     }
 
@@ -158,7 +153,6 @@ public class PostService {
         checkCommentWriter(memberId, comment);
         editRevisionRepository.save(EditRevision.fromComment(comment));
         comment.updateContent(request.content());
-        commentRepository.save(comment);
     }
 
     @Transactional
@@ -169,8 +163,6 @@ public class PostService {
         checkCommentWriter(memberId, comment);
         comment.delete();
         post.decreaseCommentCount();
-        commentRepository.save(comment);
-        postRepository.save(post);
     }
 
     private Member loadMemberOrThrow(Long memberId) {
@@ -206,10 +198,9 @@ public class PostService {
         }
     }
 
-    private void checkNotAlreadyLiked(Long memberId, Long postId) {
-        if(!postLikeRepository.existsByPostIdAndMemberId(postId, memberId)){
-            throw new ConflictException(PostErrorCode.POST_ALREADY_UNLIKED);
-        }
+    private PostLike loadActivePostLikeOrThrow(Long postId, Long memberId) {
+        return postLikeRepository.findActiveByPostIdAndMemberId(postId, memberId)
+                .orElseThrow(() -> new ConflictException(PostErrorCode.POST_ALREADY_UNLIKED));
     }
 
     private PostViewLog loadPostViewLogOrCreate(Long memberId, Long postId) {

@@ -63,7 +63,6 @@ public class PostDraftService {
         PostDraft postDraft = loadPostDraftOrThrow(postDraftId);
         checkPostDraftWriter(memberId, postDraft);
         postDraft.update(request.title(), request.content(), request.imageUrl());
-        postDraftRepository.save(postDraft);
         return PostDraftSaveResDto.from(postDraft);
     }
 
@@ -78,7 +77,6 @@ public class PostDraftService {
         Post post = Post.create(member, request.title(), request.content(), request.imageUrl());
         postRepository.save(post);
         postDraft.publish();
-        postDraftRepository.save(postDraft);
         return PostCreateResDto.from(post);
     }
 
@@ -88,7 +86,6 @@ public class PostDraftService {
         PostDraft postDraft = loadPostDraftOrThrow(postDraftId);
         checkPostDraftWriter(memberId, postDraft);
         postDraft.delete();
-        postDraftRepository.save(postDraft);
     }
 
     private static void checkPostDraftWriter(Long memberId, PostDraft postDraft) {

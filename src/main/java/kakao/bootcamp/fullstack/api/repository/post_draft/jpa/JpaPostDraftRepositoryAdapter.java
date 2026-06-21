@@ -23,11 +23,11 @@ public class JpaPostDraftRepositoryAdapter implements PostDraftRepository {
 
     @Override
     public Optional<PostDraft> findActiveById(Long id) {
-        return jpaPostDraftRepository.findByIdAndDeletedFalseAndStatus(id, DraftStatus.DRAFT);
+        return jpaPostDraftRepository.findActiveByIdAndStatus(id, DraftStatus.DRAFT);
     }
 
     @Override
     public List<PostDraft> getPostDraftsByMemberId(Long memberId) {
-        return jpaPostDraftRepository.findByMember_IdAndDeletedFalseAndStatus(memberId, DraftStatus.DRAFT);
+        return jpaPostDraftRepository.findActiveByMemberIdAndStatus(memberId, DraftStatus.DRAFT);
     }
 }

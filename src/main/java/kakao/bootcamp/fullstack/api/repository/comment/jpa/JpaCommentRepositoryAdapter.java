@@ -27,6 +27,6 @@ public class JpaCommentRepositoryAdapter implements CommentRepository {
 
     @Override
     public List<Comment> findByPostId(Long postId) {
-        return jpaCommentRepository.findByPost_IdAndDeletedFalseOrderByCreatedAtAsc(postId);
+        return jpaCommentRepository.findActiveByPostId(postId);
     }
 }

@@ -16,7 +16,6 @@ public class ValidationCode {
     public static final String INVALID_NICKNAME_FORMAT = "INVALID_NICKNAME_FORMAT";
 
     public static final String IMAGE_REQUIRED = "IMAGE_REQUIRED";
-    public static final String INVALID_IMAGE_URL = "INVALID_IMAGE_URL";
 
     public static final String TITLE_REQUIRED = "TITLE_REQUIRED";
     public static final String TITLE_LENGTH_EXCEEDED = "TITLE_LENGTH_EXCEEDED";

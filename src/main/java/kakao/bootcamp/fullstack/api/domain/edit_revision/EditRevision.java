@@ -17,9 +17,11 @@ import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
 
 @Getter
 @Entity
+@SQLDelete(sql = "UPDATE edit_revisions SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Table(name = "edit_revisions")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EditRevision extends BaseEntity {

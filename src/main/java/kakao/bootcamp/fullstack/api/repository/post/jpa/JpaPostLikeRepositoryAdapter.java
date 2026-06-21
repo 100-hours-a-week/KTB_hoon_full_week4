@@ -1,11 +1,11 @@
 package kakao.bootcamp.fullstack.api.repository.post.jpa;
 
+import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.post.PostLike;
 import kakao.bootcamp.fullstack.api.repository.post.PostLikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @Profile("prod")
@@ -20,12 +20,12 @@ public class JpaPostLikeRepositoryAdapter implements PostLikeRepository {
     }
 
     @Override
-    public void delete(Long postId, Long memberId) {
-        jpaPostLikeRepository.deleteByPost_IdAndMember_Id(postId, memberId);
+    public Optional<PostLike> findActiveByPostIdAndMemberId(Long postId, Long memberId) {
+        return jpaPostLikeRepository.findActiveByPostIdAndMemberId(postId, memberId);
     }
 
     @Override
     public boolean existsByPostIdAndMemberId(Long postId, Long memberId) {
-        return jpaPostLikeRepository.existsByPost_IdAndMember_Id(postId, memberId);
+        return jpaPostLikeRepository.existsByPostIdAndMemberId(postId, memberId);
     }
 }

@@ -1,6 +1,5 @@
 package kakao.bootcamp.fullstack.api.repository.post.inmemory;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,18 +27,21 @@ public class InMemoryPostLikeRepository implements PostLikeRepository {
     }
 
     @Override
-    public void delete(Long postId, Long memberId) {
-        likes.values().removeIf(like ->
-                like.getPost().getId().equals(postId) && like.getMember().getId().equals(memberId)
-        );
+    public Optional<PostLike> findActiveByPostIdAndMemberId(Long postId, Long memberId) {
+        return likes.values()
+                .stream()
+                .filter(like -> !like.isDeleted()
+                        && like.getPost().getId().equals(postId)
+                        && like.getMember().getId().equals(memberId))
+                .findFirst();
     }
 
     @Override
     public boolean existsByPostIdAndMemberId(Long postId, Long memberId) {
         return likes.values()
                 .stream()
-                .anyMatch(like ->
-                        like.getPost().getId().equals(postId) && like.getMember().getId().equals(memberId)
-                );
+                .anyMatch(like -> !like.isDeleted()
+                        && like.getPost().getId().equals(postId)
+                        && like.getMember().getId().equals(memberId));
     }
 }
