@@ -1,8 +1,9 @@
-package kakao.bootcamp.fullstack.api.repository.comment;
+package kakao.bootcamp.fullstack.api.repository.comment.jpa;
 
 import java.util.List;
 import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
+import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;

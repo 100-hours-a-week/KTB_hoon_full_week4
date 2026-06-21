@@ -1,7 +1,8 @@
-package kakao.bootcamp.fullstack.api.repository.member;
+package kakao.bootcamp.fullstack.api.repository.member.jpa;
 
 import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
+import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;

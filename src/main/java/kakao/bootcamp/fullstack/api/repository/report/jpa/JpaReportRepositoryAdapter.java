@@ -1,7 +1,8 @@
-package kakao.bootcamp.fullstack.api.repository.report;
+package kakao.bootcamp.fullstack.api.repository.report.jpa;
 
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.domain.report.Report;
+import kakao.bootcamp.fullstack.api.repository.report.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;

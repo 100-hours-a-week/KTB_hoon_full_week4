@@ -1,6 +1,7 @@
-package kakao.bootcamp.fullstack.api.repository.post;
+package kakao.bootcamp.fullstack.api.repository.post.jpa;
 
 import kakao.bootcamp.fullstack.api.domain.post.PostLike;
+import kakao.bootcamp.fullstack.api.repository.post.PostLikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;

@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.repository.edit_revision;
+package kakao.bootcamp.fullstack.api.repository.edit_revision.jpa;
 
 import kakao.bootcamp.fullstack.api.domain.edit_revision.EditRevision;
 import org.springframework.data.jpa.repository.JpaRepository;

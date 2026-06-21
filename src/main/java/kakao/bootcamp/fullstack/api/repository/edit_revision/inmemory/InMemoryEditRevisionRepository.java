@@ -1,8 +1,9 @@
-package kakao.bootcamp.fullstack.api.repository.edit_revision;
+package kakao.bootcamp.fullstack.api.repository.edit_revision.inmemory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import kakao.bootcamp.fullstack.api.domain.edit_revision.EditRevision;
+import kakao.bootcamp.fullstack.api.repository.edit_revision.EditRevisionRepository;
 import kakao.bootcamp.fullstack.global.generator.AtomicLongIdGenerator;
 import kakao.bootcamp.fullstack.global.generator.IdGenerator;
 import org.springframework.context.annotation.Profile;

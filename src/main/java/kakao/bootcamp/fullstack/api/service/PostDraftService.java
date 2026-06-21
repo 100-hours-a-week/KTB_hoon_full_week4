@@ -24,9 +24,11 @@ import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.rate_limiter.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostDraftService {
 
     private final PostDraftRepository postDraftRepository;
@@ -47,6 +49,7 @@ public class PostDraftService {
         return PostDraftDetailsResDto.from(postDraft);
     }
 
+    @Transactional
     public PostDraftSaveResDto createPostDraft(Long memberId, PostDraftCreateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         PostDraft postDraft = PostDraft.create(member, request.title(), request.content(), request.imageUrl());
@@ -54,6 +57,7 @@ public class PostDraftService {
         return PostDraftSaveResDto.from(postDraft);
     }
 
+    @Transactional
     public PostDraftSaveResDto updatePostDraft(Long memberId, Long postDraftId, PostDraftUpdateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         PostDraft postDraft = loadPostDraftOrThrow(postDraftId);
@@ -63,6 +67,7 @@ public class PostDraftService {
         return PostDraftSaveResDto.from(postDraft);
     }
 
+    @Transactional
     public PostCreateResDto publishPostDraft(Long memberId, Long postDraftId, PostCreateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         PostDraft postDraft = loadPostDraftOrThrow(postDraftId);
@@ -77,6 +82,7 @@ public class PostDraftService {
         return PostCreateResDto.from(post);
     }
 
+    @Transactional
     public void deletePostDraft(Long memberId, Long postDraftId) {
         Member member = loadMemberOrThrow(memberId);
         PostDraft postDraft = loadPostDraftOrThrow(postDraftId);

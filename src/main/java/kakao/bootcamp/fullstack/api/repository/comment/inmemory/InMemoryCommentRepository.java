@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.repository.comment;
+package kakao.bootcamp.fullstack.api.repository.comment.inmemory;
 
 import java.util.Comparator;
 import java.util.List;
@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
+import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.global.generator.AtomicLongIdGenerator;
 import kakao.bootcamp.fullstack.global.generator.IdGenerator;
 import org.springframework.context.annotation.Profile;

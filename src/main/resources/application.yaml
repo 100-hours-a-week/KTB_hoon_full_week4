@@ -16,6 +16,7 @@ spring:
     hibernate:
       ddl-auto: create
     show-sql: true
+    open-in-view: true
 
 jwt:
   secret: "my-secret-key-my-secret-key-my-secret-key-123456"

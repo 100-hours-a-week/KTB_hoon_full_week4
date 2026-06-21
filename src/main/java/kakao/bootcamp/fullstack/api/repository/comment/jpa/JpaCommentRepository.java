@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.repository.comment;
+package kakao.bootcamp.fullstack.api.repository.comment.jpa;
 
 import java.util.List;
 import java.util.Optional;

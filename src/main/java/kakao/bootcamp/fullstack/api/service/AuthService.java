@@ -12,9 +12,11 @@ import kakao.bootcamp.fullstack.global.jwt.TokenBlacklist;
 import kakao.bootcamp.fullstack.global.jwt.provider.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AuthService {
 
     private final MemberRepository memberRepository;
@@ -22,6 +24,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final TokenBlacklist tokenBlacklist;
 
+    @Transactional
     public LoginResDto login(LoginReqDto request) {
         Member member = loadMemberOrThrow(request);
         validatePasswordMatches(request.password(), member.getEncodedPassword());
@@ -29,6 +32,7 @@ public class AuthService {
         return new LoginResDto(accessToken);
     }
 
+    @Transactional
     public void logout(String accessToken) {
         String jti = jwtProvider.getJti(accessToken);
         long expirationMillis = jwtProvider.getExpirationMillis(accessToken);

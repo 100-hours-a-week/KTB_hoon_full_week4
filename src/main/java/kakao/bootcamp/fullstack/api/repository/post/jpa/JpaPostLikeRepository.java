@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.repository.post;
+package kakao.bootcamp.fullstack.api.repository.post.jpa;
 
 import kakao.bootcamp.fullstack.api.domain.post.PostLike;
 import org.springframework.data.jpa.repository.JpaRepository;

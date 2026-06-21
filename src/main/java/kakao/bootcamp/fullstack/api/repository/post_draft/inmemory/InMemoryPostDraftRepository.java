@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.repository.post_draft;
+package kakao.bootcamp.fullstack.api.repository.post_draft.inmemory;
 
 import java.util.List;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import kakao.bootcamp.fullstack.api.domain.post_draft.DraftStatus;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
+import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
 import kakao.bootcamp.fullstack.global.generator.AtomicLongIdGenerator;
 import kakao.bootcamp.fullstack.global.generator.IdGenerator;
 import lombok.RequiredArgsConstructor;

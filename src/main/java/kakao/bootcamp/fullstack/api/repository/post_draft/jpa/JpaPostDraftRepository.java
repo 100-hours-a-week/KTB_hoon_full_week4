@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.repository.post_draft;
+package kakao.bootcamp.fullstack.api.repository.post_draft.jpa;
 
 import java.util.List;
 import java.util.Optional;

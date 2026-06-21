@@ -36,9 +36,11 @@ import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.rate_limiter.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostService {
 
     private final PostRepository postRepository;
@@ -83,6 +85,7 @@ public class PostService {
         return PostDetailsResDto.from(post, post.isWriter(memberId), isLikedByMemberId, commentResDtos);
     }
 
+    @Transactional
     public PostCreateResDto createPost(Long memberId, PostCreateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         if (!rateLimiter.tryAcquire(memberId)) {
@@ -93,6 +96,7 @@ public class PostService {
         return PostCreateResDto.from(post);
     }
 
+    @Transactional
     public PostUpdateResDto updatePost(Long memberId, Long postId, PostUpdateReqDto request){
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
@@ -103,6 +107,7 @@ public class PostService {
         return PostUpdateResDto.from(post);
     }
 
+    @Transactional
     public void deletePost(Long memberId, Long postId) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
@@ -111,6 +116,7 @@ public class PostService {
         postRepository.save(post);
     }
 
+    @Transactional
     public PostLikeResDto postLike(Long memberId, Long postId) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
@@ -122,6 +128,7 @@ public class PostService {
         return PostLikeResDto.from(postLikeCount, true);
     }
 
+    @Transactional
     public PostLikeResDto postUnLike(Long memberId, Long postId) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
@@ -132,6 +139,7 @@ public class PostService {
         return PostLikeResDto.from(postLikeCount, false);
     }
 
+    @Transactional
     public CommentCreateResDto createComment(Long memberId, Long postId, CommentCreateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
@@ -142,6 +150,7 @@ public class PostService {
         return CommentCreateResDto.from(comment.getId());
     }
 
+    @Transactional
     public void updateComment(Long memberId, Long postId, Long commentId, CommentUpdateReqDto request) {
         loadMemberOrThrow(memberId);
         loadPostOrThrow(postId);
@@ -152,6 +161,7 @@ public class PostService {
         commentRepository.save(comment);
     }
 
+    @Transactional
     public void deleteComment(Long memberId, Long postId, Long commentId) {
         loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);

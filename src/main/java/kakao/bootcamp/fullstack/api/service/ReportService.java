@@ -16,6 +16,7 @@ import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,20 +26,20 @@ public class ReportService {
     private final MemberRepository memberRepository;
     private final List<ReportTargetHandler> handlers;
 
-    // 주의 : GlobalExceptionHandler가 예외를 잡을 수 없음
     @PostConstruct
     void verifyAllTargetTypesHandled() {
         for (TargetType type : TargetType.values()) {
             boolean covered = handlers.stream()
                     .anyMatch(handler -> handler.supports(type));
             if (!covered) {
-                throw new InternalServerException(
-                        CommonErrorCode.HANDLER_NOT_FOUND,
-                        "No ReportTargetHandler registered for: " + type);
+                throw new IllegalStateException(
+                        "No ReportTargetHandler registered for: " + type
+                );
             }
         }
     }
 
+    @Transactional
     public void report(Long memberId, PostReportReqDto request) {
         checkMemberExists(memberId);
         checkNotAlreadyReported(request.targetId(), request.targetType(), memberId);

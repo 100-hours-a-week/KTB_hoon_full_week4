@@ -1,8 +1,9 @@
-package kakao.bootcamp.fullstack.api.repository.post;
+package kakao.bootcamp.fullstack.api.repository.post.jpa;
 
 import java.util.List;
 import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
+import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;

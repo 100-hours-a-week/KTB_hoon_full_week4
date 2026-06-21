@@ -1,9 +1,10 @@
-package kakao.bootcamp.fullstack.api.repository.post_draft;
+package kakao.bootcamp.fullstack.api.repository.post_draft.jpa;
 
 import java.util.List;
 import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.post_draft.DraftStatus;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
+import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;

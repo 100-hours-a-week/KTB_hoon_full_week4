@@ -1,9 +1,10 @@
-package kakao.bootcamp.fullstack.api.repository.member;
+package kakao.bootcamp.fullstack.api.repository.member.inmemory;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
+import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.global.generator.AtomicLongIdGenerator;
 import kakao.bootcamp.fullstack.global.generator.IdGenerator;
 import org.springframework.context.annotation.Profile;

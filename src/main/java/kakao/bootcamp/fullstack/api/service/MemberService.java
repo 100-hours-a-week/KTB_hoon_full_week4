@@ -13,21 +13,24 @@ import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordHasher;
+    private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public void signup(SignupReqDto request){
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
         checkEmailDuplicated(request.email());
         checkNicknameDuplicated(request.nickname());
         Member member = Member.create(
                 request.email(),
-                passwordHasher.hash(request.password()),
+                passwordEncoder.hash(request.password()),
                 request.nickname(),
                 request.imageUrl()
         );
@@ -43,12 +46,14 @@ public class MemberService {
         );
     }
 
+    @Transactional
     public void deleteMember(Long memberId){
         Member member = loadMemberOrThrow(memberId);
         member.delete();
         memberRepository.save(member);
     }
 
+    @Transactional
     public void updateMemberProfile(Long memberId, ProfileUpdateReqDto request){
         Member member = loadMemberOrThrow(memberId);
         if (!member.getNickname().equals(request.nickname())) {
@@ -58,10 +63,11 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    @Transactional
     public void updatePassword(Long memberId, PasswordUpdateReqDto request){
         Member member = loadMemberOrThrow(memberId);
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
-        member.updatePassword(passwordHasher.hash(request.password()));
+        member.updatePassword(passwordEncoder.hash(request.password()));
         memberRepository.save(member);
     }
 

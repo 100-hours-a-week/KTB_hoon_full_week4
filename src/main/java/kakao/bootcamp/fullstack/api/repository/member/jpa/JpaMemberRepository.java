@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.repository.member;
+package kakao.bootcamp.fullstack.api.repository.member.jpa;
 
 import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
