@@ -8,7 +8,7 @@ import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 public record CommentResDto(
         Long commentId,
         String content,
-        Long writerId,
+        Long memberId,
         String writerNickname,
         boolean isMine,
         LocalDateTime createdAt

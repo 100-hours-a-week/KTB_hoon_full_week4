@@ -1,5 +1,14 @@
 package kakao.bootcamp.fullstack.api.domain.comment;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.global.BaseEntity;
 import kakao.bootcamp.fullstack.global.constants.CommentConstants;
@@ -9,17 +18,34 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "comments")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "post_id", nullable = false)
     private Long postId;
-    private Member writer;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-    private boolean edited;
+
+    @Column(nullable = false)
+    private boolean edited = false;
+
+    @Column(nullable = false)
     private long reportCount = 0L;
+
+    @Column(nullable = false)
     private boolean blinded = false;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member writer;
 
     private Comment(Long postId, Member writer, String content) {
         this.postId = postId;

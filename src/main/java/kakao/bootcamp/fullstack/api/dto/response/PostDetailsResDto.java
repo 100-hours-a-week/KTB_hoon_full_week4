@@ -13,7 +13,7 @@ public record PostDetailsResDto(
         String content,
         long likeCount,
         long viewCount,
-        Long writerId,
+        Long memberId,
         String writerNickname,
         String imageUrl,
         boolean isMine,

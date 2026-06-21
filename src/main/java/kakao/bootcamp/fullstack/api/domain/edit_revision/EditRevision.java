@@ -1,5 +1,13 @@
 package kakao.bootcamp.fullstack.api.domain.edit_revision;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
@@ -10,29 +18,46 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "edit_revisions")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EditRevision extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private TargetType targetType;
+
+    @Column(name = "target_id", nullable = false)
     private Long targetId;
-    private Long writerId;
+
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
+
+    @Column(length = 200)
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String content;
+
+    @Column(nullable = false)
     private String imageUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TargetType targetType;
 
     private EditRevision(
             TargetType targetType,
             Long targetId,
-            Long writerId,
+            Long memberId,
             String title,
             String content,
             String imageUrl
     ) {
         this.targetType = targetType;
         this.targetId = targetId;
-        this.writerId = writerId;
+        this.memberId = memberId;
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;

@@ -1,14 +1,24 @@
 package kakao.bootcamp.fullstack.global;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import lombok.Getter;
 
 @Getter
+@MappedSuperclass
 public abstract class BaseEntity {
 
-    private final LocalDateTime createdAt;
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(nullable = false)
     private boolean deleted;
 
     protected BaseEntity() {

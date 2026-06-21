@@ -1,5 +1,13 @@
 package kakao.bootcamp.fullstack.api.domain.report;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.global.BaseEntity;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
@@ -8,14 +16,28 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "reports")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Report extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "target_id", nullable = false)
     private Long targetId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private TargetType targetType;
+
+    @Column(name = "member_id", nullable = false)
     private Long memberId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
     private ReportReason reason;
 
     private Report(Long targetId, TargetType targetType, Long memberId, ReportReason reason) {

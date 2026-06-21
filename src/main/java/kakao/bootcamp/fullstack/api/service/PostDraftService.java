@@ -49,7 +49,7 @@ public class PostDraftService {
 
     public PostDraftSaveResDto createPostDraft(Long memberId, PostDraftCreateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
-        PostDraft postDraft = PostDraft.create(memberId, request.title(), request.content(), request.imageUrl());
+        PostDraft postDraft = PostDraft.create(member, request.title(), request.content(), request.imageUrl());
         postDraftRepository.save(postDraft);
         return PostDraftSaveResDto.from(postDraft);
     }

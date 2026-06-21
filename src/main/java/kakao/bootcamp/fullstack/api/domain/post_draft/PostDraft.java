@@ -1,5 +1,17 @@
 package kakao.bootcamp.fullstack.api.domain.post_draft;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.global.BaseEntity;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
@@ -8,18 +20,34 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Entity
+@Table(name = "post_drafts")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostDraft extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long writerId;
-    private String title;
-    private String content;
-    private String imageUrl;
-    private DraftStatus status;
 
-    private PostDraft(Long writerId, String title, String content, String imageUrl) {
-        this.writerId = writerId;
+    @Column(length = 200)
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String content;
+
+    @Column
+    private String imageUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DraftStatus status = DraftStatus.DRAFT;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    private PostDraft(Member member, String title, String content, String imageUrl) {
+        this.member = member;
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
@@ -38,7 +66,7 @@ public class PostDraft extends BaseEntity {
     }
 
     public boolean isWriter(Long memberId) {
-        return writerId.equals(memberId);
+        return this.member.getId().equals(memberId);
     }
 
     public void update(String title, String content, String imageUrl) {
@@ -53,7 +81,7 @@ public class PostDraft extends BaseEntity {
         updateModifiedTime();
     }
 
-    public static PostDraft create(Long writerId, String title, String content, String imageUrl) {
-        return new PostDraft(writerId, title, content, imageUrl);
+    public static PostDraft create(Member member, String title, String content, String imageUrl) {
+        return new PostDraft(member, title, content, imageUrl);
     }
 }

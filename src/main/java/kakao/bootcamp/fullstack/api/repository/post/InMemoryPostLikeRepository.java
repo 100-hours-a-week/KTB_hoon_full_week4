@@ -29,7 +29,7 @@ public class InMemoryPostLikeRepository implements PostLikeRepository {
     @Override
     public void delete(Long postId, Long memberId) {
         likes.values().removeIf(like ->
-                like.getPostId().equals(postId) && like.getMemberId().equals(memberId)
+                like.getPost().getId().equals(postId) && like.getMember().getId().equals(memberId)
         );
     }
 
@@ -38,7 +38,7 @@ public class InMemoryPostLikeRepository implements PostLikeRepository {
         return likes.values()
                 .stream()
                 .anyMatch(like ->
-                        like.getPostId().equals(postId) && like.getMemberId().equals(memberId)
+                        like.getPost().getId().equals(postId) && like.getMember().getId().equals(memberId)
                 );
     }
 }

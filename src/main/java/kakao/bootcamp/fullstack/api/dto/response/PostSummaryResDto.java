@@ -14,7 +14,7 @@ public record PostSummaryResDto(
         long viewCount,
         boolean isEdited,
         boolean isBlind,
-        Long writerId,
+        Long memberId,
         String writerNickname,
         LocalDateTime createdAt
 ) {
