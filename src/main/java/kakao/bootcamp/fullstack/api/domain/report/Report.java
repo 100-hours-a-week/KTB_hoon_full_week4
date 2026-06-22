@@ -17,10 +17,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 
+@Getter
 @Entity
 @SQLDelete(sql = "UPDATE reports SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Table(name = "reports")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Report extends BaseEntity {
 
@@ -32,14 +32,14 @@ public class Report extends BaseEntity {
     private Long targetId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private TargetType targetType;
 
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false)
     private ReportReason reason;
 
     private Report(Long targetId, TargetType targetType, Long memberId, ReportReason reason) {
