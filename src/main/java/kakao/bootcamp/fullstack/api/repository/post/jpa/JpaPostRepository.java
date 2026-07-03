@@ -10,12 +10,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface JpaPostRepository extends JpaRepository<Post, Long> {
 
-    @Query("SELECT p FROM Post p WHERE p.id = :id AND p.deleted = false")
+    @Query("SELECT p FROM Post p JOIN FETCH p.member WHERE p.id = :id AND p.deleted = false")
     Optional<Post> findActiveById(@Param("id") Long id);
 
-    @Query("SELECT p FROM Post p WHERE p.deleted = false ORDER BY p.id DESC")
+    @Query("SELECT p FROM Post p JOIN FETCH p.member WHERE p.deleted = false ORDER BY p.id DESC")
     List<Post> findActivePage(Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE p.id < :cursor AND p.deleted = false ORDER BY p.id DESC")
+    @Query("SELECT p FROM Post p JOIN FETCH p.member WHERE p.id < :cursor AND p.deleted = false ORDER BY p.id DESC")
     List<Post> findActivePageBeforeCursor(@Param("cursor") Long cursor, Pageable pageable);
 }

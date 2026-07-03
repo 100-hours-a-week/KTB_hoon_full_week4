@@ -2,6 +2,7 @@ package kakao.bootcamp.fullstack.api.controller;
 
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
 import kakao.bootcamp.fullstack.api.dto.request.CommentCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.CommentUpdateReqDto;
@@ -41,7 +42,7 @@ public class PostController {
     public ResponseEntity<ApiResponse<PostSummaryPageResDto>> getPosts(
             @LoginMember AuthMember authMember,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") Long size
+            @RequestParam(defaultValue = "10") @Max(10) Long size
     ) {
         PostSummaryPageResDto response = postService.getPostSummariesList(authMember.memberId(), cursor, size);
         return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())

@@ -16,6 +16,7 @@ public enum PostErrorCode implements BaseCode {
     POST_RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "POST_RATE_LIMIT_EXCEEDED", "post_rate_limited"),
     TITLE_REQUIRED(HttpStatus.BAD_REQUEST, "TITLE_REQUIRED", "title_required"),
     CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "CONTENT_REQUIRED", "content_required"),
+    POST_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "POST_IMAGE_REQUIRED", "post_image_required"),
     ;
 
     private final HttpStatus httpStatus;

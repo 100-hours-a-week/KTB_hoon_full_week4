@@ -4,10 +4,14 @@ import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
+import kakao.bootcamp.fullstack.api.domain.post.PostLike;
+import kakao.bootcamp.fullstack.api.domain.post.PostViewLog;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
 import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
+import kakao.bootcamp.fullstack.api.repository.post.PostLikeRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
+import kakao.bootcamp.fullstack.api.repository.post.PostViewLogRepository;
 import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
 import kakao.bootcamp.fullstack.global.hasher.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +31,8 @@ public class JpaDataInitializer implements CommandLineRunner {
 
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final PostViewLogRepository postViewLogRepository;
     private final CommentRepository commentRepository;
     private final PostDraftRepository postDraftRepository;
     private final PasswordEncoder passwordEncoder;
@@ -88,7 +94,24 @@ public class JpaDataInitializer implements CommandLineRunner {
                 Comment.create(post5, bob, "저는 작은 프로젝트엔 Recoil을 자주 씁니다."),
                 Comment.create(post6, carol, "도메인 레이어는 단위, 컨트롤러는 통합으로 가는 편입니다.")
         );
-        comments.forEach(commentRepository::save);
+        comments.forEach(comment -> {
+            commentRepository.save(comment);
+            comment.getPost().increaseCommentCount();
+        });
+
+        likePost(post1, bob, carol, dave);
+        likePost(post2, alice, carol, dave, donghoon);
+        likePost(post3, alice, bob);
+        likePost(post4, dave);
+        likePost(post5, alice, bob, carol);
+        likePost(post6, carol, dave);
+
+        viewPost(post1, bob, carol, dave, donghoon);
+        viewPost(post2, alice, carol, dave, donghoon);
+        viewPost(post3, alice, bob, dave);
+        viewPost(post4, bob, dave);
+        viewPost(post5, alice, bob, carol, donghoon);
+        viewPost(post6, alice, carol, dave);
 
         List<PostDraft> drafts = List.of(
                 PostDraft.create(donghoon,
@@ -128,5 +151,19 @@ public class JpaDataInitializer implements CommandLineRunner {
 
         log.info("[JpaDataInitializer] seeded members={}, posts={}, comments={}, drafts={}",
                 members.size(), posts.size(), comments.size(), drafts.size());
+    }
+
+    private void likePost(Post post, Member... likers) {
+        for (Member liker : likers) {
+            postLikeRepository.save(PostLike.create(post, liker));
+            post.increaseLikeCount();
+        }
+    }
+
+    private void viewPost(Post post, Member... viewers) {
+        for (Member viewer : viewers) {
+            postViewLogRepository.save(PostViewLog.create(post.getId(), viewer.getId()));
+            post.increaseViewCount();
+        }
     }
 }

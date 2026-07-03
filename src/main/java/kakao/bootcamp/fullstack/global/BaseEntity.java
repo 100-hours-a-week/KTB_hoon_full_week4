@@ -26,28 +26,15 @@ public abstract class BaseEntity {
     private LocalDateTime deletedAt;
 
     @Column(nullable = false)
-    private boolean deleted;
-
-    protected BaseEntity() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-        this.deleted = false;
-    }
-
-    protected void updateModifiedTime() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    private boolean deleted = false;
 
     public void delete() {
         this.deleted = true;
         this.deletedAt = LocalDateTime.now();
-        updateModifiedTime();
     }
 
     public void restore() {
         this.deleted = false;
         this.deletedAt = null;
-        updateModifiedTime();
     }
 }

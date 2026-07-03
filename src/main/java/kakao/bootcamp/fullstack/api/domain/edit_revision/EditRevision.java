@@ -11,7 +11,9 @@ import jakarta.persistence.Table;
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
+import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 import kakao.bootcamp.fullstack.global.BaseEntity;
+import kakao.bootcamp.fullstack.global.exception.BadRequestException;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
@@ -42,7 +44,6 @@ public class EditRevision extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
@@ -77,6 +78,9 @@ public class EditRevision extends BaseEntity {
     }
 
     public static EditRevision fromPost(Post post) {
+        if(post.getImageUrl() == null){
+            throw new BadRequestException(PostErrorCode.POST_IMAGE_REQUIRED);
+        }
         return new EditRevision(
                 TargetType.POST,
                 post.getId(),
