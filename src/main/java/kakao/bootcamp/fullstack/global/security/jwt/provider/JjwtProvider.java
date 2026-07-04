@@ -13,6 +13,7 @@ import kakao.bootcamp.fullstack.api.domain.member.Role;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.security.jwt.properties.JwtProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -21,6 +22,7 @@ import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JjwtProvider implements JwtProvider {
 
     private final JwtProperties jwtProperties;
@@ -72,7 +74,8 @@ public class JjwtProvider implements JwtProvider {
     @Override
     public Role getRole(String token) {
         Claims claims = parseClaims(token);
-        return claims.get("role", Role.class);
+        String role = claims.get("role", String.class);
+        return Role.valueOf(role);
     }
 
     @Override

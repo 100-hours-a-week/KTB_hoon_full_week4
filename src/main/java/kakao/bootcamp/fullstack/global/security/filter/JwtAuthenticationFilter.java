@@ -7,26 +7,30 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.member.Role;
-import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
 import kakao.bootcamp.fullstack.global.constants.JwtConstants;
+import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.exception.code.BaseCode;
+import kakao.bootcamp.fullstack.global.response.ApiResponse;
+import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
 import kakao.bootcamp.fullstack.global.security.jwt.TokenBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.provider.JwtProvider;
-import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import kakao.bootcamp.fullstack.global.utils.TokenExtractor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
@@ -57,17 +61,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     authMember,
                     null,
-                    Collections.emptyList()
+                    List.of(new SimpleGrantedAuthority("ROLE_" + authMember.role().name()))
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);
-        } catch (JwtException | IllegalArgumentException e) {
+        }catch (UnauthorizedException e) {
+            writeErrorResponse(response, e.getCode());
+        }
+        catch (JwtException | IllegalArgumentException e) {
             writeErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
         }
     }
 
     private void writeErrorResponse(HttpServletResponse response, BaseCode code) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setStatus(code.getHttpStatus().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(
