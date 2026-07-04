@@ -2,7 +2,7 @@ package kakao.bootcamp.fullstack.api.controller;
 
 import jakarta.validation.Valid;
 import java.util.List;
-import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
+import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
 import kakao.bootcamp.fullstack.api.dto.request.PostCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostDraftCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostDraftUpdateReqDto;
@@ -12,7 +12,7 @@ import kakao.bootcamp.fullstack.api.dto.response.PostDraftSaveResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDraftsSummaryResDto;
 import kakao.bootcamp.fullstack.api.service.PostDraftService;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
-import kakao.bootcamp.fullstack.global.jwt.annotation.LoginMember;
+import kakao.bootcamp.fullstack.global.security.jwt.annotation.LoginMember;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

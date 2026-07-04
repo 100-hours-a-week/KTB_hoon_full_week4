@@ -1,13 +1,13 @@
 package kakao.bootcamp.fullstack.api.controller;
 
 import jakarta.validation.Valid;
-import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
+import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
 import kakao.bootcamp.fullstack.api.dto.request.PasswordUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.ProfileUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.SignupReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
 import kakao.bootcamp.fullstack.api.service.MemberService;
-import kakao.bootcamp.fullstack.global.jwt.annotation.LoginMember;
+import kakao.bootcamp.fullstack.global.security.jwt.annotation.LoginMember;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

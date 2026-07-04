@@ -1,7 +1,7 @@
 package kakao.bootcamp.fullstack.global.resolver;
 
-import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
-import kakao.bootcamp.fullstack.global.jwt.annotation.LoginMember;
+import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
+import kakao.bootcamp.fullstack.global.security.jwt.annotation.LoginMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,7 +14,6 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 @RequiredArgsConstructor
 public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
-
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {

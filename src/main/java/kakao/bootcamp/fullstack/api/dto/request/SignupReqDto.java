@@ -3,9 +3,8 @@ package kakao.bootcamp.fullstack.api.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import kakao.bootcamp.fullstack.global.exception.code.ValidationCode;
-import kakao.bootcamp.fullstack.global.jwt.annotation.ValidNickname;
-import kakao.bootcamp.fullstack.global.jwt.annotation.ValidPassword;
-import org.hibernate.validator.constraints.URL;
+import kakao.bootcamp.fullstack.global.security.jwt.annotation.ValidNickname;
+import kakao.bootcamp.fullstack.global.security.jwt.annotation.ValidPassword;
 
 public record SignupReqDto(
         @NotBlank(message = ValidationCode.EMAIL_REQUIRED)

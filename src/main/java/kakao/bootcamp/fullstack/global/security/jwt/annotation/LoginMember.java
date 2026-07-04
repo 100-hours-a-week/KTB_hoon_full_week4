@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.jwt.annotation;
+package kakao.bootcamp.fullstack.global.security.jwt.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

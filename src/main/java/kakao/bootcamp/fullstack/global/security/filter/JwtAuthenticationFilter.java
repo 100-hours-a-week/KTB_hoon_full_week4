@@ -1,9 +1,7 @@
-package kakao.bootcamp.fullstack.global.filter;
+package kakao.bootcamp.fullstack.global.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,11 +10,11 @@ import java.io.IOException;
 import java.util.Collections;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.member.Role;
-import kakao.bootcamp.fullstack.api.dto.request.AuthMember;
+import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
 import kakao.bootcamp.fullstack.global.constants.JwtConstants;
 import kakao.bootcamp.fullstack.global.exception.code.BaseCode;
-import kakao.bootcamp.fullstack.global.jwt.TokenBlacklist;
-import kakao.bootcamp.fullstack.global.jwt.provider.JwtProvider;
+import kakao.bootcamp.fullstack.global.security.jwt.TokenBlacklist;
+import kakao.bootcamp.fullstack.global.security.jwt.provider.JwtProvider;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import kakao.bootcamp.fullstack.global.utils.TokenExtractor;
 import lombok.RequiredArgsConstructor;

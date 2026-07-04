@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.filter;
+package kakao.bootcamp.fullstack.global.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.jwt.provider;
+package kakao.bootcamp.fullstack.global.security.jwt.provider;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -11,7 +11,7 @@ import java.util.UUID;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.member.Role;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
-import kakao.bootcamp.fullstack.global.properties.JwtProperties;
+import kakao.bootcamp.fullstack.global.security.jwt.properties.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

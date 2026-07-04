@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.api.dto.request;
+package kakao.bootcamp.fullstack.global.security.dto;
 
 import kakao.bootcamp.fullstack.api.domain.member.Role;
 

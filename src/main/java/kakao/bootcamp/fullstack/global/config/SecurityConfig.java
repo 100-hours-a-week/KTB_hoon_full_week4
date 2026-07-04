@@ -2,10 +2,10 @@ package kakao.bootcamp.fullstack.global.config;
 
 import static kakao.bootcamp.fullstack.global.constants.PublicEndpointConstants.PUBLIC_ENDPOINTS;
 
-import kakao.bootcamp.fullstack.global.filter.JwtAccessDeniedHandler;
-import kakao.bootcamp.fullstack.global.filter.JwtAuthenticationEntryPoint;
-import kakao.bootcamp.fullstack.global.filter.JwtAuthenticationFilter;
-import kakao.bootcamp.fullstack.global.hasher.SpringSecurityPasswordEncoderAdapter;
+import kakao.bootcamp.fullstack.global.security.filter.JwtAccessDeniedHandler;
+import kakao.bootcamp.fullstack.global.security.filter.JwtAuthenticationEntryPoint;
+import kakao.bootcamp.fullstack.global.security.filter.JwtAuthenticationFilter;
+import kakao.bootcamp.fullstack.global.security.hasher.SpringSecurityPasswordEncoderAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

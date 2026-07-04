@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.jwt.annotation;
+package kakao.bootcamp.fullstack.global.security.jwt.annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -11,10 +11,10 @@ import kakao.bootcamp.fullstack.global.exception.code.ValidationCode;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
+@Pattern(regexp = "^\\S{1,10}$", message = ValidationCode.INVALID_NICKNAME_FORMAT)
 @Constraint(validatedBy = {})
-@Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,20}$", message = ValidationCode.INVALID_PASSWORD_FORMAT)
-public @interface ValidPassword {
-    String message() default "invalid password format";
+public @interface ValidNickname {
+    String message() default "invalid nickname";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

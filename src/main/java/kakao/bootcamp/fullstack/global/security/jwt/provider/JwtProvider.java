@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.jwt.provider;
+package kakao.bootcamp.fullstack.global.security.jwt.provider;
 
 import kakao.bootcamp.fullstack.api.domain.member.Role;
 

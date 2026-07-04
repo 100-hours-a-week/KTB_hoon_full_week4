@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.hasher;
+package kakao.bootcamp.fullstack.global.security.hasher;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.hasher;
+package kakao.bootcamp.fullstack.global.security.hasher;
 
 public interface PasswordEncoder {
     String hash(String rawPassword);

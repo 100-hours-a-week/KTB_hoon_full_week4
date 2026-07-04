@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.hasher;
+package kakao.bootcamp.fullstack.global.security.hasher;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

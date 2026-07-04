@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.jwt;
+package kakao.bootcamp.fullstack.global.security.jwt;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;

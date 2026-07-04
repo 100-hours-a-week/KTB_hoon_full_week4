@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.global.properties;
+package kakao.bootcamp.fullstack.global.security.jwt.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
