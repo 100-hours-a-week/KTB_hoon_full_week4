@@ -13,7 +13,8 @@ public enum AuthErrorCode implements BaseCode {
     TOKEN_EMPTY(HttpStatus.UNAUTHORIZED, "TOKEN_EMPTY", "token_empty"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "invalid_token"),
     TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED, "TOKEN_BLACKLISTED", "token_blacklisted"),
-
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "EXPIRED_TOKEN", "expired_token"),
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "access_denied"),
     ;
 
     private final HttpStatus httpStatus;

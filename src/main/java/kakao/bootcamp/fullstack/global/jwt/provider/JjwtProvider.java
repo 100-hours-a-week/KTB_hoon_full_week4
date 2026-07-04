@@ -1,6 +1,7 @@
 package kakao.bootcamp.fullstack.global.jwt.provider;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
+import kakao.bootcamp.fullstack.api.domain.member.Role;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.properties.JwtProperties;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +26,14 @@ public class JjwtProvider implements JwtProvider {
     private final JwtProperties jwtProperties;
 
     @Override
-    public String createAccessToken(Long memberId, String email) {
+    public String createAccessToken(Long memberId, String email, Role role) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiration = now.plusSeconds(jwtProperties.accessTokenExpireSeconds());
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
                 .subject(String.valueOf(memberId))
                 .claim("email", email)
+                .claim("role", role)
                 .issuedAt(toDate(now))
                 .expiration(toDate(expiration))
                 .signWith(getSecretKey(), Jwts.SIG.HS256)
@@ -41,6 +44,8 @@ public class JjwtProvider implements JwtProvider {
     public void validateToken(String token) {
         try {
             parseClaims(token);
+        } catch (ExpiredJwtException e) {
+            throw new UnauthorizedException(AuthErrorCode.EXPIRED_TOKEN);
         } catch (JwtException | IllegalArgumentException e) {
             throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
         }
@@ -62,6 +67,12 @@ public class JjwtProvider implements JwtProvider {
     public String getJti(String token) {
         Claims claims = parseClaims(token);
         return claims.getId();
+    }
+
+    @Override
+    public Role getRole(String token) {
+        Claims claims = parseClaims(token);
+        return claims.get("role", Role.class);
     }
 
     @Override

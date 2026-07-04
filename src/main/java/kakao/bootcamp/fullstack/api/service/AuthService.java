@@ -28,7 +28,7 @@ public class AuthService {
     public LoginResDto login(LoginReqDto request) {
         Member member = loadMemberOrThrow(request);
         validatePasswordMatches(request.password(), member.getEncodedPassword());
-        String accessToken = jwtProvider.createAccessToken(member.getId(), member.getEmail());
+        String accessToken = jwtProvider.createAccessToken(member.getId(), member.getEmail(), member.getRole());
         return new LoginResDto(accessToken);
     }
 

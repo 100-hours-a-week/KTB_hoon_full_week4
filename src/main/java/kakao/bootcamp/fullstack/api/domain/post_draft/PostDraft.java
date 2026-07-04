@@ -53,7 +53,6 @@ public class PostDraft extends BaseEntity {
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
-        this.status = DraftStatus.DRAFT;
     }
 
     public boolean isNew() {
@@ -75,12 +74,10 @@ public class PostDraft extends BaseEntity {
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
-        updateModifiedTime();
     }
 
     public void publish() {
         this.status = DraftStatus.PUBLISHED;
-        updateModifiedTime();
     }
 
     public static PostDraft create(Member member, String title, String content, String imageUrl) {
