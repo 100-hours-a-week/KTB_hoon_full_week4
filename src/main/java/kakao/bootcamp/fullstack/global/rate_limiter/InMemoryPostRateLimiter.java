@@ -10,22 +10,19 @@ import org.springframework.stereotype.Component;
 @Profile({"local","prod"})
 public class InMemoryPostRateLimiter implements RateLimiter {
 
-    private static final long WINDOW_MINUTES = 1; // fixed window 방식 사용
-    private static final int LIMIT = 3;
-
     private final Map<Long, Window> windows = new HashMap<>();
 
     @Override
-    public synchronized boolean tryAcquire(Long memberId) {
+    public synchronized boolean tryAcquire(Long memberId, int limit, long windowMinutes) {
         LocalDateTime now = LocalDateTime.now();
         Window window = windows.get(memberId);
 
         if (window == null || now.isAfter(window.expiresAt())) {
-            windows.put(memberId, new Window(now.plusMinutes(WINDOW_MINUTES), 1));
+            windows.put(memberId, new Window(now.plusMinutes(windowMinutes), 1));
             return true;
         }
 
-        if (window.count() >= LIMIT) {
+        if (window.count() >= limit) {
             return false;
         }
 

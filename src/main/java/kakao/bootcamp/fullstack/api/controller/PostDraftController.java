@@ -12,6 +12,7 @@ import kakao.bootcamp.fullstack.api.dto.response.PostDraftSaveResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDraftsSummaryResDto;
 import kakao.bootcamp.fullstack.api.service.PostDraftService;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
+import kakao.bootcamp.fullstack.global.rate_limiter.RateLimited;
 import kakao.bootcamp.fullstack.global.security.jwt.annotation.LoginMember;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +70,7 @@ public class PostDraftController {
     }
 
     @PostMapping("/{draftId}/publish")
+    @RateLimited
     public ResponseEntity<ApiResponse<PostCreateResDto>> publishPostDraft(
             @LoginMember AuthMember authMember,
             @PathVariable Long draftId,

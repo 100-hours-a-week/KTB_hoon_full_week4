@@ -31,9 +31,7 @@ import kakao.bootcamp.fullstack.api.repository.post.PostViewLogRepository;
 import kakao.bootcamp.fullstack.global.exception.ConflictException;
 import kakao.bootcamp.fullstack.global.exception.ForbiddenException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
-import kakao.bootcamp.fullstack.global.exception.TooManyRequestsException;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
-import kakao.bootcamp.fullstack.global.rate_limiter.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +47,6 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final EditRevisionRepository editRevisionRepository;
     private final PostViewLogRepository postViewLogRepository;
-    private final RateLimiter rateLimiter;
 
     public PostSummaryPageResDto getPostSummariesList(Long memberId, Long cursor, Long size) {
         Member member = loadMemberOrThrow(memberId);
@@ -88,9 +85,6 @@ public class PostService {
     @Transactional
     public PostCreateResDto createPost(Long memberId, PostCreateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
-        if (!rateLimiter.tryAcquire(memberId)) {
-            throw new TooManyRequestsException(PostErrorCode.POST_RATE_LIMIT_EXCEEDED);
-        }
         Post post = Post.create(member, request.title(), request.content(), request.imageUrl());
         postRepository.save(post);
         return PostCreateResDto.from(post);

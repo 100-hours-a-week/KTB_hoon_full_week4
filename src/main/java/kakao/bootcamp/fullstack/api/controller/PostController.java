@@ -16,6 +16,7 @@ import kakao.bootcamp.fullstack.api.dto.response.PostSummaryPageResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostUpdateResDto;
 import kakao.bootcamp.fullstack.api.service.PostService;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
+import kakao.bootcamp.fullstack.global.rate_limiter.RateLimited;
 import kakao.bootcamp.fullstack.global.security.jwt.annotation.LoginMember;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,7 @@ public class PostController {
     }
 
     @PostMapping
+    @RateLimited
     public ResponseEntity<ApiResponse<PostCreateResDto>> createPost(
             @LoginMember AuthMember authMember,
             @Valid @RequestBody PostCreateReqDto request){
