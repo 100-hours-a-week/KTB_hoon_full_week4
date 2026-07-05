@@ -6,6 +6,7 @@ import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 import kakao.bootcamp.fullstack.api.domain.comment.CommentErrorCode;
 import kakao.bootcamp.fullstack.api.domain.edit_revision.EditRevision;
+import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.PostLike;
@@ -161,7 +162,7 @@ public class PostService {
 
     private Member loadMemberOrThrow(Long memberId) {
         return memberRepository.findActiveById(memberId)
-                .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new UnauthorizedException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
     private Post loadPostOrThrow(Long postId) {

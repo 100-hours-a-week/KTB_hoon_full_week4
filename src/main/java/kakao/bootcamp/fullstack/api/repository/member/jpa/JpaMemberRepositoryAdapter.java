@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("prod")
+@Profile({"prod","test"})
 @RequiredArgsConstructor
 public class JpaMemberRepositoryAdapter implements MemberRepository {
 

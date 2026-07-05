@@ -8,12 +8,14 @@ import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import kakao.bootcamp.fullstack.global.exception.code.ErrorCodeMapper;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @Slf4j
 @RestControllerAdvice
@@ -26,6 +28,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(code.getHttpStatus())
                 .body(ApiResponse.error(code));
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    protected ResponseEntity<ApiResponse<Void>> handleHandlerMethodValidationException(
+            HandlerMethodValidationException e) {
+        log.warn(e.getMessage(), e);
+        String validationCode = e.getAllErrors().stream()
+                .findFirst()
+                .map(MessageSourceResolvable::getDefaultMessage)
+                .orElse(CommonErrorCode.INTERNAL_SERVER_ERROR.getCode());
+        BaseCode errorCode = ErrorCodeMapper.from(validationCode)
+                .orElse(CommonErrorCode.UNMAPPED_VALIDATION_ERROR);
+
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(ApiResponse.error(errorCode));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -55,6 +73,14 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(code));
     }
 
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+        log.warn(e.getMessage(), e);
+        return ResponseEntity
+                .status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
+                .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR));
+    }
+
     private BaseCode resolveRequestBodyErrorCode(Throwable cause) {
         if (cause instanceof InvalidFormatException ife && ife.getTargetType() != null
                 && ife.getTargetType().isEnum()) {
@@ -64,13 +90,5 @@ public class GlobalExceptionHandler {
             return CommonErrorCode.INVALID_REQUEST_BODY;
         }
         return CommonErrorCode.MALFORMED_REQUEST_BODY;
-    }
-
-    @ExceptionHandler(Exception.class)
-    protected ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
-        log.warn(e.getMessage(), e);
-        return ResponseEntity
-                .status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
-                .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR));
     }
 }

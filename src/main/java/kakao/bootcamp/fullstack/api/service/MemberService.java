@@ -9,8 +9,8 @@ import kakao.bootcamp.fullstack.api.dto.request.SignupReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.global.exception.BadRequestException;
+import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import kakao.bootcamp.fullstack.global.security.hasher.PasswordEncoder;
-import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,7 +70,7 @@ public class MemberService {
 
     private Member loadMemberOrThrow(Long memberId) {
         return memberRepository.findActiveById(memberId)
-                .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
     private void validatePasswordConfirmMatch(String password, String passwordConfirm) {

@@ -23,6 +23,7 @@ public enum MemberErrorCode implements BaseCode {
     EMAIL_DUPLICATED(HttpStatus.CONFLICT, "EMAIL_DUPLICATED", "email_duplicated"),
     NICKNAME_DUPLICATED(HttpStatus.CONFLICT, "NICKNAME_DUPLICATED", "nickname_duplicated"),
 
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER_NOT_FOUND", "member_not_found"),
     ;
     private final HttpStatus httpStatus;
     private final String code;

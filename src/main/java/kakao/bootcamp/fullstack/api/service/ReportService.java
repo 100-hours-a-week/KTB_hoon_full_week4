@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
+import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.domain.report.Report;
 import kakao.bootcamp.fullstack.api.domain.report.ReportErrorCode;
 import kakao.bootcamp.fullstack.api.dto.request.PostReportReqDto;
@@ -65,7 +66,7 @@ public class ReportService {
 
     private void checkMemberExists(Long memberId) {
         if (!memberRepository.existsById(memberId)) {
-            throw new UnauthorizedException(AuthErrorCode.MEMBER_NOT_FOUND);
+            throw new UnauthorizedException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 

@@ -3,6 +3,7 @@ package kakao.bootcamp.fullstack.api.service;
 import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
+import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraftErrorCode;
@@ -94,6 +95,6 @@ public class PostDraftService {
 
     private Member loadMemberOrThrow(Long memberId) {
         return memberRepository.findActiveById(memberId)
-                .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new UnauthorizedException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }
