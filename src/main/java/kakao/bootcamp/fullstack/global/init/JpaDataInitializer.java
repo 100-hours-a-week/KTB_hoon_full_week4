@@ -13,7 +13,7 @@ import kakao.bootcamp.fullstack.api.repository.post.PostLikeRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostViewLogRepository;
 import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
-import kakao.bootcamp.fullstack.global.security.hasher.PasswordEncoder;
+import kakao.bootcamp.fullstack.global.security.hasher.PasswordHasher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -35,7 +35,7 @@ public class JpaDataInitializer implements CommandLineRunner {
     private final PostViewLogRepository postViewLogRepository;
     private final CommentRepository commentRepository;
     private final PostDraftRepository postDraftRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordEncoder;
 
     @Override
     @Transactional

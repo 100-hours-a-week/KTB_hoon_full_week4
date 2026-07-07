@@ -9,7 +9,7 @@ import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SimplePasswordEncoder implements PasswordEncoder {
+public class SimplePasswordEncoder implements PasswordHasher {
 
     @Override
     public String hash(String rawPassword) {

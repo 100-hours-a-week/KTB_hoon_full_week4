@@ -1,6 +1,5 @@
 package kakao.bootcamp.fullstack.api.service;
 
-import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.dto.request.PasswordUpdateReqDto;
@@ -10,7 +9,7 @@ import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.global.exception.BadRequestException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
-import kakao.bootcamp.fullstack.global.security.hasher.PasswordEncoder;
+import kakao.bootcamp.fullstack.global.security.hasher.PasswordHasher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
 
     @Transactional
     public void signup(SignupReqDto request){
@@ -30,7 +29,7 @@ public class MemberService {
         checkNicknameDuplicated(request.nickname());
         Member member = Member.create(
                 request.email(),
-                passwordEncoder.hash(request.password()),
+                passwordHasher.hash(request.password()),
                 request.nickname(),
                 request.imageUrl()
         );
@@ -65,7 +64,7 @@ public class MemberService {
     public void updatePassword(Long memberId, PasswordUpdateReqDto request){
         Member member = loadMemberOrThrow(memberId);
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
-        member.updatePassword(passwordEncoder.hash(request.password()));
+        member.updatePassword(passwordHasher.hash(request.password()));
     }
 
     private Member loadMemberOrThrow(Long memberId) {

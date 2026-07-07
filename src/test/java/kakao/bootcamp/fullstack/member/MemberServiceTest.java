@@ -1,5 +1,12 @@
 package kakao.bootcamp.fullstack.member;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
@@ -12,7 +19,7 @@ import kakao.bootcamp.fullstack.api.service.MemberService;
 import kakao.bootcamp.fullstack.global.exception.BadRequestException;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
-import kakao.bootcamp.fullstack.global.security.hasher.PasswordEncoder;
+import kakao.bootcamp.fullstack.global.security.hasher.PasswordHasher;
 import kakao.bootcamp.fullstack.member.fixture.MemberFixture;
 import kakao.bootcamp.fullstack.member.fixture.dto.PasswordUpdateReqDtoFixture;
 import kakao.bootcamp.fullstack.member.fixture.dto.ProfileUpdateReqDtoFixture;
@@ -26,14 +33,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
 
@@ -41,7 +40,7 @@ class MemberServiceTest {
     private MemberRepository memberRepository;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PasswordHasher passwordEncoder;
 
     @InjectMocks
     private MemberService memberService;

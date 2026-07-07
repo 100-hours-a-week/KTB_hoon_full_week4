@@ -7,7 +7,7 @@ import kakao.bootcamp.fullstack.api.dto.request.LoginReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.LoginResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
-import kakao.bootcamp.fullstack.global.security.hasher.PasswordEncoder;
+import kakao.bootcamp.fullstack.global.security.hasher.PasswordHasher;
 import kakao.bootcamp.fullstack.global.security.jwt.TokenBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.provider.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final JwtProvider jwtProvider;
     private final TokenBlacklist tokenBlacklist;
 
@@ -45,7 +45,7 @@ public class AuthService {
     }
 
     private void validatePasswordMatches(String rawPassword, String encodedPassword) {
-        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+        if (!passwordHasher.matches(rawPassword, encodedPassword)) {
             throw new UnauthorizedException(AuthErrorCode.PASSWORD_MISMATCH);
         }
     }

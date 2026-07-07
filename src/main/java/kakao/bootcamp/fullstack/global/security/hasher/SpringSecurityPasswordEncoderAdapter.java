@@ -1,22 +1,20 @@
 package kakao.bootcamp.fullstack.global.security.hasher;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-@Component
 @RequiredArgsConstructor
-public class SpringSecurityPasswordEncoderAdapter implements
-        org.springframework.security.crypto.password.PasswordEncoder {
+public class SpringSecurityPasswordEncoderAdapter implements PasswordEncoder {
 
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
 
     @Override
     public String encode(CharSequence rawPassword) {
-        return passwordEncoder.hash(rawPassword.toString());
+        return passwordHasher.hash(rawPassword.toString());
     }
 
     @Override
     public boolean matches(CharSequence rawPassword, String encodedPassword) {
-        return passwordEncoder.matches(rawPassword.toString(), encodedPassword);
+        return passwordHasher.matches(rawPassword.toString(), encodedPassword);
     }
 }
