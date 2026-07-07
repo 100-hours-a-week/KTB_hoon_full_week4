@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
-        log.warn(e.getMessage(), e);
+        log.error(e.getMessage(), e);
         BaseCode code = e.getCode();
         return ResponseEntity
                 .status(code.getHttpStatus())
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HandlerMethodValidationException.class)
     protected ResponseEntity<ApiResponse<Void>> handleHandlerMethodValidationException(
             HandlerMethodValidationException e) {
-        log.warn(e.getMessage(), e);
+        log.error(e.getMessage(), e);
         String validationCode = e.getAllErrors().stream()
                 .findFirst()
                 .map(MessageSourceResolvable::getDefaultMessage)
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        log.warn(e.getMessage(), e);
+        log.error(e.getMessage(), e);
         String validationCode = e.getBindingResult()
                 .getAllErrors()
                 .stream()
@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     protected ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(
             HttpMessageNotReadableException e) {
-        log.warn(e.getMessage(), e);
+        log.error(e.getMessage(), e);
         BaseCode code = resolveRequestBodyErrorCode(e.getCause());
         return ResponseEntity
                 .status(code.getHttpStatus())
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
-        log.warn(e.getMessage(), e);
+        log.error(e.getMessage(), e);
         return ResponseEntity
                 .status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
                 .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR));

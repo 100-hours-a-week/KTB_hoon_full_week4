@@ -19,5 +19,5 @@ spring:
     open-in-view: true
 
 jwt:
-  secret: "my-secret-key-my-secret-key-my-secret-key-123456"
+  secret: "mysecretkeymysecretkeymysecretkey123456mysecretkeymysecretkeymysecretkey123456mysecretkeymysecretkeymysecretkey123456"
   access-token-expire-seconds: 3600

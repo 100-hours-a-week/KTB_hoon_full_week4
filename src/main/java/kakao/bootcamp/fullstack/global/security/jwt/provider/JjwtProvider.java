@@ -4,10 +4,14 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.UUID;
+import javax.crypto.SecretKey;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.member.Role;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
@@ -16,16 +20,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class JjwtProvider implements JwtProvider {
 
+    private SecretKey key;
     private final JwtProperties jwtProperties;
+
+    @PostConstruct
+    public void init() {
+        key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.secret()));
+    }
 
     @Override
     public String createAccessToken(Long memberId, String email, Role role) {
@@ -38,7 +44,7 @@ public class JjwtProvider implements JwtProvider {
                 .claim("role", role)
                 .issuedAt(toDate(now))
                 .expiration(toDate(expiration))
-                .signWith(getSecretKey(), Jwts.SIG.HS256)
+                .signWith(key, Jwts.SIG.HS256)
                 .compact();
     }
 
@@ -86,16 +92,10 @@ public class JjwtProvider implements JwtProvider {
 
     private Claims parseClaims(String token) {
         return Jwts.parser()
-                .verifyWith(getSecretKey())
+                .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-    }
-
-    private SecretKey getSecretKey() {
-        return Keys.hmacShaKeyFor(
-                jwtProperties.secret().getBytes(StandardCharsets.UTF_8)
-        );
     }
 
     private Date toDate(LocalDateTime localDateTime) {

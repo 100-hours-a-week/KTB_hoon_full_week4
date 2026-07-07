@@ -9,18 +9,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
-import kakao.bootcamp.fullstack.api.domain.member.Role;
 import kakao.bootcamp.fullstack.global.constants.JwtConstants;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
-import kakao.bootcamp.fullstack.global.exception.code.BaseCode;
-import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
 import kakao.bootcamp.fullstack.global.security.jwt.TokenBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.provider.JwtProvider;
 import kakao.bootcamp.fullstack.global.utils.TokenExtractor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -33,10 +29,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-
     private final JwtProvider jwtProvider;
     private final TokenBlacklist tokenBlacklist;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -51,34 +45,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             jwtProvider.validateToken(token);
             if (tokenBlacklist.exists(jwtProvider.getJti(token))) {
-                writeErrorResponse(response, AuthErrorCode.TOKEN_BLACKLISTED);
-                return;
+                throw new UnauthorizedException(AuthErrorCode.TOKEN_BLACKLISTED);
             }
             Long memberId = jwtProvider.getMemberId(token);
             String email = jwtProvider.getEmail(token);
-            Role role = jwtProvider.getRole(token);
+            String role = jwtProvider.getRole(token).name();
             AuthMember authMember = new AuthMember(memberId, email, role);
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     authMember,
                     null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + authMember.role().name()))
+                    List.of(new SimpleGrantedAuthority("ROLE_" + authMember.role()))
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);
         }catch (UnauthorizedException e) {
-            writeErrorResponse(response, e.getCode());
+            throw e;
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
         }
-        catch (JwtException | IllegalArgumentException e) {
-            writeErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
-        }
-    }
-
-    private void writeErrorResponse(HttpServletResponse response, BaseCode code) throws IOException {
-        response.setStatus(code.getHttpStatus().value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(objectMapper.writeValueAsString(
-                ApiResponse.error(code)
-        ));
     }
 }
