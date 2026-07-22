@@ -1,5 +1,6 @@
 package kakao.bootcamp.fullstack.global.init;
 
+import java.util.ArrayList;
 import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
@@ -64,7 +65,8 @@ public class DataInitializer implements CommandLineRunner {
                 "테스트 코드, 어디까지 작성하나요?",
                 "단위 테스트와 통합 테스트의 균형이 늘 고민입니다. 다들 어떻게 하시나요?",
                 "https://picsum.photos/seed/post6/600/400");
-        List<Post> posts = List.of(post1, post2, post3, post4, post5, post6);
+        List<Post> posts = new ArrayList<>(List.of(post1, post2, post3, post4, post5, post6));
+        posts.addAll(createSamplePosts(members));
         posts.forEach(postRepository::save);
 
         List<Comment> comments = List.of(
@@ -119,5 +121,16 @@ public class DataInitializer implements CommandLineRunner {
 
         log.info("[DataInitializer] seeded members={}, posts={}, comments={}, drafts={}",
                 members.size(), posts.size(), comments.size(), drafts.size());
+    }
+
+    private List<Post> createSamplePosts(List<Member> authors) {
+        List<Post> posts = new ArrayList<>();
+        String[][] data = SamplePosts.DATA;
+        for (int i = 0; i < data.length; i++) {
+            Member author = authors.get(i % authors.size());
+            posts.add(Post.create(author, data[i][0], data[i][1],
+                    "https://picsum.photos/seed/post" + (i + 7) + "/600/400"));
+        }
+        return posts;
     }
 }
