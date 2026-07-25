@@ -16,8 +16,6 @@ public enum Role {
     private final String label;
 
     public static Optional<Role> from(String code) {
-        return Arrays.stream(values())
-                .filter(r -> r.code.equals(code))
-                .findFirst();
+        return Arrays.stream(values()).filter(r -> r.code.equals(code)).findFirst();
     }
 }

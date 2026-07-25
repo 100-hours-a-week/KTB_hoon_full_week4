@@ -15,6 +15,8 @@ import kakao.bootcamp.fullstack.global.exception.code.ValidationCode;
 @Constraint(validatedBy = {})
 public @interface ValidNickname {
     String message() default "invalid nickname";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

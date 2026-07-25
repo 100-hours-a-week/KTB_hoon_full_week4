@@ -17,7 +17,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 
 @Entity
-@SQLDelete(sql = "UPDATE members SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(
+        sql =
+                "UPDATE members SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Table(name = "members")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -61,22 +63,18 @@ public class Member extends BaseEntity {
         this.id = id;
     }
 
-    public void updateProfile(String nickname, String profileImgUrl){
+    public void updateProfile(String nickname, String profileImgUrl) {
         this.profileImgUrl = profileImgUrl;
         this.nickname = nickname;
     }
 
-    public void updatePassword(String encodedPassword){
+    public void updatePassword(String encodedPassword) {
         this.encodedPassword = encodedPassword;
     }
 
     // TODO : 도메인에서 필드 유효성 검사 필요
     public static Member create(
-            String email,
-            String encodedPassword,
-            String nickname,
-            String profileImageUrl
-    ) {
+            String email, String encodedPassword, String nickname, String profileImageUrl) {
         return new Member(email, encodedPassword, nickname, profileImageUrl);
     }
 }

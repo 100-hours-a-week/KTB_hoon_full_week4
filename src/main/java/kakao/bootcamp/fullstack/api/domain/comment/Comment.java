@@ -21,7 +21,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 
 @Entity
-@SQLDelete(sql = "UPDATE comments SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(
+        sql =
+                "UPDATE comments SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Table(name = "comments")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -87,7 +89,7 @@ public class Comment extends BaseEntity {
         return member.getId().equals(memberId);
     }
 
-    public boolean isWriterWithdrawn(){
+    public boolean isWriterWithdrawn() {
         return member.isDeleted();
     }
 

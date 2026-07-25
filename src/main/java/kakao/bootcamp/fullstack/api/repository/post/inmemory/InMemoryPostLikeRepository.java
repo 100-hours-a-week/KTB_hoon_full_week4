@@ -28,20 +28,22 @@ public class InMemoryPostLikeRepository implements PostLikeRepository {
 
     @Override
     public Optional<PostLike> findActiveByPostIdAndMemberId(Long postId, Long memberId) {
-        return likes.values()
-                .stream()
-                .filter(like -> !like.isDeleted()
-                        && like.getPost().getId().equals(postId)
-                        && like.getMember().getId().equals(memberId))
+        return likes.values().stream()
+                .filter(
+                        like ->
+                                !like.isDeleted()
+                                        && like.getPost().getId().equals(postId)
+                                        && like.getMember().getId().equals(memberId))
                 .findFirst();
     }
 
     @Override
     public boolean existsByPostIdAndMemberId(Long postId, Long memberId) {
-        return likes.values()
-                .stream()
-                .anyMatch(like -> !like.isDeleted()
-                        && like.getPost().getId().equals(postId)
-                        && like.getMember().getId().equals(memberId));
+        return likes.values().stream()
+                .anyMatch(
+                        like ->
+                                !like.isDeleted()
+                                        && like.getPost().getId().equals(postId)
+                                        && like.getMember().getId().equals(memberId));
     }
 }

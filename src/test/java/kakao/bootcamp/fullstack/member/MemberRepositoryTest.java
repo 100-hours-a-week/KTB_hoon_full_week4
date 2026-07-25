@@ -1,5 +1,7 @@
 package kakao.bootcamp.fullstack.member;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
@@ -13,15 +15,12 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @DataJpaTest
 @ActiveProfiles("test")
 @Import({JpaMemberRepositoryAdapter.class, JpaConfig.class})
 public class MemberRepositoryTest {
 
-    @Autowired
-    private MemberRepository memberRepository;
+    @Autowired private MemberRepository memberRepository;
     private Member member;
 
     @BeforeEach
@@ -32,7 +31,7 @@ public class MemberRepositoryTest {
     @Test
     @DisplayName("회원을 저장하면 id가 할당된다")
     void savesMemberAndAssignsId() {
-       // when
+        // when
         memberRepository.save(member);
 
         // then
@@ -88,10 +87,10 @@ public class MemberRepositoryTest {
         // given
         memberRepository.save(member);
 
-        //when
+        // when
         boolean found = memberRepository.existsById(member.getId());
 
-        //then
+        // then
         assertThat(found).isTrue();
     }
 
@@ -109,17 +108,16 @@ public class MemberRepositoryTest {
         assertThat(found).isTrue();
     }
 
-
     @Test
     @DisplayName("이메일로 해당 회원이 존재함을 확인한다")
     void existsByEmail() {
         // given
         memberRepository.save(member);
 
-        //when
+        // when
         boolean found = memberRepository.existsByEmail(member.getEmail());
 
-        //then
+        // then
         assertThat(found).isTrue();
     }
 
@@ -129,10 +127,10 @@ public class MemberRepositoryTest {
         // given
         memberRepository.save(member);
 
-        //when
+        // when
         boolean found = memberRepository.existsByNickname(member.getNickname());
 
-        //then
+        // then
         assertThat(found).isTrue();
     }
 
@@ -161,7 +159,6 @@ public class MemberRepositoryTest {
         // then
         assertThat(found).isFalse();
     }
-
 
     @Test
     @DisplayName("삭제된 회원이어도 이메일로 존재를 확인하면 true를 반환한다")

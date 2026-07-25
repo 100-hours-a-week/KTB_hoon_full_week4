@@ -31,14 +31,12 @@ public class InMemoryCommentRepository implements CommentRepository {
 
     @Override
     public Optional<Comment> findActiveById(Long commentId) {
-        return Optional.ofNullable(comments.get(commentId))
-                .filter(comment -> !comment.isDeleted());
+        return Optional.ofNullable(comments.get(commentId)).filter(comment -> !comment.isDeleted());
     }
 
     @Override
     public List<Comment> findByPostId(Long postId) {
-        return comments.values()
-                .stream()
+        return comments.values().stream()
                 .filter(comment -> !comment.isDeleted())
                 .filter(comment -> Objects.equals(comment.getPost().getId(), postId))
                 .sorted(Comparator.comparing(Comment::getCreatedAt))

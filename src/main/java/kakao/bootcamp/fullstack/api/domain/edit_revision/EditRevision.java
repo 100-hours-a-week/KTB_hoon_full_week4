@@ -8,8 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
+import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 import kakao.bootcamp.fullstack.global.BaseEntity;
@@ -23,7 +23,9 @@ import org.hibernate.annotations.SQLDelete;
 
 @Getter
 @Entity
-@SQLDelete(sql = "UPDATE edit_revisions SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(
+        sql =
+                "UPDATE edit_revisions SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Table(name = "edit_revisions")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EditRevision extends BaseEntity {
@@ -56,8 +58,7 @@ public class EditRevision extends BaseEntity {
             Long memberId,
             String title,
             String content,
-            String imageUrl
-    ) {
+            String imageUrl) {
         this.targetType = targetType;
         this.targetId = targetId;
         this.memberId = memberId;
@@ -78,7 +79,7 @@ public class EditRevision extends BaseEntity {
     }
 
     public static EditRevision fromPost(Post post) {
-        if(post.getImageUrl() == null){
+        if (post.getImageUrl() == null) {
             throw new BadRequestException(PostErrorCode.POST_IMAGE_REQUIRED);
         }
         return new EditRevision(
@@ -87,8 +88,7 @@ public class EditRevision extends BaseEntity {
                 post.getMember().getId(),
                 post.getTitle(),
                 post.getContent(),
-                post.getImageUrl()
-        );
+                post.getImageUrl());
     }
 
     public static EditRevision fromComment(Comment comment) {
@@ -98,7 +98,6 @@ public class EditRevision extends BaseEntity {
                 comment.getMember().getId(),
                 null,
                 comment.getContent(),
-                null
-        );
+                null);
     }
 }

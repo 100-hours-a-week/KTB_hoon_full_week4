@@ -24,7 +24,7 @@ public class LoginMemberArgumentResolverTest {
     @Test
     @DisplayName("SecurityContext에서_AuthMember를_꺼낸다")
     void getAuthMemberFromSecurityContext() throws Exception {
-        AuthMember authMember = new AuthMember(1L, "test@test.com","ROLE_USER");
+        AuthMember authMember = new AuthMember(1L, "test@test.com", "ROLE_USER");
         Authentication auth = new UsernamePasswordAuthenticationToken(authMember, null, List.of());
         SecurityContextHolder.getContext().setAuthentication(auth);
         AuthMember result = resolver.resolveArgument(null, null, null, null);

@@ -1,11 +1,10 @@
 package kakao.bootcamp.fullstack.api.service;
 
 import java.util.List;
-import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
-import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 import kakao.bootcamp.fullstack.api.domain.comment.CommentErrorCode;
 import kakao.bootcamp.fullstack.api.domain.edit_revision.EditRevision;
+import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
@@ -54,9 +53,7 @@ public class PostService {
         List<Post> posts = postRepository.findPage(cursor, size + 1);
         boolean hasNext = posts.size() > size;
         List<Post> page = hasNext ? posts.subList(0, size.intValue()) : posts;
-        List<PostSummaryResDto> summaries = page.stream()
-                .map(PostSummaryResDto::from)
-                .toList();
+        List<PostSummaryResDto> summaries = page.stream().map(PostSummaryResDto::from).toList();
         Long nextCursor = hasNext ? page.get(page.size() - 1).getId() : null;
         return new PostSummaryPageResDto(summaries, nextCursor, hasNext);
     }
@@ -73,14 +70,13 @@ public class PostService {
             }
             postViewLogRepository.save(viewLog);
         }
-        List<CommentResDto> commentResDtos = commentRepository
-                .findByPostId(postId)
-                .stream()
-                .map(comment ->
-                        CommentResDto.from(comment, comment.isWriter(memberId)))
-                .toList();
+        List<CommentResDto> commentResDtos =
+                commentRepository.findByPostId(postId).stream()
+                        .map(comment -> CommentResDto.from(comment, comment.isWriter(memberId)))
+                        .toList();
         boolean isLikedByMemberId = postLikeRepository.existsByPostIdAndMemberId(postId, memberId);
-        return PostDetailsResDto.from(post, post.isWriter(memberId), isLikedByMemberId, commentResDtos);
+        return PostDetailsResDto.from(
+                post, post.isWriter(memberId), isLikedByMemberId, commentResDtos);
     }
 
     @Transactional
@@ -92,7 +88,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostUpdateResDto updatePost(Long memberId, Long postId, PostUpdateReqDto request){
+    public PostUpdateResDto updatePost(Long memberId, Long postId, PostUpdateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
         checkPostWriter(memberId, post);
@@ -131,7 +127,8 @@ public class PostService {
     }
 
     @Transactional
-    public CommentCreateResDto createComment(Long memberId, Long postId, CommentCreateReqDto request) {
+    public CommentCreateResDto createComment(
+            Long memberId, Long postId, CommentCreateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         Post post = loadPostOrThrow(postId);
         Comment comment = Comment.create(post, member, request.content());
@@ -141,7 +138,8 @@ public class PostService {
     }
 
     @Transactional
-    public void updateComment(Long memberId, Long postId, Long commentId, CommentUpdateReqDto request) {
+    public void updateComment(
+            Long memberId, Long postId, Long commentId, CommentUpdateReqDto request) {
         loadMemberOrThrow(memberId);
         loadPostOrThrow(postId);
         Comment comment = loadCommentOrThrow(commentId);
@@ -161,22 +159,25 @@ public class PostService {
     }
 
     private Member loadMemberOrThrow(Long memberId) {
-        return memberRepository.findActiveById(memberId)
+        return memberRepository
+                .findActiveById(memberId)
                 .orElseThrow(() -> new UnauthorizedException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
     private Post loadPostOrThrow(Long postId) {
-        return postRepository.findActiveById(postId)
+        return postRepository
+                .findActiveById(postId)
                 .orElseThrow(() -> new NotFoundException(PostErrorCode.POST_NOT_FOUND));
     }
 
     private Comment loadCommentOrThrow(Long commentId) {
-        return commentRepository.findActiveById(commentId)
+        return commentRepository
+                .findActiveById(commentId)
                 .orElseThrow(() -> new NotFoundException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 
     private void checkPostWriter(Long memberId, Post post) {
-        if(!post.isWriter(memberId)){
+        if (!post.isWriter(memberId)) {
             throw new ForbiddenException(PostErrorCode.NOT_POST_WRITER);
         }
     }
@@ -188,18 +189,20 @@ public class PostService {
     }
 
     private void checkAlreadyLiked(Long memberId, Long postId) {
-        if(postLikeRepository.existsByPostIdAndMemberId(postId, memberId)){
+        if (postLikeRepository.existsByPostIdAndMemberId(postId, memberId)) {
             throw new ConflictException(PostErrorCode.POST_ALREADY_LIKED);
         }
     }
 
     private PostLike loadActivePostLikeOrThrow(Long postId, Long memberId) {
-        return postLikeRepository.findActiveByPostIdAndMemberId(postId, memberId)
+        return postLikeRepository
+                .findActiveByPostIdAndMemberId(postId, memberId)
                 .orElseThrow(() -> new ConflictException(PostErrorCode.POST_ALREADY_UNLIKED));
     }
 
     private PostViewLog loadPostViewLogOrCreate(Long memberId, Long postId) {
-        return postViewLogRepository.findByPostIdAndMemberId(postId, memberId)
+        return postViewLogRepository
+                .findByPostIdAndMemberId(postId, memberId)
                 .orElseGet(() -> PostViewLog.create(postId, memberId));
     }
 }

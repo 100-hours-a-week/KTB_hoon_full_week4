@@ -16,8 +16,7 @@ public record PostSummaryResDto(
         boolean isBlind,
         Long memberId,
         String writerNickname,
-        LocalDateTime createdAt
-) {
+        LocalDateTime createdAt) {
     public static PostSummaryResDto from(Post post) {
         return new PostSummaryResDto(
                 post.getId(),
@@ -29,7 +28,6 @@ public record PostSummaryResDto(
                 post.isBlinded(),
                 post.getMember().getId(),
                 post.isWriterWithdrawn() ? UNKNOWN_WRITER : post.getMember().getNickname(),
-                post.getCreatedAt()
-        );
+                post.getCreatedAt());
     }
 }

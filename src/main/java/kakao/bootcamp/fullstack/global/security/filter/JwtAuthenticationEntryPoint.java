@@ -17,12 +17,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
+    public void commence(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authException) {
         handlerExceptionResolver.resolveException(
-                request,
-                response,
-                null,
-                new UnauthorizedException(AuthErrorCode.TOKEN_EMPTY)
-        );
+                request, response, null, new UnauthorizedException(AuthErrorCode.TOKEN_EMPTY));
     }
 }

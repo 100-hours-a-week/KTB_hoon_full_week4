@@ -19,7 +19,9 @@ import org.hibernate.annotations.SQLDelete;
 
 @Getter
 @Entity
-@SQLDelete(sql = "UPDATE reports SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(
+        sql =
+                "UPDATE reports SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Table(name = "reports")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Report extends BaseEntity {
@@ -60,7 +62,8 @@ public class Report extends BaseEntity {
         this.id = id;
     }
 
-    public static Report create(Long targetId, TargetType targetType, Long memberId, ReportReason reason) {
+    public static Report create(
+            Long targetId, TargetType targetType, Long memberId, ReportReason reason) {
         return new Report(targetId, targetType, memberId, reason);
     }
 }

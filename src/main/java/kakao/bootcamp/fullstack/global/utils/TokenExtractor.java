@@ -1,6 +1,5 @@
 package kakao.bootcamp.fullstack.global.utils;
 
-
 import kakao.bootcamp.fullstack.global.constants.JwtConstants;
 
 public class TokenExtractor {

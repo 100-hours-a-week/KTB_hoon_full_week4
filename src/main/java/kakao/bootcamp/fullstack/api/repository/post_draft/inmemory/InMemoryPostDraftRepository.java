@@ -9,7 +9,6 @@ import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
 import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
 import kakao.bootcamp.fullstack.global.generator.AtomicLongIdGenerator;
 import kakao.bootcamp.fullstack.global.generator.IdGenerator;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -22,7 +21,7 @@ public class InMemoryPostDraftRepository implements PostDraftRepository {
 
     @Override
     public void save(PostDraft postDraft) {
-        if(postDraft.isNew()){
+        if (postDraft.isNew()) {
             Long id = idGenerator.nextId();
             postDraft.assignId(id);
         }
@@ -38,8 +37,7 @@ public class InMemoryPostDraftRepository implements PostDraftRepository {
 
     @Override
     public List<PostDraft> getPostDraftsByMemberId(Long memberId) {
-        return postDrafts.values()
-                .stream()
+        return postDrafts.values().stream()
                 .filter(postDraft -> postDraft.isWriter(memberId))
                 .filter(postDraft -> !postDraft.isDeleted())
                 .filter(postDraft -> postDraft.getStatus().equals(DraftStatus.DRAFT))

@@ -6,7 +6,6 @@ import kakao.bootcamp.fullstack.global.exception.code.ValidationCode;
 
 public record PostDraftUpdateReqDto(
         @Size(max = PostConstants.TITLE_MAX_LENGTH, message = ValidationCode.TITLE_LENGTH_EXCEEDED)
-        String title,
+                String title,
         String content,
-        String imageUrl
-) {}
+        String imageUrl) {}

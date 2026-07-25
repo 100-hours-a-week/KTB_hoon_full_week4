@@ -3,8 +3,8 @@ package kakao.bootcamp.fullstack.api.repository.report.inmemory;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import kakao.bootcamp.fullstack.api.domain.report.Report;
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
+import kakao.bootcamp.fullstack.api.domain.report.Report;
 import kakao.bootcamp.fullstack.api.repository.report.ReportRepository;
 import kakao.bootcamp.fullstack.global.generator.AtomicLongIdGenerator;
 import kakao.bootcamp.fullstack.global.generator.IdGenerator;
@@ -29,12 +29,11 @@ public class InMemoryReportRepository implements ReportRepository {
 
     @Override
     public boolean existsByTargetAndMember(Long targetId, TargetType targetType, Long memberId) {
-        return reports.values()
-                .stream()
-                .anyMatch(report ->
-                        Objects.equals(report.getTargetId(), targetId)
-                                && report.getTargetType() == targetType
-                                && Objects.equals(report.getMemberId(), memberId)
-                );
+        return reports.values().stream()
+                .anyMatch(
+                        report ->
+                                Objects.equals(report.getTargetId(), targetId)
+                                        && report.getTargetType() == targetType
+                                        && Objects.equals(report.getMemberId(), memberId));
     }
 }

@@ -8,18 +8,13 @@ import kakao.bootcamp.fullstack.global.security.jwt.annotation.ValidPassword;
 
 public record SignupReqDto(
         @NotBlank(message = ValidationCode.EMAIL_REQUIRED)
-        @Email(message = ValidationCode.INVALID_EMAIL_FORMAT)
-        String email,
+                @Email(message = ValidationCode.INVALID_EMAIL_FORMAT)
+                String email,
         @NotBlank(message = ValidationCode.NICKNAME_REQUIRED)
-        @ValidNickname(message = ValidationCode.INVALID_NICKNAME_FORMAT)
-        String nickname,
+                @ValidNickname(message = ValidationCode.INVALID_NICKNAME_FORMAT)
+                String nickname,
         @NotBlank(message = ValidationCode.PASSWORD_REQUIRED)
-        @ValidPassword(message = ValidationCode.INVALID_PASSWORD_FORMAT)
-        String password,
-        @NotBlank(message = ValidationCode.PASSWORD_CONFIRM_REQUIRED)
-        String passwordConfirm,
-        @NotBlank(message = ValidationCode.IMAGE_REQUIRED)
-        String imageUrl
-) {
-
-}
+                @ValidPassword(message = ValidationCode.INVALID_PASSWORD_FORMAT)
+                String password,
+        @NotBlank(message = ValidationCode.PASSWORD_CONFIRM_REQUIRED) String passwordConfirm,
+        @NotBlank(message = ValidationCode.IMAGE_REQUIRED) String imageUrl) {}

@@ -2,7 +2,6 @@ package kakao.bootcamp.fullstack.api.service;
 
 import jakarta.annotation.PostConstruct;
 import java.util.List;
-import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.domain.report.Report;
@@ -30,12 +29,9 @@ public class ReportService {
     @PostConstruct
     void verifyAllTargetTypesHandled() {
         for (TargetType type : TargetType.values()) {
-            boolean covered = handlers.stream()
-                    .anyMatch(handler -> handler.supports(type));
+            boolean covered = handlers.stream().anyMatch(handler -> handler.supports(type));
             if (!covered) {
-                throw new IllegalStateException(
-                        "No ReportTargetHandler registered for: " + type
-                );
+                throw new IllegalStateException("No ReportTargetHandler registered for: " + type);
             }
         }
     }
@@ -44,24 +40,22 @@ public class ReportService {
     public void report(Long memberId, PostReportReqDto request) {
         checkMemberExists(memberId);
         checkNotAlreadyReported(request.targetId(), request.targetType(), memberId);
-        Report report = Report.create(
-                request.targetId(),
-                request.targetType(),
-                memberId,
-                request.reportReason()
-        );
+        Report report =
+                Report.create(
+                        request.targetId(), request.targetType(), memberId, request.reportReason());
         reportRepository.save(report);
-        resolveHandler(request.targetType())
-                .handleReported(request.targetId());
+        resolveHandler(request.targetType()).handleReported(request.targetId());
     }
 
     private ReportTargetHandler resolveHandler(TargetType targetType) {
         return handlers.stream()
                 .filter(h -> h.supports(targetType))
                 .findFirst()
-                .orElseThrow(() -> new InternalServerException(
-                        CommonErrorCode.HANDLER_NOT_FOUND,
-                        "No ReportTargetHandler registered for: " + targetType));
+                .orElseThrow(
+                        () ->
+                                new InternalServerException(
+                                        CommonErrorCode.HANDLER_NOT_FOUND,
+                                        "No ReportTargetHandler registered for: " + targetType));
     }
 
     private void checkMemberExists(Long memberId) {

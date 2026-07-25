@@ -23,36 +23,33 @@ public class MemberService {
     private final PasswordHasher passwordHasher;
 
     @Transactional
-    public void signup(SignupReqDto request){
+    public void signup(SignupReqDto request) {
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
         checkEmailDuplicated(request.email());
         checkNicknameDuplicated(request.nickname());
-        Member member = Member.create(
-                request.email(),
-                passwordHasher.hash(request.password()),
-                request.nickname(),
-                request.imageUrl()
-        );
+        Member member =
+                Member.create(
+                        request.email(),
+                        passwordHasher.hash(request.password()),
+                        request.nickname(),
+                        request.imageUrl());
         memberRepository.save(member);
     }
 
-    public MemberProfileResDto getMemberProfile(Long memberId){
+    public MemberProfileResDto getMemberProfile(Long memberId) {
         Member member = loadMemberOrThrow(memberId);
         return new MemberProfileResDto(
-                member.getEmail(),
-                member.getNickname(),
-                member.getProfileImgUrl()
-        );
+                member.getEmail(), member.getNickname(), member.getProfileImgUrl());
     }
 
     @Transactional
-    public void deleteMember(Long memberId){
+    public void deleteMember(Long memberId) {
         Member member = loadMemberOrThrow(memberId);
         member.delete();
     }
 
     @Transactional
-    public void updateMemberProfile(Long memberId, ProfileUpdateReqDto request){
+    public void updateMemberProfile(Long memberId, ProfileUpdateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         if (!member.getNickname().equals(request.nickname())) {
             checkNicknameDuplicated(request.nickname());
@@ -61,7 +58,7 @@ public class MemberService {
     }
 
     @Transactional
-    public void updatePassword(Long memberId, PasswordUpdateReqDto request){
+    public void updatePassword(Long memberId, PasswordUpdateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
         validateCurrentPasswordMatch(request.currentPassword(), member.getEncodedPassword());
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
@@ -69,7 +66,8 @@ public class MemberService {
     }
 
     private Member loadMemberOrThrow(Long memberId) {
-        return memberRepository.findActiveById(memberId)
+        return memberRepository
+                .findActiveById(memberId)
                 .orElseThrow(() -> new NotFoundException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
@@ -80,19 +78,19 @@ public class MemberService {
     }
 
     private void validatePasswordConfirmMatch(String password, String passwordConfirm) {
-        if(!password.equals(passwordConfirm)){
+        if (!password.equals(passwordConfirm)) {
             throw new BadRequestException(MemberErrorCode.PASSWORD_CONFIRM_MISMATCH);
         }
     }
 
     private void checkEmailDuplicated(String email) {
-        if(memberRepository.existsByEmail(email)){
+        if (memberRepository.existsByEmail(email)) {
             throw new BadRequestException(MemberErrorCode.EMAIL_DUPLICATED);
         }
     }
 
     private void checkNicknameDuplicated(String nickname) {
-        if(memberRepository.existsByNickname(nickname)){
+        if (memberRepository.existsByNickname(nickname)) {
             throw new BadRequestException(MemberErrorCode.NICKNAME_DUPLICATED);
         }
     }

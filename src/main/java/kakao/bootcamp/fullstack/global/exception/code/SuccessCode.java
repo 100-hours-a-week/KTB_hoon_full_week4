@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum SuccessCode implements BaseCode{
+public enum SuccessCode implements BaseCode {
     SUCCESS(HttpStatus.OK, "SUCCESS", "success"),
     CREATED(HttpStatus.CREATED, "SUCCESS", "created"),
     ;

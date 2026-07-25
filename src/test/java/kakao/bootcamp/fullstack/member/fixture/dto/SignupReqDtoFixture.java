@@ -10,10 +10,16 @@ public class SignupReqDtoFixture {
     private static final String DEFAULT_IMAGE_URL = "url";
 
     public static SignupReqDto valid() {
-        return new SignupReqDto(DEFAULT_EMAIL, DEFAULT_NICKNAME, DEFAULT_PASSWORD, DEFAULT_PASSWORD, DEFAULT_IMAGE_URL);
+        return new SignupReqDto(
+                DEFAULT_EMAIL,
+                DEFAULT_NICKNAME,
+                DEFAULT_PASSWORD,
+                DEFAULT_PASSWORD,
+                DEFAULT_IMAGE_URL);
     }
 
     public static SignupReqDto withPasswordConfirm(String password, String passwordConfirm) {
-        return new SignupReqDto(DEFAULT_EMAIL, DEFAULT_NICKNAME, password, passwordConfirm, DEFAULT_IMAGE_URL);
+        return new SignupReqDto(
+                DEFAULT_EMAIL, DEFAULT_NICKNAME, password, passwordConfirm, DEFAULT_IMAGE_URL);
     }
 }

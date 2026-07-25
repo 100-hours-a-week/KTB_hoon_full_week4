@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import kakao.bootcamp.fullstack.global.BaseEntity;
 import kakao.bootcamp.fullstack.global.constants.PostConstants;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
@@ -13,9 +14,6 @@ import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLDelete;
-
-import java.time.LocalDateTime;
 
 // TODO : 추후 리팩토링 검토
 //  - (postId, memberId) 복합키(@EmbeddedId)로 전환하여 대체 키 제거
@@ -57,8 +55,7 @@ public class PostViewLog extends BaseEntity {
     }
 
     public boolean canCountAsNewView() {
-        return viewedAt
-                .plusHours(PostConstants.VIEW_COUNT_INTERVAL_HOURS)
+        return viewedAt.plusHours(PostConstants.VIEW_COUNT_INTERVAL_HOURS)
                 .isBefore(LocalDateTime.now());
     }
 

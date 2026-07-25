@@ -6,6 +6,8 @@ import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
 
 public interface PostDraftRepository {
     void save(PostDraft postDraft);
+
     Optional<PostDraft> findActiveById(Long id);
+
     List<PostDraft> getPostDraftsByMemberId(Long memberId);
 }

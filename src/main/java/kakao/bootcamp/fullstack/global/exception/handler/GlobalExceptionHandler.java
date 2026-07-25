@@ -25,42 +25,39 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
         log.error(e.getMessage(), e);
         BaseCode code = e.getCode();
-        return ResponseEntity
-                .status(code.getHttpStatus())
-                .body(ApiResponse.error(code));
+        return ResponseEntity.status(code.getHttpStatus()).body(ApiResponse.error(code));
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     protected ResponseEntity<ApiResponse<Void>> handleHandlerMethodValidationException(
             HandlerMethodValidationException e) {
         log.error(e.getMessage(), e);
-        String validationCode = e.getAllErrors().stream()
-                .findFirst()
-                .map(MessageSourceResolvable::getDefaultMessage)
-                .orElse(CommonErrorCode.INTERNAL_SERVER_ERROR.getCode());
-        BaseCode errorCode = ErrorCodeMapper.from(validationCode)
-                .orElse(CommonErrorCode.UNMAPPED_VALIDATION_ERROR);
+        String validationCode =
+                e.getAllErrors().stream()
+                        .findFirst()
+                        .map(MessageSourceResolvable::getDefaultMessage)
+                        .orElse(CommonErrorCode.INTERNAL_SERVER_ERROR.getCode());
+        BaseCode errorCode =
+                ErrorCodeMapper.from(validationCode)
+                        .orElse(CommonErrorCode.UNMAPPED_VALIDATION_ERROR);
 
-        return ResponseEntity
-                .status(errorCode.getHttpStatus())
-                .body(ApiResponse.error(errorCode));
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(ApiResponse.error(errorCode));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    protected ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException e) {
         log.error(e.getMessage(), e);
-        String validationCode = e.getBindingResult()
-                .getAllErrors()
-                .stream()
-                .findFirst()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .orElse(CommonErrorCode.INTERNAL_SERVER_ERROR.getCode());
-        BaseCode errorCode = ErrorCodeMapper.from(validationCode)
-                .orElse(CommonErrorCode.UNMAPPED_VALIDATION_ERROR);
+        String validationCode =
+                e.getBindingResult().getAllErrors().stream()
+                        .findFirst()
+                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                        .orElse(CommonErrorCode.INTERNAL_SERVER_ERROR.getCode());
+        BaseCode errorCode =
+                ErrorCodeMapper.from(validationCode)
+                        .orElse(CommonErrorCode.UNMAPPED_VALIDATION_ERROR);
 
-        return ResponseEntity
-                .status(errorCode.getHttpStatus())
-                .body(ApiResponse.error(errorCode));
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(ApiResponse.error(errorCode));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -68,21 +65,19 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException e) {
         log.error(e.getMessage(), e);
         BaseCode code = resolveRequestBodyErrorCode(e.getCause());
-        return ResponseEntity
-                .status(code.getHttpStatus())
-                .body(ApiResponse.error(code));
+        return ResponseEntity.status(code.getHttpStatus()).body(ApiResponse.error(code));
     }
 
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
         log.error(e.getMessage(), e);
-        return ResponseEntity
-                .status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
+        return ResponseEntity.status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
                 .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR));
     }
 
     private BaseCode resolveRequestBodyErrorCode(Throwable cause) {
-        if (cause instanceof InvalidFormatException ife && ife.getTargetType() != null
+        if (cause instanceof InvalidFormatException ife
+                && ife.getTargetType() != null
                 && ife.getTargetType().isEnum()) {
             return CommonErrorCode.INVALID_ENUM_VALUE;
         }

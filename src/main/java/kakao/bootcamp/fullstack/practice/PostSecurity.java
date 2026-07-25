@@ -12,7 +12,8 @@ public class PostSecurity {
     private final PostRepository postRepository;
 
     public boolean isOwner(Long postId, Long memberId) {
-        return postRepository.findActiveById(postId)
+        return postRepository
+                .findActiveById(postId)
                 .map(post -> post.getMember().getId().equals(memberId))
                 .orElse(false);
     }

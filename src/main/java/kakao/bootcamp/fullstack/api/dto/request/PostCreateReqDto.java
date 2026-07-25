@@ -8,10 +8,9 @@ import kakao.bootcamp.fullstack.global.exception.code.ValidationCode;
 
 public record PostCreateReqDto(
         @NotEmpty(message = ValidationCode.TITLE_REQUIRED)
-        @Size(max = PostConstants.TITLE_MAX_LENGTH, message = ValidationCode.TITLE_LENGTH_EXCEEDED)
-        String title,
-        @NotEmpty(message = ValidationCode.CONTENT_REQUIRED)
-        String content,
-        @NotBlank(message = ValidationCode.IMAGE_REQUIRED)
-        String imageUrl
-) {}
+                @Size(
+                        max = PostConstants.TITLE_MAX_LENGTH,
+                        message = ValidationCode.TITLE_LENGTH_EXCEEDED)
+                String title,
+        @NotEmpty(message = ValidationCode.CONTENT_REQUIRED) String content,
+        @NotBlank(message = ValidationCode.IMAGE_REQUIRED) String imageUrl) {}

@@ -20,7 +20,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 
 @Entity
-@SQLDelete(sql = "UPDATE posts SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(
+        sql =
+                "UPDATE posts SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Table(name = "posts")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -36,8 +38,7 @@ public class Post extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column
-    private String imageUrl;
+    @Column private String imageUrl;
 
     @Column(nullable = false)
     private long likeCount = 0L;
@@ -79,53 +80,53 @@ public class Post extends BaseEntity {
         this.id = id;
     }
 
-    public void increaseViewCount(){
+    public void increaseViewCount() {
         this.viewCount++;
     }
 
-    public void increaseCommentCount(){
+    public void increaseCommentCount() {
         this.commentCount++;
     }
 
-    public long increaseLikeCount(){
+    public long increaseLikeCount() {
         this.likeCount++;
         return likeCount;
     }
 
-    public void increaseReportCount(){
+    public void increaseReportCount() {
         this.reportCount++;
         if (!blinded && reportCount >= PostConstants.BLIND_THRESHOLD) {
             this.blinded = true;
         }
     }
 
-    public long decreaseLikeCount(){
+    public long decreaseLikeCount() {
         this.likeCount--;
         return likeCount;
     }
 
-    public void decreaseCommentCount(){
+    public void decreaseCommentCount() {
         this.commentCount--;
     }
 
-    public boolean isWriterWithdrawn(){
+    public boolean isWriterWithdrawn() {
         return member.isDeleted();
     }
 
-    public void updatePost(String title, String content, String imageUrl){
+    public void updatePost(String title, String content, String imageUrl) {
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
-        if(!edited) {
+        if (!edited) {
             this.edited = true;
         }
     }
 
-    public boolean isWriter(Long memberId){
+    public boolean isWriter(Long memberId) {
         return member.getId().equals(memberId);
     }
 
-    public static Post create(Member writer, String title, String content, String imageUrl){
+    public static Post create(Member writer, String title, String content, String imageUrl) {
         return new Post(writer, title, content, imageUrl);
     }
 }

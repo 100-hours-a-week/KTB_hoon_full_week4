@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface JpaPostViewLogRepository extends JpaRepository<PostViewLog, Long> {
 
-    @Query("SELECT pvl FROM PostViewLog pvl WHERE pvl.memberId = :memberId AND pvl.postId = :postId")
-    Optional<PostViewLog> findByPostIdAndMemberId(@Param("postId") Long postId, @Param("memberId")Long memberId);
+    @Query(
+            "SELECT pvl FROM PostViewLog pvl WHERE pvl.memberId = :memberId AND pvl.postId = :postId")
+    Optional<PostViewLog> findByPostIdAndMemberId(
+            @Param("postId") Long postId, @Param("memberId") Long memberId);
 }

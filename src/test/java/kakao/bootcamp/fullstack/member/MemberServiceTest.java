@@ -36,14 +36,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
 
-    @Mock
-    private MemberRepository memberRepository;
+    @Mock private MemberRepository memberRepository;
 
-    @Mock
-    private PasswordHasher passwordEncoder;
+    @Mock private PasswordHasher passwordEncoder;
 
-    @InjectMocks
-    private MemberService memberService;
+    @InjectMocks private MemberService memberService;
 
     @Nested
     @DisplayName("signup()")
@@ -63,7 +60,10 @@ class MemberServiceTest {
 
             // then
             ArgumentCaptor<Member> captor = ArgumentCaptor.forClass(Member.class);
-            verify(memberRepository).save(captor.capture()); // verify(memberRepository).save(any(Member.class)) 보다 좀 더 의미있는 행위 검증인듯
+            verify(memberRepository)
+                    .save(captor.capture()); // verify(memberRepository).save(any(Member.class))
+            // 보다 좀 더 의미있는 행위
+            // 검증인듯
             Member savedMember = captor.getValue();
             assertThat(savedMember.getEmail()).isEqualTo(request.email());
             assertThat(savedMember.getNickname()).isEqualTo(request.nickname());
@@ -75,7 +75,8 @@ class MemberServiceTest {
         @DisplayName("비밀번호와 비밀번호 확인이 다르면 예외를 던진다")
         void throwsExceptionWhenPasswordConfirmMismatch() {
             // given
-            SignupReqDto request = SignupReqDtoFixture.withPasswordConfirm("password1!", "different!");
+            SignupReqDto request =
+                    SignupReqDtoFixture.withPasswordConfirm("password1!", "different!");
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)
@@ -197,7 +198,8 @@ class MemberServiceTest {
             // given
             Long memberId = 1L;
             Member member = MemberFixture.activeMember(memberId);
-            ProfileUpdateReqDto request = ProfileUpdateReqDtoFixture.withNickname(member.getNickname());
+            ProfileUpdateReqDto request =
+                    ProfileUpdateReqDtoFixture.withNickname(member.getNickname());
             given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
 
             // when
@@ -234,7 +236,8 @@ class MemberServiceTest {
             Long memberId = 1L;
             Member member = MemberFixture.activeMember(memberId);
             String originalNickname = member.getNickname();
-            ProfileUpdateReqDto request = ProfileUpdateReqDtoFixture.withNickname("duplicated-nick");
+            ProfileUpdateReqDto request =
+                    ProfileUpdateReqDtoFixture.withNickname("duplicated-nick");
             given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
             given(memberRepository.existsByNickname("duplicated-nick")).willReturn(true);
 
@@ -274,7 +277,8 @@ class MemberServiceTest {
             Member member = MemberFixture.activeMember(memberId);
             PasswordUpdateReqDto request = PasswordUpdateReqDtoFixture.valid();
             given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
-            given(passwordEncoder.matches(request.currentPassword(), member.getEncodedPassword())).willReturn(true);
+            given(passwordEncoder.matches(request.currentPassword(), member.getEncodedPassword()))
+                    .willReturn(true);
             given(passwordEncoder.hash(request.password())).willReturn("new-encoded");
 
             // when
@@ -292,9 +296,11 @@ class MemberServiceTest {
             Long memberId = 1L;
             Member member = MemberFixture.activeMember(memberId);
             String originalEncodedPassword = member.getEncodedPassword();
-            PasswordUpdateReqDto request = PasswordUpdateReqDtoFixture.withCurrentPassword("wrongCurrent1!");
+            PasswordUpdateReqDto request =
+                    PasswordUpdateReqDtoFixture.withCurrentPassword("wrongCurrent1!");
             given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
-            given(passwordEncoder.matches(request.currentPassword(), originalEncodedPassword)).willReturn(false);
+            given(passwordEncoder.matches(request.currentPassword(), originalEncodedPassword))
+                    .willReturn(false);
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)
@@ -315,7 +321,8 @@ class MemberServiceTest {
             PasswordUpdateReqDto request =
                     PasswordUpdateReqDtoFixture.withPasswordConfirm("newPassword1!", "different!");
             given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
-            given(passwordEncoder.matches(request.currentPassword(), originalEncodedPassword)).willReturn(true);
+            given(passwordEncoder.matches(request.currentPassword(), originalEncodedPassword))
+                    .willReturn(true);
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)

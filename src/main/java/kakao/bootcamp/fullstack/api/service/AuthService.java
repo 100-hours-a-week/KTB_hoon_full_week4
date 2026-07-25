@@ -27,7 +27,8 @@ public class AuthService {
     public LoginResDto login(LoginReqDto request) {
         Member member = loadMemberOrThrow(request);
         validatePasswordMatches(request.password(), member.getEncodedPassword());
-        String accessToken = jwtProvider.createAccessToken(member.getId(), member.getEmail(), member.getRole());
+        String accessToken =
+                jwtProvider.createAccessToken(member.getId(), member.getEmail(), member.getRole());
         return new LoginResDto(accessToken);
     }
 
@@ -39,7 +40,8 @@ public class AuthService {
     }
 
     private Member loadMemberOrThrow(LoginReqDto request) {
-        return memberRepository.findActiveByEmail(request.email())
+        return memberRepository
+                .findActiveByEmail(request.email())
                 .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.LOGIN_FAILED));
     }
 

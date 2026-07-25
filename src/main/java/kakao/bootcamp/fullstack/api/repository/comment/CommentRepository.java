@@ -6,6 +6,8 @@ import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 
 public interface CommentRepository {
     void save(Comment comment);
+
     Optional<Comment> findActiveById(Long commentId);
+
     List<Comment> findByPostId(Long postId);
 }

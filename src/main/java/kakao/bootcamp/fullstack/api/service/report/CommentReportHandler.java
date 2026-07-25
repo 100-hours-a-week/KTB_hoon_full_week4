@@ -21,8 +21,11 @@ public class CommentReportHandler implements ReportTargetHandler {
 
     @Override
     public void handleReported(Long targetId) {
-        Comment comment = commentRepository.findActiveById(targetId)
-                .orElseThrow(() -> new NotFoundException(CommentErrorCode.COMMENT_NOT_FOUND));
+        Comment comment =
+                commentRepository
+                        .findActiveById(targetId)
+                        .orElseThrow(
+                                () -> new NotFoundException(CommentErrorCode.COMMENT_NOT_FOUND));
         comment.increaseReportCount();
         commentRepository.save(comment);
     }

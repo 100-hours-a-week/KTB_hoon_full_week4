@@ -41,23 +41,20 @@ public class InMemoryMemberRepository implements MemberRepository {
 
     @Override
     public Optional<Member> findActiveByEmail(String email) {
-        return members.values()
-                .stream()
+        return members.values().stream()
                 .filter(member -> member.getEmail().equals(email))
                 .findFirst();
     }
 
     @Override
     public boolean existsByEmail(String email) {
-        return members.entrySet()
-                .stream()
+        return members.entrySet().stream()
                 .anyMatch(entry -> entry.getValue().getEmail().equals(email));
     }
 
     @Override
     public boolean existsByNickname(String nickname) {
-        return members.entrySet()
-                .stream()
+        return members.entrySet().stream()
                 .anyMatch(entry -> entry.getValue().getNickname().equals(nickname));
     }
 }

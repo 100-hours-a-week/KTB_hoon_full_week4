@@ -29,8 +29,7 @@ public class InMemoryPostViewLogRepository implements PostViewLogRepository {
     @Override
     public Optional<PostViewLog> findByPostIdAndMemberId(Long postId, Long memberId) {
         return logs.values().stream()
-                .filter(log -> log.getPostId().equals(postId)
-                        && log.getMemberId().equals(memberId))
+                .filter(log -> log.getPostId().equals(postId) && log.getMemberId().equals(memberId))
                 .findFirst();
     }
 }

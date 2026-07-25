@@ -11,16 +11,17 @@ public record CommentResDto(
         Long memberId,
         String writerNickname,
         boolean isMine,
-        LocalDateTime createdAt
-) {
+        LocalDateTime createdAt) {
     public static CommentResDto from(Comment comment, boolean isMine) {
         return new CommentResDto(
                 comment.getId(),
                 comment.getContent(),
                 comment.getMember().getId(),
-                comment.isWriterWithdrawn() ? UNKNOWN_WRITER : comment.getMember().getNickname(), // UNKNOWN_WRITER가 현재 PostConstant에서 가져옴
+                comment.isWriterWithdrawn()
+                        ? UNKNOWN_WRITER
+                        : comment.getMember()
+                                .getNickname(), // UNKNOWN_WRITER가 현재 PostConstant에서 가져옴
                 isMine,
-                comment.getCreatedAt()
-        );
+                comment.getCreatedAt());
     }
 }

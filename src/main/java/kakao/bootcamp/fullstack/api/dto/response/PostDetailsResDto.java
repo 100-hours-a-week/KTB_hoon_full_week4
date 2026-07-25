@@ -20,9 +20,9 @@ public record PostDetailsResDto(
         boolean isBlind,
         boolean isLikedByMe,
         LocalDateTime createdAt,
-        List<CommentResDto> comments
-) {
-    public static PostDetailsResDto from(Post post, boolean isMine, boolean isLikedByMe, List<CommentResDto> comments) {
+        List<CommentResDto> comments) {
+    public static PostDetailsResDto from(
+            Post post, boolean isMine, boolean isLikedByMe, List<CommentResDto> comments) {
         boolean blinded = post.isBlinded();
         return new PostDetailsResDto(
                 post.getId(),
@@ -37,7 +37,6 @@ public record PostDetailsResDto(
                 blinded,
                 isLikedByMe,
                 post.getCreatedAt(),
-                comments
-        );
+                comments);
     }
 }

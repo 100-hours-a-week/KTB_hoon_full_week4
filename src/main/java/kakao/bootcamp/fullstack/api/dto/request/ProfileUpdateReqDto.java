@@ -6,10 +6,6 @@ import kakao.bootcamp.fullstack.global.security.jwt.annotation.ValidNickname;
 
 public record ProfileUpdateReqDto(
         @NotBlank(message = ValidationCode.NICKNAME_REQUIRED)
-        @ValidNickname(message = ValidationCode.INVALID_NICKNAME_FORMAT)
-        String nickname,
-        @NotBlank(message = ValidationCode.IMAGE_REQUIRED)
-        String imageUrl
-) {
-
-}
+                @ValidNickname(message = ValidationCode.INVALID_NICKNAME_FORMAT)
+                String nickname,
+        @NotBlank(message = ValidationCode.IMAGE_REQUIRED) String imageUrl) {}

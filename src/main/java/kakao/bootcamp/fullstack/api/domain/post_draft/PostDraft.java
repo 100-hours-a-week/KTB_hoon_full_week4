@@ -22,7 +22,9 @@ import org.hibernate.annotations.SQLDelete;
 
 @Getter
 @Entity
-@SQLDelete(sql = "UPDATE post_drafts SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(
+        sql =
+                "UPDATE post_drafts SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Table(name = "post_drafts")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostDraft extends BaseEntity {
@@ -37,8 +39,7 @@ public class PostDraft extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column
-    private String imageUrl;
+    @Column private String imageUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

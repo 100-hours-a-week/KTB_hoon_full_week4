@@ -1,6 +1,5 @@
 package kakao.bootcamp.fullstack.api.controller;
 
-
 import jakarta.validation.Valid;
 import kakao.bootcamp.fullstack.api.dto.request.LoginReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.LoginResDto;
@@ -26,21 +25,18 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResDto>> login(@Valid @RequestBody LoginReqDto request){
+    public ResponseEntity<ApiResponse<LoginResDto>> login(@Valid @RequestBody LoginReqDto request) {
         LoginResDto response = authService.login(request);
-        return ResponseEntity
-                .status(SuccessCode.SUCCESS.getHttpStatus())
+        return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(SuccessCode.SUCCESS, response));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader
-    ) {
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
         String accessToken = TokenExtractor.extractBearerToken(authorizationHeader);
         authService.logout(accessToken);
-        return ResponseEntity
-                .status(SuccessCode.SUCCESS.getHttpStatus())
+        return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(SuccessCode.SUCCESS));
     }
 }

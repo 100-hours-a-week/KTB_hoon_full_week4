@@ -7,8 +7,7 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
 public class FullstackApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(FullstackApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(FullstackApplication.class, args);
+    }
 }

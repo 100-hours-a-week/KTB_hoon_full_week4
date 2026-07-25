@@ -21,8 +21,10 @@ public class PostReportHandler implements ReportTargetHandler {
 
     @Override
     public void handleReported(Long targetId) {
-        Post post = postRepository.findActiveById(targetId)
-                .orElseThrow(() -> new NotFoundException(PostErrorCode.POST_NOT_FOUND));
+        Post post =
+                postRepository
+                        .findActiveById(targetId)
+                        .orElseThrow(() -> new NotFoundException(PostErrorCode.POST_NOT_FOUND));
         post.increaseReportCount();
         postRepository.save(post);
     }

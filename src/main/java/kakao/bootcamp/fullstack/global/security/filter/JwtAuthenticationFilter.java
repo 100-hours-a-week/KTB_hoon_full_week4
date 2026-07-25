@@ -1,6 +1,5 @@
 package kakao.bootcamp.fullstack.global.security.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -44,11 +43,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        String token = TokenExtractor.extractBearerToken(request.getHeader(JwtConstants.TOKEN_HEADER));
+        String token =
+                TokenExtractor.extractBearerToken(request.getHeader(JwtConstants.TOKEN_HEADER));
         if (token == null) {
             filterChain.doFilter(request, response);
             return;
@@ -62,14 +62,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String email = jwtProvider.getEmail(token);
             String role = jwtProvider.getRole(token).name();
             AuthMember authMember = new AuthMember(memberId, email, role);
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    authMember,
-                    null,
-                    List.of(new SimpleGrantedAuthority(authMember.role()))
-            );
+            Authentication authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            authMember,
+                            null,
+                            List.of(new SimpleGrantedAuthority(authMember.role())));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);
-        }catch (UnauthorizedException e) {
+        } catch (UnauthorizedException e) {
             throw e;
         } catch (JwtException | IllegalArgumentException e) {
             throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
