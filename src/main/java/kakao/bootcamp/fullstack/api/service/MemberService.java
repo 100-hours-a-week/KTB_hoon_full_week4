@@ -63,6 +63,7 @@ public class MemberService {
     @Transactional
     public void updatePassword(Long memberId, PasswordUpdateReqDto request){
         Member member = loadMemberOrThrow(memberId);
+        validateCurrentPasswordMatch(request.currentPassword(), member.getEncodedPassword());
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
         member.updatePassword(passwordHasher.hash(request.password()));
     }
@@ -70,6 +71,12 @@ public class MemberService {
     private Member loadMemberOrThrow(Long memberId) {
         return memberRepository.findActiveById(memberId)
                 .orElseThrow(() -> new NotFoundException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    private void validateCurrentPasswordMatch(String currentPassword, String encodedPassword) {
+        if (!passwordHasher.matches(currentPassword, encodedPassword)) {
+            throw new BadRequestException(MemberErrorCode.CURRENT_PASSWORD_MISMATCH);
+        }
     }
 
     private void validatePasswordConfirmMatch(String password, String passwordConfirm) {

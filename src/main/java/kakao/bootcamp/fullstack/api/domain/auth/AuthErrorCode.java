@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum AuthErrorCode implements BaseCode {
-    PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "PASSWORD_MISMATCH", "password_mismatch"),
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "LOGIN_FAILED", "login_failed"),
     TOKEN_EMPTY(HttpStatus.UNAUTHORIZED, "TOKEN_EMPTY", "token_empty"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "invalid_token"),
     TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED, "TOKEN_BLACKLISTED", "token_blacklisted"),

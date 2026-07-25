@@ -10,6 +10,7 @@ public class ValidationCode {
 
     public static final String PASSWORD_REQUIRED = "PASSWORD_REQUIRED";
     public static final String INVALID_PASSWORD_FORMAT = "INVALID_PASSWORD_FORMAT";
+    public static final String CURRENT_PASSWORD_REQUIRED = "CURRENT_PASSWORD_REQUIRED";
     public static final String PASSWORD_CONFIRM_REQUIRED = "PASSWORD_CONFIRM_REQUIRED";
 
     public static final String NICKNAME_REQUIRED = "NICKNAME_REQUIRED";

@@ -274,6 +274,7 @@ class MemberServiceTest {
             Member member = MemberFixture.activeMember(memberId);
             PasswordUpdateReqDto request = PasswordUpdateReqDtoFixture.valid();
             given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
+            given(passwordEncoder.matches(request.currentPassword(), member.getEncodedPassword())).willReturn(true);
             given(passwordEncoder.hash(request.password())).willReturn("new-encoded");
 
             // when
@@ -282,6 +283,26 @@ class MemberServiceTest {
             // then
             verify(passwordEncoder).hash(request.password());
             assertThat(member.getEncodedPassword()).isEqualTo("new-encoded");
+        }
+
+        @Test
+        @DisplayName("현재 비밀번호가 일치하지 않으면 예외를 던진다")
+        void throwsExceptionWhenCurrentPasswordMismatch() {
+            // given
+            Long memberId = 1L;
+            Member member = MemberFixture.activeMember(memberId);
+            String originalEncodedPassword = member.getEncodedPassword();
+            PasswordUpdateReqDto request = PasswordUpdateReqDtoFixture.withCurrentPassword("wrongCurrent1!");
+            given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
+            given(passwordEncoder.matches(request.currentPassword(), originalEncodedPassword)).willReturn(false);
+
+            // when & then
+            assertThatExceptionOfType(BadRequestException.class)
+                    .isThrownBy(() -> memberService.updatePassword(memberId, request))
+                    .extracting(BusinessException::getCode)
+                    .isEqualTo(MemberErrorCode.CURRENT_PASSWORD_MISMATCH);
+            verify(passwordEncoder, never()).hash(any());
+            assertThat(member.getEncodedPassword()).isEqualTo(originalEncodedPassword);
         }
 
         @Test
@@ -294,6 +315,7 @@ class MemberServiceTest {
             PasswordUpdateReqDto request =
                     PasswordUpdateReqDtoFixture.withPasswordConfirm("newPassword1!", "different!");
             given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
+            given(passwordEncoder.matches(request.currentPassword(), originalEncodedPassword)).willReturn(true);
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)

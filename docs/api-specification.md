@@ -51,8 +51,7 @@ Authorization: Bearer {accessToken}
 ### 0.6 인증 관련 에러 코드 (`AuthErrorCode`)
 | code                | HTTP |
 |---------------------|------|
-| `MEMBER_NOT_FOUND`  | 401  |
-| `PASSWORD_MISMATCH` | 401  |
+| `LOGIN_FAILED`      | 401  |
 | `TOKEN_EMPTY`       | 401  |
 | `INVALID_TOKEN`     | 401  |
 | `TOKEN_BLACKLISTED` | 401  |
@@ -93,7 +92,7 @@ Authorization: Bearer {accessToken}
 | HTTP | code                |
 |------|---------------------|
 | 400  | `EMAIL_REQUIRED`, `INVALID_EMAIL_FORMAT`, `PASSWORD_REQUIRED` |
-| 401  | `MEMBER_NOT_FOUND`, `PASSWORD_MISMATCH` |
+| 401  | `LOGIN_FAILED` (이메일 미존재·비밀번호 불일치 모두 동일 응답) |
 
 ---
 
@@ -211,10 +210,17 @@ Authorization: Bearer {accessToken}
 **Request Body**
 ```json
 {
+  "currentPassword": "Password1!",
   "password": "NewPassword1!",
   "passwordConfirm": "NewPassword1!"
 }
 ```
+
+| 필드            | 타입   | 필수 | 검증                        |
+|-----------------|--------|----|---------------------------|
+| currentPassword | string | O  | NotBlank (현재 비밀번호와 일치해야 함) |
+| password        | string | O  | NotBlank, `@ValidPassword`  |
+| passwordConfirm | string | O  | NotBlank, `password`와 일치     |
 
 **Response 200 OK**
 ```json
@@ -224,7 +230,7 @@ Authorization: Bearer {accessToken}
 **에러**
 | HTTP | code |
 |------|------|
-| 400  | `PASSWORD_REQUIRED`, `INVALID_PASSWORD_FORMAT`, `PASSWORD_CONFIRM_REQUIRED`, `PASSWORD_CONFIRM_MISMATCH` |
+| 400  | `CURRENT_PASSWORD_REQUIRED`, `CURRENT_PASSWORD_MISMATCH`, `PASSWORD_REQUIRED`, `INVALID_PASSWORD_FORMAT`, `PASSWORD_CONFIRM_REQUIRED`, `PASSWORD_CONFIRM_MISMATCH` |
 
 ---
 
@@ -732,10 +738,12 @@ Authorization: Bearer {accessToken}
 | INVALID_NICKNAME_FORMAT  | 400 |
 | EMAIL_REQUIRED           | 400 |
 | PASSWORD_REQUIRED        | 400 |
+| CURRENT_PASSWORD_REQUIRED| 400 |
 | NICKNAME_REQUIRED        | 400 |
 | IMAGE_REQUIRED           | 400 |
 | PASSWORD_CONFIRM_REQUIRED| 400 |
 | PASSWORD_CONFIRM_MISMATCH| 400 |
+| CURRENT_PASSWORD_MISMATCH| 400 |
 | EMAIL_DUPLICATED         | 409 |
 | NICKNAME_DUPLICATED      | 409 |
 

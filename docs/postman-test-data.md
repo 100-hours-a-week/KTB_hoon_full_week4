@@ -169,6 +169,7 @@ pm.environment.set("accessToken", body.data.accessToken);
 성공 요청
 ```json
 {
+  "currentPassword": "Password1!",
   "password": "Newpass1!",
   "passwordConfirm": "Newpass1!"
 }
@@ -177,8 +178,18 @@ pm.environment.set("accessToken", body.data.accessToken);
 실패 시나리오 (확인 불일치)
 ```json
 {
+  "currentPassword": "Password1!",
   "password": "Newpass1!",
   "passwordConfirm": "Other222!"
+}
+```
+
+실패 시나리오 (현재 비밀번호 불일치)
+```json
+{
+  "currentPassword": "WrongPass1!",
+  "password": "Newpass1!",
+  "passwordConfirm": "Newpass1!"
 }
 ```
 
