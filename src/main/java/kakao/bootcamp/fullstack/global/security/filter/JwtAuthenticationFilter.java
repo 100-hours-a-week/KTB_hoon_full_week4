@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             jwtProvider.validateToken(token);
             if (tokenBlacklist.exists(jwtProvider.getJti(token))) {
-                throw new UnauthorizedException(AuthErrorCode.TOKEN_BLACKLISTED);
+                throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
             }
             Long memberId = jwtProvider.getMemberId(token);
             String email = jwtProvider.getEmail(token);

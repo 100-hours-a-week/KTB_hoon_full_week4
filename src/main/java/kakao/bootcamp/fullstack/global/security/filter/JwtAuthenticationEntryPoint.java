@@ -22,6 +22,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             HttpServletResponse response,
             AuthenticationException authException) {
         handlerExceptionResolver.resolveException(
-                request, response, null, new UnauthorizedException(AuthErrorCode.TOKEN_EMPTY));
+                request, response, null, new UnauthorizedException(AuthErrorCode.INVALID_TOKEN));
     }
 }

@@ -52,9 +52,7 @@ Authorization: Bearer {accessToken}
 | code                | HTTP |
 |---------------------|------|
 | `LOGIN_FAILED`      | 401  |
-| `TOKEN_EMPTY`       | 401  |
 | `INVALID_TOKEN`     | 401  |
-| `TOKEN_BLACKLISTED` | 401  |
 
 ---
 
@@ -113,7 +111,7 @@ Authorization: Bearer {accessToken}
 **에러**
 | HTTP | code |
 |------|------|
-| 401  | `TOKEN_EMPTY`, `INVALID_TOKEN`, `TOKEN_BLACKLISTED` |
+| 401  | `INVALID_TOKEN` |
 
 ---
 

@@ -1,7 +1,6 @@
 package kakao.bootcamp.fullstack.global.security.jwt.provider;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -52,8 +51,6 @@ public class JjwtProvider implements JwtProvider {
     public void validateToken(String token) {
         try {
             parseClaims(token);
-        } catch (ExpiredJwtException e) {
-            throw new UnauthorizedException(AuthErrorCode.EXPIRED_TOKEN);
         } catch (JwtException | IllegalArgumentException e) {
             throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
         }
