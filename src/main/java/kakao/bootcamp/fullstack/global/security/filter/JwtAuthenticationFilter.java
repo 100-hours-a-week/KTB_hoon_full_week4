@@ -13,6 +13,7 @@ import kakao.bootcamp.fullstack.global.constants.JwtConstants;
 import kakao.bootcamp.fullstack.global.constants.PublicEndpointConstants;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
+import kakao.bootcamp.fullstack.global.security.jwt.SessionBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.TokenBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.provider.JwtProvider;
 import kakao.bootcamp.fullstack.global.utils.TokenExtractor;
@@ -33,6 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final TokenBlacklist tokenBlacklist;
+    private final SessionBlacklist sessionBlacklist;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
@@ -56,6 +58,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             jwtProvider.validateToken(token);
             if (tokenBlacklist.exists(jwtProvider.getJti(token))) {
+                throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
+            }
+            String fid = jwtProvider.getFid(token);
+            if (fid != null && sessionBlacklist.exists(fid)) {
                 throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
             }
             Long memberId = jwtProvider.getMemberId(token);

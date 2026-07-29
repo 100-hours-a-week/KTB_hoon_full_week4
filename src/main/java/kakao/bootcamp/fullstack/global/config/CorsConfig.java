@@ -16,6 +16,7 @@ public class CorsConfig {
         config.addAllowedOrigin("http://127.0.0.1:5173");
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
+        config.setAllowCredentials(true); // 로컬 개발 확인용
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

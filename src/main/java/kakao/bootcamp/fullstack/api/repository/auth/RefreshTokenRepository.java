@@ -1,0 +1,13 @@
+package kakao.bootcamp.fullstack.api.repository.auth;
+
+import java.util.Optional;
+import kakao.bootcamp.fullstack.api.domain.auth.RefreshToken;
+
+public interface RefreshTokenRepository {
+
+    void save(RefreshToken refreshToken);
+
+    Optional<RefreshToken> findActiveByTokenHash(String tokenHash);
+
+    void revokeAllByFamilyId(String familyId);
+}

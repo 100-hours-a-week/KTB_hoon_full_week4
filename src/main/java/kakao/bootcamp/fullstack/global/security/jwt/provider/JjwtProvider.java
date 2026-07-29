@@ -33,7 +33,7 @@ public class JjwtProvider implements JwtProvider {
     }
 
     @Override
-    public String createAccessToken(Long memberId, String email, Role role) {
+    public String createAccessToken(Long memberId, String email, Role role, String familyId) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiration = now.plusSeconds(jwtProperties.accessTokenExpireSeconds());
         return Jwts.builder()
@@ -41,6 +41,7 @@ public class JjwtProvider implements JwtProvider {
                 .subject(String.valueOf(memberId))
                 .claim("email", email)
                 .claim("role", role)
+                .claim("fid", familyId)
                 .issuedAt(toDate(now))
                 .expiration(toDate(expiration))
                 .signWith(key, Jwts.SIG.HS256)
@@ -72,6 +73,12 @@ public class JjwtProvider implements JwtProvider {
     public String getJti(String token) {
         Claims claims = parseClaims(token);
         return claims.getId();
+    }
+
+    @Override
+    public String getFid(String token) {
+        Claims claims = parseClaims(token);
+        return claims.get("fid", String.class);
     }
 
     @Override
