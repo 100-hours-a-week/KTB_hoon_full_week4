@@ -7,6 +7,7 @@ import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.member.jpa.JpaMemberRepositoryAdapter;
 import kakao.bootcamp.fullstack.global.config.JpaConfig;
+import kakao.bootcamp.fullstack.member.fixture.MemberFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ public class MemberRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        member = Member.create("test@example.com", "encoded", "nick", "url");
+        member = MemberFixture.activeMember();
     }
 
     @Test

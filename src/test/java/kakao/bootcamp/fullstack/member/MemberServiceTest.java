@@ -34,7 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class MemberServiceTest {
+public class MemberServiceTest {
 
     @Mock private MemberRepository memberRepository;
 
@@ -60,9 +60,7 @@ class MemberServiceTest {
 
             // then
             ArgumentCaptor<Member> captor = ArgumentCaptor.forClass(Member.class);
-            verify(memberRepository)
-                    .save(captor.capture()); // verify(memberRepository).save(any(Member.class))
-            // 보다 좀 더 의미있는 행위
+            verify(memberRepository).save(captor.capture());
             // 검증인듯
             Member savedMember = captor.getValue();
             assertThat(savedMember.getEmail()).isEqualTo(request.email());

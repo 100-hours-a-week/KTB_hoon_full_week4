@@ -73,7 +73,10 @@ public class ValidPasswordTest {
     @Test
     @DisplayName("길이가 7자면 실패한다")
     void failsWhenLengthIsSeven() {
-        Set<ConstraintViolation<TestTarget>> violations = validate("Ab1!567");
+        String password = "Ab1!567";
+        assertThat(password).hasSize(7);
+
+        Set<ConstraintViolation<TestTarget>> violations = validate(password);
 
         assertThat(violations).hasSize(1);
         assertThat(violations)
@@ -84,7 +87,10 @@ public class ValidPasswordTest {
     @Test
     @DisplayName("길이가 8자면 통과한다")
     void passesWhenLengthIsEight() {
-        Set<ConstraintViolation<TestTarget>> violations = validate("Ab1!5678");
+        String password = "Ab1!5678";
+        assertThat(password).hasSize(8);
+
+        Set<ConstraintViolation<TestTarget>> violations = validate(password);
 
         assertThat(violations).isEmpty();
     }
@@ -92,7 +98,10 @@ public class ValidPasswordTest {
     @Test
     @DisplayName("길이가 20자면 통과한다")
     void passesWhenLengthIsTwenty() {
-        Set<ConstraintViolation<TestTarget>> violations = validate("Ab1!567890123456789");
+        String password = "Ab1!5678901234567890";
+        assertThat(password).hasSize(20);
+
+        Set<ConstraintViolation<TestTarget>> violations = validate(password);
 
         assertThat(violations).isEmpty();
     }
@@ -100,7 +109,10 @@ public class ValidPasswordTest {
     @Test
     @DisplayName("길이가 21자면 실패한다")
     void failsWhenLengthIsTwentyOne() {
-        Set<ConstraintViolation<TestTarget>> violations = validate("Ab1!56789012345678900");
+        String password = "Ab1!56789012345678900";
+        assertThat(password).hasSize(21);
+
+        Set<ConstraintViolation<TestTarget>> violations = validate(password);
 
         assertThat(violations).hasSize(1);
         assertThat(violations)
