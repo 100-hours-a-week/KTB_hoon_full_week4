@@ -15,7 +15,8 @@ import kakao.bootcamp.fullstack.global.security.jwt.SessionBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.TokenBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.properties.JwtProperties;
 import kakao.bootcamp.fullstack.global.security.jwt.provider.JwtProvider;
-import kakao.bootcamp.fullstack.global.security.token.RefreshTokenProvider;
+import kakao.bootcamp.fullstack.global.security.token.RefreshTokenGenerator;
+import kakao.bootcamp.fullstack.global.security.token.RefreshTokenHasher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,8 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordHasher passwordHasher;
     private final JwtProvider jwtProvider;
-    private final RefreshTokenProvider refreshTokenProvider;
+    private final RefreshTokenGenerator refreshTokenGenerator;
+    private final RefreshTokenHasher refreshTokenHasher;
     private final TokenBlacklist tokenBlacklist;
     private final SessionBlacklist sessionBlacklist;
     private final JwtProperties jwtProperties;
@@ -63,12 +65,12 @@ public class AuthService {
     }
 
     private String issueRefreshToken(Long memberId, String familyId) {
-        String rawToken = refreshTokenProvider.generateToken();
+        String rawToken = refreshTokenGenerator.generate();
         LocalDateTime expiresAt =
                 LocalDateTime.now().plusSeconds(jwtProperties.refreshTokenExpireSeconds());
         refreshTokenRepository.save(
                 RefreshToken.create(
-                        memberId, familyId, refreshTokenProvider.hash(rawToken), expiresAt));
+                        memberId, familyId, refreshTokenHasher.hash(rawToken), expiresAt));
         return rawToken;
     }
 
@@ -92,7 +94,7 @@ public class AuthService {
             throw new UnauthorizedException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
         return refreshTokenRepository
-                .findActiveByTokenHash(refreshTokenProvider.hash(rawRefreshToken))
+                .findActiveByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
                 .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.INVALID_REFRESH_TOKEN));
     }
 

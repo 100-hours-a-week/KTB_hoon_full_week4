@@ -17,7 +17,9 @@ import org.hibernate.annotations.SQLDelete;
 
 @Getter
 @Entity
-@SQLDelete(sql = "UPDATE refresh_tokens SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(
+        sql =
+                "UPDATE refresh_tokens SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 @Table(name = "refresh_tokens")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken extends BaseEntity {
@@ -41,7 +43,8 @@ public class RefreshToken extends BaseEntity {
     @Column(nullable = false)
     private boolean revoked = false;
 
-    private RefreshToken(Long memberId, String familyId, String tokenHash, LocalDateTime expiresAt) {
+    private RefreshToken(
+            Long memberId, String familyId, String tokenHash, LocalDateTime expiresAt) {
         this.memberId = memberId;
         this.familyId = familyId;
         this.tokenHash = tokenHash;
