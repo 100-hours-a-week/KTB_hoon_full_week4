@@ -18,9 +18,9 @@
 ## 프레임워크 · 스타일
 
 - **JUnit5 + AssertJ**. Mockito도 사용 가능.
-- 테스트 클래스: `class XxxTest`, 접근제어자 없음(package-private).
-- **`@Nested` + `@DisplayName`**: 메서드별로 `@Nested` 클래스를 두고 한글 `@DisplayName`을 단다.
-- 테스트 메서드명은 영어 camelCase, 본문은 `// given / // when / // then` 주석 블록으로 구분.
+- 테스트 클래스: `public class XxxTest`.
+- **`@Nested` + `@DisplayName`**: 대상 메서드가 여럿인 테스트(서비스·컨트롤러 등)는 메서드별로 `@Nested` 클래스를 두고 한글 `@DisplayName`을 단다. 단일 대상·단순 케이스 위주인 리포지토리(`@DataJpaTest`)·검증(`@ValidXxx`) 테스트는 `@Nested` 없이 평면 구조로 둔다.
+- 테스트 메서드명은 영어 camelCase, 본문은 `// given / // when / // then` 주석 블록으로 구분한다. **설명성 주석은 두지 않는다**(비자명한 "왜"만 예외로 허용).
 - 예외 검증은 아래 관용구를 쓴다 (에러코드까지 확인):
 
 ```java
