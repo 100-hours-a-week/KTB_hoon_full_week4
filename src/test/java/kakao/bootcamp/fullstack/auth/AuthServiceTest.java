@@ -1,7 +1,7 @@
 package kakao.bootcamp.fullstack.auth;
 
-import static kakao.bootcamp.fullstack.auth.TokenExpireTestConstants.ACCESS_TOKEN_EXPIRE_SECONDS;
-import static kakao.bootcamp.fullstack.auth.TokenExpireTestConstants.REFRESH_TOKEN_EXPIRE_SECONDS;
+import static kakao.bootcamp.fullstack.auth.constant.TokenExpireTestConstants.ACCESS_TOKEN_EXPIRE_SECONDS;
+import static kakao.bootcamp.fullstack.auth.constant.TokenExpireTestConstants.REFRESH_TOKEN_EXPIRE_SECONDS;
 import static kakao.bootcamp.fullstack.auth.fixture.RefreshTokenFixture.active;
 import static kakao.bootcamp.fullstack.auth.fixture.RefreshTokenFixture.expired;
 import static org.assertj.core.api.Assertions.assertThat;

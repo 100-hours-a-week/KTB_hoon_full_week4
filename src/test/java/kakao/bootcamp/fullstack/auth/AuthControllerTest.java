@@ -1,6 +1,6 @@
 package kakao.bootcamp.fullstack.auth;
 
-import static kakao.bootcamp.fullstack.auth.TokenExpireTestConstants.REFRESH_TOKEN_EXPIRE_SECONDS;
+import static kakao.bootcamp.fullstack.auth.constant.TokenExpireTestConstants.REFRESH_TOKEN_EXPIRE_SECONDS;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;

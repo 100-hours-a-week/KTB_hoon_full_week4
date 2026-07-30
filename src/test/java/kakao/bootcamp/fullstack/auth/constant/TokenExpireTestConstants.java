@@ -1,4 +1,4 @@
-package kakao.bootcamp.fullstack.auth;
+package kakao.bootcamp.fullstack.auth.constant;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
