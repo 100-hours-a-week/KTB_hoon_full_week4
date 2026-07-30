@@ -50,6 +50,7 @@ public class AuthControllerTest {
     private static final String EMAIL = "user@example.com";
     private static final String PASSWORD = "Password1!";
     private static final String WRONG_PASSWORD = "wrongPassword1!";
+
     private static String loginBody(String email, String password) {
         return "{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}";
     }
@@ -115,16 +116,17 @@ public class AuthControllerTest {
         @DisplayName("인증된 요청이면 Authorization의 AT를 서비스로 넘기고 200을 응답한다")
         void logsOutSuccessfully() throws Exception {
             // given
-            given(jwtProvider.getRole("access-token")).willReturn(Role.ROLE_USER);
+            String accessToken = "access-token";
+            given(jwtProvider.getRole(accessToken)).willReturn(Role.ROLE_USER);
 
             // when & then
             mockMvc.perform(
                             post("/api/v1/logout")
-                                    .header(HttpHeaders.AUTHORIZATION, "Bearer access-token"))
+                                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"));
 
-            verify(authService).logout("access-token");
+            verify(authService).logout(accessToken);
         }
 
         @Test

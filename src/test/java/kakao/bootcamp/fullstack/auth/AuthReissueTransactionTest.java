@@ -36,9 +36,10 @@ public class AuthReissueTransactionTest {
         // given
         String unique = UUID.randomUUID().toString();
         String email = "something-" + unique + "@example.com";
-        memberRepository.save(MemberFixture.activeMember(email, passwordHasher.hash("Password1!")));
+        String password = "Password1!";
+        memberRepository.save(MemberFixture.activeMember(email, passwordHasher.hash(password)));
 
-        LoginResult login = authService.login(new LoginReqDto(email, "Password1!"));
+        LoginResult login = authService.login(new LoginReqDto(email, password));
         String rt1 = login.refreshToken();
         LoginResult rotated = authService.reissue(rt1);
         String rt2 = rotated.refreshToken();

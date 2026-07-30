@@ -36,6 +36,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
 
+    private static final Long MEMBER_ID = 1L;
+
     @Mock private MemberRepository memberRepository;
 
     @Mock private PasswordHasher passwordEncoder;
@@ -61,7 +63,6 @@ public class MemberServiceTest {
             // then
             ArgumentCaptor<Member> captor = ArgumentCaptor.forClass(Member.class);
             verify(memberRepository).save(captor.capture());
-            // 검증인듯
             Member savedMember = captor.getValue();
             assertThat(savedMember.getEmail()).isEqualTo(request.email());
             assertThat(savedMember.getNickname()).isEqualTo(request.nickname());
@@ -124,12 +125,11 @@ public class MemberServiceTest {
         @DisplayName("존재하는 회원이면 프로필을 반환한다")
         void returnsProfileWhenMemberExists() {
             // given
-            Long memberId = 1L;
-            Member member = MemberFixture.activeMember(memberId);
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
+            Member member = MemberFixture.activeMember(MEMBER_ID);
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
 
             // when
-            MemberProfileResDto response = memberService.getMemberProfile(memberId);
+            MemberProfileResDto response = memberService.getMemberProfile(MEMBER_ID);
 
             // then
             assertThat(response.email()).isEqualTo(member.getEmail());
@@ -141,12 +141,11 @@ public class MemberServiceTest {
         @DisplayName("존재하지 않는 회원이면 예외를 던진다")
         void throwsExceptionWhenMemberNotFound() {
             // given
-            Long memberId = 1L;
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.empty());
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(NotFoundException.class)
-                    .isThrownBy(() -> memberService.getMemberProfile(memberId))
+                    .isThrownBy(() -> memberService.getMemberProfile(MEMBER_ID))
                     .extracting(BusinessException::getCode)
                     .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
         }
@@ -160,12 +159,11 @@ public class MemberServiceTest {
         @DisplayName("존재하는 회원을 삭제 처리한다")
         void deletesMemberSuccessfully() {
             // given
-            Long memberId = 1L;
-            Member member = MemberFixture.activeMember(memberId);
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
+            Member member = MemberFixture.activeMember(MEMBER_ID);
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
 
             // when
-            memberService.deleteMember(memberId);
+            memberService.deleteMember(MEMBER_ID);
 
             // then
             assertThat(member.isDeleted()).isTrue();
@@ -175,12 +173,11 @@ public class MemberServiceTest {
         @DisplayName("존재하지 않는 회원이면 예외를 던진다")
         void throwsExceptionWhenMemberNotFound() {
             // given
-            Long memberId = 1L;
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.empty());
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(NotFoundException.class)
-                    .isThrownBy(() -> memberService.deleteMember(memberId))
+                    .isThrownBy(() -> memberService.deleteMember(MEMBER_ID))
                     .extracting(BusinessException::getCode)
                     .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
         }
@@ -194,14 +191,13 @@ public class MemberServiceTest {
         @DisplayName("닉네임 변경 없이 프로필을 수정한다")
         void updatesProfileWithoutNicknameChange() {
             // given
-            Long memberId = 1L;
-            Member member = MemberFixture.activeMember(memberId);
+            Member member = MemberFixture.activeMember(MEMBER_ID);
             ProfileUpdateReqDto request =
                     ProfileUpdateReqDtoFixture.withNickname(member.getNickname());
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
 
             // when
-            memberService.updateMemberProfile(memberId, request);
+            memberService.updateMemberProfile(MEMBER_ID, request);
 
             // then
             assertThat(member.getNickname()).isEqualTo(request.nickname());
@@ -213,17 +209,17 @@ public class MemberServiceTest {
         @DisplayName("닉네임을 변경하고, 중복이 아니면 정상적으로 수정된다")
         void updatesProfileWithNewNickname() {
             // given
-            Long memberId = 1L;
-            Member member = MemberFixture.activeMember(memberId);
-            ProfileUpdateReqDto request = ProfileUpdateReqDtoFixture.withNickname("new-nick");
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
-            given(memberRepository.existsByNickname("new-nick")).willReturn(false);
+            String newNickname = "new-nick";
+            Member member = MemberFixture.activeMember(MEMBER_ID);
+            ProfileUpdateReqDto request = ProfileUpdateReqDtoFixture.withNickname(newNickname);
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
+            given(memberRepository.existsByNickname(newNickname)).willReturn(false);
 
             // when
-            memberService.updateMemberProfile(memberId, request);
+            memberService.updateMemberProfile(MEMBER_ID, request);
 
             // then
-            assertThat(member.getNickname()).isEqualTo("new-nick");
+            assertThat(member.getNickname()).isEqualTo(newNickname);
             assertThat(member.getProfileImgUrl()).isEqualTo(request.imageUrl());
         }
 
@@ -231,17 +227,17 @@ public class MemberServiceTest {
         @DisplayName("변경하려는 닉네임이 중복이면 예외를 던진다")
         void throwsExceptionWhenNewNicknameDuplicated() {
             // given
-            Long memberId = 1L;
-            Member member = MemberFixture.activeMember(memberId);
+            String duplicatedNickname = "duplicated-nick";
+            Member member = MemberFixture.activeMember(MEMBER_ID);
             String originalNickname = member.getNickname();
             ProfileUpdateReqDto request =
-                    ProfileUpdateReqDtoFixture.withNickname("duplicated-nick");
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
-            given(memberRepository.existsByNickname("duplicated-nick")).willReturn(true);
+                    ProfileUpdateReqDtoFixture.withNickname(duplicatedNickname);
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
+            given(memberRepository.existsByNickname(duplicatedNickname)).willReturn(true);
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)
-                    .isThrownBy(() -> memberService.updateMemberProfile(memberId, request))
+                    .isThrownBy(() -> memberService.updateMemberProfile(MEMBER_ID, request))
                     .extracting(BusinessException::getCode)
                     .isEqualTo(MemberErrorCode.NICKNAME_DUPLICATED);
             assertThat(member.getNickname()).isEqualTo(originalNickname);
@@ -251,13 +247,12 @@ public class MemberServiceTest {
         @DisplayName("존재하지 않는 회원이면 예외를 던진다")
         void throwsExceptionWhenMemberNotFound() {
             // given
-            Long memberId = 1L;
             ProfileUpdateReqDto request = ProfileUpdateReqDtoFixture.valid();
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.empty());
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(NotFoundException.class)
-                    .isThrownBy(() -> memberService.updateMemberProfile(memberId, request))
+                    .isThrownBy(() -> memberService.updateMemberProfile(MEMBER_ID, request))
                     .extracting(BusinessException::getCode)
                     .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
         }
@@ -271,16 +266,15 @@ public class MemberServiceTest {
         @DisplayName("정상적으로 비밀번호를 변경한다")
         void updatesPasswordSuccessfully() {
             // given
-            Long memberId = 1L;
-            Member member = MemberFixture.activeMember(memberId);
+            Member member = MemberFixture.activeMember(MEMBER_ID);
             PasswordUpdateReqDto request = PasswordUpdateReqDtoFixture.valid();
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
             given(passwordEncoder.matches(request.currentPassword(), member.getEncodedPassword()))
                     .willReturn(true);
             given(passwordEncoder.hash(request.password())).willReturn("new-encoded");
 
             // when
-            memberService.updatePassword(memberId, request);
+            memberService.updatePassword(MEMBER_ID, request);
 
             // then
             verify(passwordEncoder).hash(request.password());
@@ -291,18 +285,17 @@ public class MemberServiceTest {
         @DisplayName("현재 비밀번호가 일치하지 않으면 예외를 던진다")
         void throwsExceptionWhenCurrentPasswordMismatch() {
             // given
-            Long memberId = 1L;
-            Member member = MemberFixture.activeMember(memberId);
+            Member member = MemberFixture.activeMember(MEMBER_ID);
             String originalEncodedPassword = member.getEncodedPassword();
             PasswordUpdateReqDto request =
                     PasswordUpdateReqDtoFixture.withCurrentPassword("wrongCurrent1!");
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
             given(passwordEncoder.matches(request.currentPassword(), originalEncodedPassword))
                     .willReturn(false);
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)
-                    .isThrownBy(() -> memberService.updatePassword(memberId, request))
+                    .isThrownBy(() -> memberService.updatePassword(MEMBER_ID, request))
                     .extracting(BusinessException::getCode)
                     .isEqualTo(MemberErrorCode.CURRENT_PASSWORD_MISMATCH);
             verify(passwordEncoder, never()).hash(any());
@@ -313,18 +306,17 @@ public class MemberServiceTest {
         @DisplayName("비밀번호와 비밀번호 확인이 다르면 예외를 던진다")
         void throwsExceptionWhenPasswordConfirmMismatch() {
             // given
-            Long memberId = 1L;
-            Member member = MemberFixture.activeMember(memberId);
+            Member member = MemberFixture.activeMember(MEMBER_ID);
             String originalEncodedPassword = member.getEncodedPassword();
             PasswordUpdateReqDto request =
                     PasswordUpdateReqDtoFixture.withPasswordConfirm("newPassword1!", "different!");
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.of(member));
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
             given(passwordEncoder.matches(request.currentPassword(), originalEncodedPassword))
                     .willReturn(true);
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)
-                    .isThrownBy(() -> memberService.updatePassword(memberId, request))
+                    .isThrownBy(() -> memberService.updatePassword(MEMBER_ID, request))
                     .extracting(BusinessException::getCode)
                     .isEqualTo(MemberErrorCode.PASSWORD_CONFIRM_MISMATCH);
             assertThat(member.getEncodedPassword()).isEqualTo(originalEncodedPassword);
@@ -334,13 +326,12 @@ public class MemberServiceTest {
         @DisplayName("존재하지 않는 회원이면 예외를 던진다")
         void throwsExceptionWhenMemberNotFound() {
             // given
-            Long memberId = 1L;
             PasswordUpdateReqDto request = PasswordUpdateReqDtoFixture.valid();
-            given(memberRepository.findActiveById(memberId)).willReturn(Optional.empty());
+            given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.empty());
 
             // when & then
             assertThatExceptionOfType(NotFoundException.class)
-                    .isThrownBy(() -> memberService.updatePassword(memberId, request))
+                    .isThrownBy(() -> memberService.updatePassword(MEMBER_ID, request))
                     .extracting(BusinessException::getCode)
                     .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
         }
