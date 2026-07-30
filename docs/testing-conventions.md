@@ -54,8 +54,9 @@ assertThatExceptionOfType(UnauthorizedException.class)
 **테스트에서 도메인 객체(엔티티 등)를 직접 `new`/`create` 하지 말고 픽스처를 거친다.** 생성 방식이 한 곳에 모여야 필드가 바뀌어도 흔들리지 않는다.
 
 - 엔티티 픽스처는 `.../<domain>/fixture/`, 요청 DTO 픽스처는 `.../<domain>/fixture/dto/`에 둔다. 인스턴스화 불가한 홀더 클래스에 **static 팩토리**를 두고, 빌더 라이브러리는 쓰지 않는다.
-- **기준값(canonical)은 한 곳에서만 정의한다.** no-arg 팩토리에 기준값을 두고, 파라미터 오버로드는 그 no-arg를 재사용하거나 필요한 값만 받는다. 기준 리터럴을 오버로드마다 반복하지 않는다.
-  예: `MemberFixture.activeMember()`(기준값) / `activeMember(Long id)`(→ no-arg + `assignId`) / `activeMember(String email, String encodedPassword)`.
+- **기준값(canonical)은 한 곳에서만 정의한다.** 기준 인자는 픽스처 클래스의 `public static final` 상수로 선언하고, no-arg 팩토리가 그 상수로 기준 인스턴스를 만든다. 파라미터 오버로드는 no-arg를 재사용하거나(예: id만 추가) 공유 상수를 재사용해 기준 리터럴을 반복하지 않는다.
+  예: `MemberFixture.EMAIL`/`ENCODED_PASSWORD`/`NICKNAME`/`PROFILE_IMG_URL` 상수 + `activeMember()`(기준값) / `activeMember(Long id)`(→ no-arg + `assignId`) / `activeMember(String email, String encodedPassword)`.
+- 상수를 `public`으로 두면 라운드트립을 검증하는 테스트가 리터럴을 하드코딩하지 않고 픽스처 상수를 참조할 수 있다(예: `MemberRepositoryTest`가 저장 후 필드를 `MemberFixture.EMAIL` 등과 비교).
 - **id 유무를 흐름에 맞춘다.** 리포지토리 저장으로 id가 부여되는 흐름(`@DataJpaTest`)에는 **id 미할당** 팩토리를, id가 미리 필요한 서비스 유닛 등에는 `assignId(...)`된 팩토리를 쓴다.
 - **상태별 팩토리로 경계·의미를 명확히 한다.** 유효/만료처럼 갈리는 경우 이름 있는 팩토리로 나눠 오해와 경계 누락을 막는다. 예: `RefreshTokenFixture.active(...)` / `expired(...)`.
 - 엔티티는 정적 팩토리(`Xxx.create(...)`)로 만들고 `assignId(...)`로 id를 부여한다.

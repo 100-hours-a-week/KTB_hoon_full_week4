@@ -5,11 +5,14 @@ import kakao.bootcamp.fullstack.api.domain.auth.RefreshToken;
 
 public class RefreshTokenFixture {
 
+    public static final Long MEMBER_ID = 1L;
+
     public static RefreshToken active(String familyId, String tokenHash) {
-        return RefreshToken.create(1L, familyId, tokenHash, LocalDateTime.now().plusDays(1));
+        return RefreshToken.create(MEMBER_ID, familyId, tokenHash, LocalDateTime.now().plusDays(1));
     }
 
     public static RefreshToken expired(String familyId, String tokenHash) {
-        return RefreshToken.create(1L, familyId, tokenHash, LocalDateTime.now().minusSeconds(1));
+        return RefreshToken.create(
+                MEMBER_ID, familyId, tokenHash, LocalDateTime.now().minusSeconds(1));
     }
 }

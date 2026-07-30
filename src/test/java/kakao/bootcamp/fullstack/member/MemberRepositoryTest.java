@@ -48,10 +48,10 @@ public class MemberRepositoryTest {
         Member found = memberRepository.findActiveById(member.getId()).orElseThrow();
 
         // then
-        assertThat(found.getEmail()).isEqualTo("test@example.com");
-        assertThat(found.getEncodedPassword()).isEqualTo("encoded");
-        assertThat(found.getNickname()).isEqualTo("nick");
-        assertThat(found.getProfileImgUrl()).isEqualTo("url");
+        assertThat(found.getEmail()).isEqualTo(MemberFixture.EMAIL);
+        assertThat(found.getEncodedPassword()).isEqualTo(MemberFixture.ENCODED_PASSWORD);
+        assertThat(found.getNickname()).isEqualTo(MemberFixture.NICKNAME);
+        assertThat(found.getProfileImgUrl()).isEqualTo(MemberFixture.PROFILE_IMG_URL);
     }
 
     @Test
@@ -61,7 +61,7 @@ public class MemberRepositoryTest {
         memberRepository.save(member);
 
         // when
-        Optional<Member> found = memberRepository.findActiveByEmail("test@example.com");
+        Optional<Member> found = memberRepository.findActiveByEmail(MemberFixture.EMAIL);
 
         // then
         assertThat(found).isPresent();
@@ -76,7 +76,7 @@ public class MemberRepositoryTest {
         memberRepository.save(member);
 
         // when
-        Optional<Member> found = memberRepository.findActiveByEmail("test@example.com");
+        Optional<Member> found = memberRepository.findActiveByEmail(MemberFixture.EMAIL);
 
         // then
         assertThat(found).isEmpty();
