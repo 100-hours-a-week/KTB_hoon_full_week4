@@ -1,6 +1,7 @@
 package kakao.bootcamp.fullstack.api.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.auth.RefreshToken;
@@ -41,11 +42,11 @@ public class AuthService {
         Member member = loadMemberOrThrow(request);
         validatePasswordMatches(request.password(), member.getEncodedPassword());
         String familyId = UUID.randomUUID().toString();
-        String refreshToken = issueRefreshToken(member.getId(), familyId);
         return new LoginResult(
                 issueAccessToken(member, familyId),
-                refreshToken,
-                jwtProperties.refreshTokenExpireSeconds());
+                issueRefreshToken(member.getId(), familyId),
+                jwtProperties.refreshTokenExpireSeconds()
+        );
     }
 
     @Transactional(noRollbackFor = UnauthorizedException.class)
@@ -58,10 +59,12 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(String accessToken) {
-        String jti = jwtProvider.getJti(accessToken);
-        long expirationMillis = jwtProvider.getExpirationMillis(accessToken);
-        tokenBlacklist.add(jti, expirationMillis);
+    public void logout(String accessToken, String refreshToken) {
+        tokenBlacklist.add(jwtProvider.getJti(accessToken), jwtProvider.getExpirationMillis(accessToken));
+        RefreshToken storedRefreshToken = loadActiveRefreshToken(refreshToken);
+        String familyId = storedRefreshToken.getFamilyId();
+        sessionBlacklist.add(familyId, toEpochMillis(storedRefreshToken.getExpiresAt()));
+        refreshTokenRepository.revokeAllByFamilyId(familyId);
     }
 
     private String issueRefreshToken(Long memberId, String familyId) {
@@ -79,14 +82,15 @@ public class AuthService {
                 member.getId(), member.getEmail(), member.getRole(), familyId);
     }
 
-    private LoginResult rotate(RefreshToken current, Member member) {
-        current.revoke();
-        String familyId = current.getFamilyId();
+    private LoginResult rotate(RefreshToken refreshToken, Member member) {
+        refreshToken.revoke();
+        String familyId = refreshToken.getFamilyId();
         String newRefreshToken = issueRefreshToken(member.getId(), familyId);
         return new LoginResult(
                 issueAccessToken(member, familyId),
                 newRefreshToken,
-                jwtProperties.refreshTokenExpireSeconds());
+                jwtProperties.refreshTokenExpireSeconds()
+        );
     }
 
     private RefreshToken loadActiveRefreshToken(String rawRefreshToken) {
@@ -134,5 +138,9 @@ public class AuthService {
         if (!passwordHasher.matches(rawPassword, encodedPassword)) {
             throw new UnauthorizedException(AuthErrorCode.LOGIN_FAILED);
         }
+    }
+
+    private long toEpochMillis(LocalDateTime dateTime) {
+        return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 }

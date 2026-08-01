@@ -247,19 +247,22 @@ public class AuthServiceTest {
     class Logout {
 
         @Test
-        @DisplayName("AT의 jti를 블랙리스트에 등록한다")
-        void blacklistsJti() {
+        @DisplayName("AT의 jti와 RT의 세션(family)을 블랙리스트에 등록하고 family를 폐기한다")
+        void blacklistsJtiAndSession() {
             // given
             registerMember("user@example.com");
             LoginResult login =
                     authService.login(new LoginReqDto("user@example.com", RAW_PASSWORD));
             String accessToken = login.accessToken();
+            String refreshToken = login.refreshToken();
+            String familyId = storedTokenOf(refreshToken).getFamilyId();
 
             // when
-            authService.logout(accessToken);
+            authService.logout(accessToken, refreshToken);
 
             // then
             assertThat(tokenBlacklist.exists(jwtProvider.getJti(accessToken))).isTrue();
+            assertThat(sessionBlacklist.exists(familyId)).isTrue();
         }
     }
 

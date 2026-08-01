@@ -60,10 +60,14 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
+            @CookieValue(value = AuthCookieConstants.REFRESH_TOKEN_COOKIE, required = false) String refreshToken
+            ) {
         String accessToken = TokenExtractor.extractBearerToken(authorizationHeader);
-        authService.logout(accessToken);
+        authService.logout(accessToken, refreshToken);
+        ResponseCookie logoutCookie = RefreshTokenCookieFactory.delete();
         return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
+                .header(HttpHeaders.SET_COOKIE, logoutCookie.toString())
                 .body(ApiResponse.success(SuccessCode.SUCCESS));
     }
 }

@@ -16,6 +16,7 @@ import kakao.bootcamp.fullstack.api.domain.member.Role;
 import kakao.bootcamp.fullstack.api.dto.request.LoginReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.LoginResult;
 import kakao.bootcamp.fullstack.api.service.AuthService;
+import kakao.bootcamp.fullstack.global.constants.AuthCookieConstants;
 import kakao.bootcamp.fullstack.global.config.SecurityConfig;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.rate_limiter.RateLimiter;
@@ -113,20 +114,35 @@ public class AuthControllerTest {
     class Logout {
 
         @Test
-        @DisplayName("인증된 요청이면 Authorization의 AT를 서비스로 넘기고 200을 응답한다")
+        @DisplayName("인증된 요청이면 Authorization의 AT와 RT 쿠키를 서비스로 넘기고 200을 응답한다")
         void logsOutSuccessfully() throws Exception {
             // given
             String accessToken = "access-token";
+            String refreshToken = "refresh-token";
             given(jwtProvider.getRole(accessToken)).willReturn(Role.ROLE_USER);
 
             // when & then
             mockMvc.perform(
                             post("/api/v1/logout")
-                                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                                    .cookie(
+                                            new Cookie(
+                                                    AuthCookieConstants.REFRESH_TOKEN_COOKIE,
+                                                    refreshToken)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("SUCCESS"));
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(
+                            header().string(
+                                            HttpHeaders.SET_COOKIE,
+                                            containsString("refresh_token=;")))
+                    .andExpect(
+                            header().string(
+                                            HttpHeaders.SET_COOKIE,
+                                            containsString("Path=/api/v1/reissue")))
+                    .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
+                    .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("HttpOnly")));
 
-            verify(authService).logout(accessToken);
+            verify(authService).logout(accessToken, refreshToken);
         }
 
         @Test
