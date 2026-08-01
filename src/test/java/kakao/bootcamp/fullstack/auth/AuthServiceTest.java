@@ -159,7 +159,7 @@ public class AuthServiceTest {
         }
 
         @Test
-        @DisplayName("이미 폐기된 RT가 다시 제출되면 재사용을 감지해 family 전체를 무효화하고 세션을 블랙리스트에 등록한다")
+        @DisplayName("이미 폐기된 RT가 다시 제출되면 재사용을 감지해 family 전체를 무효화하고 세션을 블랙리스트에 등록하되, 응답 코드는 INVALID_REFRESH_TOKEN으로 통일한다")
         void detectsReuse() {
             // given
             registerMember("user@example.com");
@@ -174,7 +174,7 @@ public class AuthServiceTest {
             assertThatExceptionOfType(UnauthorizedException.class)
                     .isThrownBy(() -> authService.reissue(rt1))
                     .extracting(BusinessException::getCode)
-                    .isEqualTo(AuthErrorCode.REFRESH_TOKEN_REUSE_DETECTED);
+                    .isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
 
             assertThat(storedTokenOf(rt2).isRevoked()).isTrue();
             assertThat(sessionBlacklist.exists(familyId)).isTrue();

@@ -19,9 +19,11 @@ import kakao.bootcamp.fullstack.global.security.jwt.provider.JwtProvider;
 import kakao.bootcamp.fullstack.global.security.token.RefreshTokenGenerator;
 import kakao.bootcamp.fullstack.global.security.token.RefreshTokenHasher;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -129,8 +131,13 @@ public class AuthService {
 
     private void detectReuseOrThrow(RefreshToken refreshToken) {
         if (refreshToken.isRevoked()) {
+            // 응답 코드는 INVALID_REFRESH_TOKEN으로 통일해 추측을 막고(설계 3-3),
+            // 실제 사유(이미 회전된 RT 재사용)는 서버 로그로만 남긴다.
+            log.warn(
+                    "RT 재사용 감지: 이미 회전된 토큰이 제출되어 family 전체를 폐기한다. familyId={}",
+                    refreshToken.getFamilyId());
             revokeFamily(refreshToken.getFamilyId());
-            throw new UnauthorizedException(AuthErrorCode.REFRESH_TOKEN_REUSE_DETECTED);
+            throw new UnauthorizedException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
     }
 

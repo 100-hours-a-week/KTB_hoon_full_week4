@@ -49,7 +49,7 @@ public class AuthReissueTransactionTest {
         assertThatExceptionOfType(UnauthorizedException.class)
                 .isThrownBy(() -> authService.reissue(rt1))
                 .extracting(BusinessException::getCode)
-                .isEqualTo(AuthErrorCode.REFRESH_TOKEN_REUSE_DETECTED);
+                .isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
 
         // then
         assertThat(activeTokenOf(rt2).isRevoked()).isTrue();

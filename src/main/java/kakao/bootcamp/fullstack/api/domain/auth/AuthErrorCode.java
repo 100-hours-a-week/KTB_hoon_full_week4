@@ -12,10 +12,6 @@ public enum AuthErrorCode implements BaseCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "invalid_token"),
     INVALID_REFRESH_TOKEN(
             HttpStatus.UNAUTHORIZED, "INVALID_REFRESH_TOKEN", "invalid_refresh_token"),
-    REFRESH_TOKEN_REUSE_DETECTED(
-            HttpStatus.UNAUTHORIZED,
-            "REFRESH_TOKEN_REUSE_DETECTED",
-            "refresh_token_reuse_detected"),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "access_denied"),
     ;
 

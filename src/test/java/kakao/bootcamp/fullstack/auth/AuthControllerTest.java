@@ -225,21 +225,5 @@ public class AuthControllerTest {
 
             verify(authService).reissue(null);
         }
-
-        @Test
-        @DisplayName("재사용이 감지되면 401과 REFRESH_TOKEN_REUSE_DETECTED 코드를 응답한다")
-        void reissueReuseDetected() throws Exception {
-            // given
-            given(authService.reissue("reused-token"))
-                    .willThrow(
-                            new UnauthorizedException(AuthErrorCode.REFRESH_TOKEN_REUSE_DETECTED));
-
-            // when & then
-            mockMvc.perform(
-                            post("/api/v1/reissue")
-                                    .cookie(new Cookie("refresh_token", "reused-token")))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.code").value("REFRESH_TOKEN_REUSE_DETECTED"));
-        }
     }
 }
