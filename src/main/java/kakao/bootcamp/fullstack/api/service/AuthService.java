@@ -60,10 +60,35 @@ public class AuthService {
 
     @Transactional
     public void logout(String accessToken, String refreshToken) {
-        tokenBlacklist.add(jwtProvider.getJti(accessToken), jwtProvider.getExpirationMillis(accessToken));
-        RefreshToken storedRefreshToken = loadActiveRefreshToken(refreshToken);
-        String familyId = storedRefreshToken.getFamilyId();
-        sessionBlacklist.add(familyId, toEpochMillis(storedRefreshToken.getExpiresAt()));
+        blacklistAccessToken(accessToken);
+        revokeSession(refreshToken);
+    }
+
+    private void blacklistAccessToken(String accessToken) {
+        if (accessToken == null || accessToken.isBlank()) {
+            return;
+        }
+        try {
+            jwtProvider.validateToken(accessToken);
+        } catch (UnauthorizedException e) {
+            return;
+        }
+        tokenBlacklist.add(
+                jwtProvider.getJti(accessToken), jwtProvider.getExpirationMillis(accessToken));
+    }
+
+    private void revokeSession(String rawRefreshToken) {
+        if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
+            return;
+        }
+        refreshTokenRepository
+                .findActiveByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
+                .ifPresent(this::revokeFamilyForLogout);
+    }
+
+    private void revokeFamilyForLogout(RefreshToken refreshToken) {
+        String familyId = refreshToken.getFamilyId();
+        sessionBlacklist.add(familyId, toEpochMillis(refreshToken.getExpiresAt()));
         refreshTokenRepository.revokeAllByFamilyId(familyId);
     }
 

@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import jakarta.servlet.http.Cookie;
 import kakao.bootcamp.fullstack.api.controller.AuthController;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
-import kakao.bootcamp.fullstack.api.domain.member.Role;
 import kakao.bootcamp.fullstack.api.dto.request.LoginReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.LoginResult;
 import kakao.bootcamp.fullstack.api.service.AuthService;
@@ -114,12 +113,11 @@ public class AuthControllerTest {
     class Logout {
 
         @Test
-        @DisplayName("인증된 요청이면 Authorization의 AT와 RT 쿠키를 서비스로 넘기고 200을 응답한다")
+        @DisplayName("AT와 RT 쿠키가 있으면 둘 다 서비스로 넘기고 200을 응답한다")
         void logsOutSuccessfully() throws Exception {
             // given
             String accessToken = "access-token";
             String refreshToken = "refresh-token";
-            given(jwtProvider.getRole(accessToken)).willReturn(Role.ROLE_USER);
 
             // when & then
             mockMvc.perform(
@@ -146,12 +144,35 @@ public class AuthControllerTest {
         }
 
         @Test
-        @DisplayName("인증 헤더가 없으면 401과 INVALID_TOKEN 코드를 응답한다")
-        void returns401WithoutAuth() throws Exception {
+        @DisplayName("AT가 만료돼 Authorization이 없어도 RT 쿠키만으로 로그아웃되어 200을 응답한다")
+        void logsOutWithRefreshTokenCookieOnly() throws Exception {
+            // given
+            String refreshToken = "refresh-token";
+
+            // when & then
+            mockMvc.perform(
+                            post("/api/v1/logout")
+                                    .cookie(
+                                            new Cookie(
+                                                    AuthCookieConstants.REFRESH_TOKEN_COOKIE,
+                                                    refreshToken)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")));
+
+            verify(authService).logout(null, refreshToken);
+        }
+
+        @Test
+        @DisplayName("AT와 RT가 모두 없어도 예외 없이 200과 삭제 쿠키를 응답한다(멱등)")
+        void logsOutIdempotentlyWithoutTokens() throws Exception {
             // when & then
             mockMvc.perform(post("/api/v1/logout"))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.code").value("INVALID_TOKEN"));
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")));
+
+            verify(authService).logout(null, null);
         }
     }
 

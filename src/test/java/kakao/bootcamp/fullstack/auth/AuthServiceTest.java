@@ -263,6 +263,42 @@ public class AuthServiceTest {
             // then
             assertThat(tokenBlacklist.exists(jwtProvider.getJti(accessToken))).isTrue();
             assertThat(sessionBlacklist.exists(familyId)).isTrue();
+            assertThat(storedTokenOf(refreshToken).isRevoked()).isTrue();
+        }
+
+        @Test
+        @DisplayName("AT가 null이어도 RT 쿠키만으로 family를 폐기하고 세션을 블랙리스트에 등록한다")
+        void logsOutWithRefreshTokenOnly() {
+            // given
+            registerMember("user@example.com");
+            LoginResult login =
+                    authService.login(new LoginReqDto("user@example.com", RAW_PASSWORD));
+            String refreshToken = login.refreshToken();
+            String familyId = storedTokenOf(refreshToken).getFamilyId();
+
+            // when
+            authService.logout(null, refreshToken);
+
+            // then
+            assertThat(sessionBlacklist.exists(familyId)).isTrue();
+            assertThat(storedTokenOf(refreshToken).isRevoked()).isTrue();
+        }
+
+        @Test
+        @DisplayName("AT와 RT가 모두 없어도 예외 없이 멱등하게 처리한다")
+        void logsOutIdempotentlyWithoutTokens() {
+            // when & then
+            authService.logout(null, null);
+        }
+
+        @Test
+        @DisplayName("저장되지 않은 RT면 예외 없이 아무 것도 폐기하지 않는다")
+        void ignoresUnknownRefreshToken() {
+            // given
+            String unknownToken = refreshTokenGenerator.generate();
+
+            // when & then
+            authService.logout(null, unknownToken);
         }
     }
 
