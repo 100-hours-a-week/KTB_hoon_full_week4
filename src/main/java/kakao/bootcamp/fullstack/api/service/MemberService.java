@@ -6,6 +6,7 @@ import kakao.bootcamp.fullstack.api.dto.request.PasswordUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.ProfileUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.SignupReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
+import kakao.bootcamp.fullstack.api.repository.auth.RefreshTokenRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.global.exception.BadRequestException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordHasher passwordHasher;
 
     @Transactional
@@ -63,6 +65,7 @@ public class MemberService {
         validateCurrentPasswordMatch(request.currentPassword(), member.getEncodedPassword());
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
         member.updatePassword(passwordHasher.hash(request.password()));
+        refreshTokenRepository.revokeAllByMemberId(memberId);
     }
 
     private Member loadMemberOrThrow(Long memberId) {

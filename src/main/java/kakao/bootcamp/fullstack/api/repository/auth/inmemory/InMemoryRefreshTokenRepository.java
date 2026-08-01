@@ -42,4 +42,12 @@ public class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
                 .filter(token -> Objects.equals(token.getFamilyId(), familyId))
                 .forEach(RefreshToken::revoke);
     }
+
+    @Override
+    public void revokeAllByMemberId(Long memberId) {
+        refreshTokens.values().stream()
+                .filter(token -> !token.isDeleted())
+                .filter(token -> Objects.equals(token.getMemberId(), memberId))
+                .forEach(RefreshToken::revoke);
+    }
 }

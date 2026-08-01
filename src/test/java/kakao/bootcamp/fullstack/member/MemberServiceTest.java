@@ -14,6 +14,7 @@ import kakao.bootcamp.fullstack.api.dto.request.PasswordUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.ProfileUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.SignupReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
+import kakao.bootcamp.fullstack.api.repository.auth.RefreshTokenRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.service.MemberService;
 import kakao.bootcamp.fullstack.global.exception.BadRequestException;
@@ -39,6 +40,8 @@ public class MemberServiceTest {
     private static final Long MEMBER_ID = 1L;
 
     @Mock private MemberRepository memberRepository;
+
+    @Mock private RefreshTokenRepository refreshTokenRepository;
 
     @Mock private PasswordHasher passwordEncoder;
 
@@ -279,6 +282,7 @@ public class MemberServiceTest {
             // then
             verify(passwordEncoder).hash(request.password());
             assertThat(member.getEncodedPassword()).isEqualTo("new-encoded");
+            verify(refreshTokenRepository).revokeAllByMemberId(MEMBER_ID);
         }
 
         @Test

@@ -28,4 +28,9 @@ public class JpaRefreshTokenRepositoryAdapter implements RefreshTokenRepository 
     public void revokeAllByFamilyId(String familyId) {
         jpaRefreshTokenRepository.revokeAllByFamilyId(familyId);
     }
+
+    @Override
+    public void revokeAllByMemberId(Long memberId) {
+        jpaRefreshTokenRepository.revokeAllByMemberId(memberId);
+    }
 }

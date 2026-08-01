@@ -10,4 +10,6 @@ public interface RefreshTokenRepository {
     Optional<RefreshToken> findActiveByTokenHash(String tokenHash);
 
     void revokeAllByFamilyId(String familyId);
+
+    void revokeAllByMemberId(Long memberId);
 }
