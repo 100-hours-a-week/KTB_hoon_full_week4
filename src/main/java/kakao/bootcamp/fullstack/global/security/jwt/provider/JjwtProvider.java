@@ -1,6 +1,7 @@
 package kakao.bootcamp.fullstack.global.security.jwt.provider;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -52,7 +53,13 @@ public class JjwtProvider implements JwtProvider {
     public void validateToken(String token) {
         try {
             parseClaims(token);
+        } catch (ExpiredJwtException e) {
+            // 만료는 재발급으로 자연 복구되는 정상 이벤트 → 소음 방지를 위해 debug
+            log.debug("AT 만료: 재발급 대상.");
+            throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
         } catch (JwtException | IllegalArgumentException e) {
+            // 서명 불일치·구조 손상 등은 위변조 가능성 → warn
+            log.warn("AT 검증 실패(위변조 의심): {}", e.getMessage());
             throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
         }
     }
