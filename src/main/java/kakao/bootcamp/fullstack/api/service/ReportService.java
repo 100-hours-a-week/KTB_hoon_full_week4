@@ -2,6 +2,9 @@ package kakao.bootcamp.fullstack.api.service;
 
 import jakarta.annotation.PostConstruct;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.domain.report.Report;
@@ -26,11 +29,24 @@ public class ReportService {
     private final MemberRepository memberRepository;
     private final List<ReportTargetHandler> handlers;
 
+    private Map<TargetType, ReportTargetHandler> handlerMap;
+
     @PostConstruct
-    void verifyAllTargetTypesHandled() {
+    void registerAndVerifyHandlers() {
+        handlerMap =
+                handlers.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        ReportTargetHandler::getTargetType,
+                                        Function.identity(),
+                                        (existing, duplicate) -> {
+                                            throw new IllegalStateException(
+                                                    "Duplicate ReportTargetHandler for: "
+                                                            + existing.getTargetType());
+                                        }));
+        // 갭(핸들러 없는 타입)도 기동 시점에 실패시킨다.
         for (TargetType type : TargetType.values()) {
-            boolean covered = handlers.stream().anyMatch(handler -> handler.supports(type));
-            if (!covered) {
+            if (!handlerMap.containsKey(type)) {
                 throw new IllegalStateException("No ReportTargetHandler registered for: " + type);
             }
         }
@@ -48,14 +64,13 @@ public class ReportService {
     }
 
     private ReportTargetHandler resolveHandler(TargetType targetType) {
-        return handlers.stream()
-                .filter(h -> h.supports(targetType))
-                .findFirst()
-                .orElseThrow(
-                        () ->
-                                new InternalServerException(
-                                        CommonErrorCode.HANDLER_NOT_FOUND,
-                                        "No ReportTargetHandler registered for: " + targetType));
+        ReportTargetHandler handler = handlerMap.get(targetType);
+        if (handler == null) {
+            throw new InternalServerException(
+                    CommonErrorCode.HANDLER_NOT_FOUND,
+                    "No ReportTargetHandler registered for: " + targetType);
+        }
+        return handler;
     }
 
     private void checkMemberExists(Long memberId) {

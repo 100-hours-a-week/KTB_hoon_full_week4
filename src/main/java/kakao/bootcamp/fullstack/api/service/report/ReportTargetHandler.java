@@ -4,7 +4,7 @@ import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 
 public interface ReportTargetHandler {
 
-    boolean supports(TargetType targetType);
+    TargetType getTargetType();
 
     void handleReported(Long targetId);
 }

@@ -15,8 +15,8 @@ public class CommentReportHandler implements ReportTargetHandler {
     private final CommentRepository commentRepository;
 
     @Override
-    public boolean supports(TargetType targetType) {
-        return targetType == TargetType.COMMENT;
+    public TargetType getTargetType() {
+        return TargetType.COMMENT;
     }
 
     @Override

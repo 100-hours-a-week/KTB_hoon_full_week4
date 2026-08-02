@@ -15,8 +15,8 @@ public class PostReportHandler implements ReportTargetHandler {
     private final PostRepository postRepository;
 
     @Override
-    public boolean supports(TargetType targetType) {
-        return targetType == TargetType.POST;
+    public TargetType getTargetType() {
+        return TargetType.POST;
     }
 
     @Override
