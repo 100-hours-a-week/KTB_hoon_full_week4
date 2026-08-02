@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import kakao.bootcamp.fullstack.global.BaseEntity;
@@ -20,7 +21,12 @@ import org.hibernate.annotations.SQLDelete;
 @SQLDelete(
         sql =
                 "UPDATE refresh_tokens SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
-@Table(name = "refresh_tokens")
+@Table(
+        name = "refresh_tokens",
+        indexes = {
+            @Index(name = "idx_refresh_tokens_family_id", columnList = "family_id"),
+            @Index(name = "idx_refresh_tokens_member_id", columnList = "member_id")
+        })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken extends BaseEntity {
 
