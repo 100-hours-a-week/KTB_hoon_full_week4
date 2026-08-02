@@ -20,7 +20,7 @@ public class JpaRefreshTokenRepositoryAdapter implements RefreshTokenRepository 
     }
 
     @Override
-    public Optional<RefreshToken> findActiveByTokenHash(String tokenHash) {
+    public Optional<RefreshToken> findNotDeletedByTokenHash(String tokenHash) {
         return jpaRefreshTokenRepository.findByTokenHashAndDeletedFalse(tokenHash);
     }
 

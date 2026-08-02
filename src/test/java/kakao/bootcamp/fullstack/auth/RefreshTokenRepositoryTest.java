@@ -43,7 +43,7 @@ public class RefreshTokenRepositoryTest {
         refreshTokenRepository.save(active("family-a", "hash-1"));
 
         // when
-        Optional<RefreshToken> result = refreshTokenRepository.findActiveByTokenHash("hash-1");
+        Optional<RefreshToken> result = refreshTokenRepository.findNotDeletedByTokenHash("hash-1");
 
         // then
         assertThat(result).isPresent();
@@ -60,7 +60,7 @@ public class RefreshTokenRepositoryTest {
         refreshTokenRepository.save(token);
 
         // when
-        Optional<RefreshToken> result = refreshTokenRepository.findActiveByTokenHash("hash-1");
+        Optional<RefreshToken> result = refreshTokenRepository.findNotDeletedByTokenHash("hash-1");
 
         // then
         assertThat(result).isEmpty();
@@ -80,19 +80,19 @@ public class RefreshTokenRepositoryTest {
         // then
         assertThat(
                         refreshTokenRepository
-                                .findActiveByTokenHash("hash-a1")
+                                .findNotDeletedByTokenHash("hash-a1")
                                 .orElseThrow()
                                 .isRevoked())
                 .isTrue();
         assertThat(
                         refreshTokenRepository
-                                .findActiveByTokenHash("hash-a2")
+                                .findNotDeletedByTokenHash("hash-a2")
                                 .orElseThrow()
                                 .isRevoked())
                 .isTrue();
         assertThat(
                         refreshTokenRepository
-                                .findActiveByTokenHash("hash-b1")
+                                .findNotDeletedByTokenHash("hash-b1")
                                 .orElseThrow()
                                 .isRevoked())
                 .isFalse();
@@ -108,6 +108,6 @@ public class RefreshTokenRepositoryTest {
         refreshTokenRepository.revokeAllByFamilyId("family-a");
 
         // then
-        assertThat(refreshTokenRepository.findActiveByTokenHash("hash-1")).isPresent();
+        assertThat(refreshTokenRepository.findNotDeletedByTokenHash("hash-1")).isPresent();
     }
 }

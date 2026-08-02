@@ -57,7 +57,7 @@ public class AuthReissueTransactionTest {
 
     private RefreshToken activeTokenOf(String rawRefreshToken) {
         return refreshTokenRepository
-                .findActiveByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
+                .findNotDeletedByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
                 .orElseThrow();
     }
 }

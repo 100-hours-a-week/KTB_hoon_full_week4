@@ -22,7 +22,7 @@ public class FakeRefreshTokenRepository implements RefreshTokenRepository {
     }
 
     @Override
-    public Optional<RefreshToken> findActiveByTokenHash(String tokenHash) {
+    public Optional<RefreshToken> findNotDeletedByTokenHash(String tokenHash) {
         return store.values().stream()
                 .filter(token -> !token.isDeleted())
                 .filter(token -> Objects.equals(token.getTokenHash(), tokenHash))

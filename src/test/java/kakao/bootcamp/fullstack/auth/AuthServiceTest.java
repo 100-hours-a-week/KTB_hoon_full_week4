@@ -324,7 +324,7 @@ public class AuthServiceTest {
 
             // then
             Optional<RefreshToken> active =
-                    refreshTokenRepository.findActiveByTokenHash(refreshTokenHasher.hash(rt1));
+                    refreshTokenRepository.findNotDeletedByTokenHash(refreshTokenHasher.hash(rt1));
             assertThat(active).isPresent();
             assertThat(active.get().isRevoked()).isTrue();
             assertThat(sessionBlacklist.exists(familyId)).isTrue();
@@ -339,7 +339,7 @@ public class AuthServiceTest {
 
     private RefreshToken storedTokenOf(String rawRefreshToken) {
         return refreshTokenRepository
-                .findActiveByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
+                .findNotDeletedByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
                 .orElseThrow();
     }
 }

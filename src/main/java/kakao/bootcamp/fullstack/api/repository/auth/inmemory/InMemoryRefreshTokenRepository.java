@@ -28,7 +28,7 @@ public class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
     }
 
     @Override
-    public Optional<RefreshToken> findActiveByTokenHash(String tokenHash) {
+    public Optional<RefreshToken> findNotDeletedByTokenHash(String tokenHash) {
         return refreshTokens.values().stream()
                 .filter(token -> !token.isDeleted())
                 .filter(token -> Objects.equals(token.getTokenHash(), tokenHash))

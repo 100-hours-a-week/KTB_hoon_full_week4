@@ -83,7 +83,7 @@ public class AuthService {
             return;
         }
         refreshTokenRepository
-                .findActiveByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
+                .findNotDeletedByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
                 .ifPresent(this::revokeFamilyForLogout);
     }
 
@@ -123,7 +123,7 @@ public class AuthService {
             throw new UnauthorizedException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
         return refreshTokenRepository
-                .findActiveByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
+                .findNotDeletedByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
                 .orElseThrow(() -> new UnauthorizedException(AuthErrorCode.INVALID_REFRESH_TOKEN));
     }
 

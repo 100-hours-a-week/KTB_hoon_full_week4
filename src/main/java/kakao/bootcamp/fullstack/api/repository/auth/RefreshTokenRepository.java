@@ -7,7 +7,7 @@ public interface RefreshTokenRepository {
 
     void save(RefreshToken refreshToken);
 
-    Optional<RefreshToken> findActiveByTokenHash(String tokenHash);
+    Optional<RefreshToken> findNotDeletedByTokenHash(String tokenHash);
 
     void revokeAllByFamilyId(String familyId);
 
