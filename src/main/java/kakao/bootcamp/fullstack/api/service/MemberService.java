@@ -87,13 +87,13 @@ public class MemberService {
     }
 
     private void checkEmailDuplicated(String email) {
-        if (memberRepository.existsByEmail(email)) {
+        if (memberRepository.existsByEmailIncludingDeleted(email)) {
             throw new BadRequestException(MemberErrorCode.EMAIL_DUPLICATED);
         }
     }
 
     private void checkNicknameDuplicated(String nickname) {
-        if (memberRepository.existsByNickname(nickname)) {
+        if (memberRepository.existsByNicknameIncludingDeleted(nickname)) {
             throw new BadRequestException(MemberErrorCode.NICKNAME_DUPLICATED);
         }
     }

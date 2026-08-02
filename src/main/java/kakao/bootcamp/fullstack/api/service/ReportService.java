@@ -44,7 +44,6 @@ public class ReportService {
                                                     "Duplicate ReportTargetHandler for: "
                                                             + existing.getTargetType());
                                         }));
-        // 갭(핸들러 없는 타입)도 기동 시점에 실패시킨다.
         for (TargetType type : TargetType.values()) {
             if (!handlerMap.containsKey(type)) {
                 throw new IllegalStateException("No ReportTargetHandler registered for: " + type);

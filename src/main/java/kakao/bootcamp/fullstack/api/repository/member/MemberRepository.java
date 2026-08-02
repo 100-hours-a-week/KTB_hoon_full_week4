@@ -12,7 +12,7 @@ public interface MemberRepository {
 
     Optional<Member> findActiveByEmail(String email);
 
-    boolean existsByEmail(String email);
+    boolean existsByEmailIncludingDeleted(String email);
 
-    boolean existsByNickname(String nickname);
+    boolean existsByNicknameIncludingDeleted(String nickname);
 }

@@ -39,12 +39,12 @@ public class FakeMemberRepository implements MemberRepository {
     }
 
     @Override
-    public boolean existsByEmail(String email) {
+    public boolean existsByEmailIncludingDeleted(String email) {
         return store.values().stream().anyMatch(member -> member.getEmail().equals(email));
     }
 
     @Override
-    public boolean existsByNickname(String nickname) {
+    public boolean existsByNicknameIncludingDeleted(String nickname) {
         return store.values().stream().anyMatch(member -> member.getNickname().equals(nickname));
     }
 

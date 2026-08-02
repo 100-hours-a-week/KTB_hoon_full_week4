@@ -35,12 +35,12 @@ public class JpaMemberRepositoryAdapter implements MemberRepository {
     }
 
     @Override
-    public boolean existsByEmail(String email) {
+    public boolean existsByEmailIncludingDeleted(String email) {
         return jpaMemberRepository.existsByEmail(email);
     }
 
     @Override
-    public boolean existsByNickname(String nickname) {
+    public boolean existsByNicknameIncludingDeleted(String nickname) {
         return jpaMemberRepository.existsByNickname(nickname);
     }
 }

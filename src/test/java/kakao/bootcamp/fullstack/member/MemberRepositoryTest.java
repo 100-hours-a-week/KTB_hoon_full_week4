@@ -116,7 +116,7 @@ public class MemberRepositoryTest {
         memberRepository.save(member);
 
         // when
-        boolean found = memberRepository.existsByEmail(member.getEmail());
+        boolean found = memberRepository.existsByEmailIncludingDeleted(member.getEmail());
 
         // then
         assertThat(found).isTrue();
@@ -129,7 +129,7 @@ public class MemberRepositoryTest {
         memberRepository.save(member);
 
         // when
-        boolean found = memberRepository.existsByNickname(member.getNickname());
+        boolean found = memberRepository.existsByNicknameIncludingDeleted(member.getNickname());
 
         // then
         assertThat(found).isTrue();
@@ -155,7 +155,7 @@ public class MemberRepositoryTest {
         String notSavedEmail = "notfound@example.com";
 
         // when
-        boolean found = memberRepository.existsByEmail(notSavedEmail);
+        boolean found = memberRepository.existsByEmailIncludingDeleted(notSavedEmail);
 
         // then
         assertThat(found).isFalse();
@@ -169,7 +169,7 @@ public class MemberRepositoryTest {
         memberRepository.save(member);
 
         // when
-        boolean found = memberRepository.existsByEmail(member.getEmail());
+        boolean found = memberRepository.existsByEmailIncludingDeleted(member.getEmail());
 
         // then
         assertThat(found).isTrue();

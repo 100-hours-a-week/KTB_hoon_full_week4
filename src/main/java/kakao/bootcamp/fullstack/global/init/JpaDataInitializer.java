@@ -41,7 +41,7 @@ public class JpaDataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (memberRepository.existsByEmail(SEED_GUARD_EMAIL)) {
+        if (memberRepository.existsByEmailIncludingDeleted(SEED_GUARD_EMAIL)) {
             log.info("[JpaDataInitializer] skip — already seeded");
             return;
         }

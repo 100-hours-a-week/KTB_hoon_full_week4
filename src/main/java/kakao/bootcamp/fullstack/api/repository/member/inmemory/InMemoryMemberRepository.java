@@ -47,13 +47,13 @@ public class InMemoryMemberRepository implements MemberRepository {
     }
 
     @Override
-    public boolean existsByEmail(String email) {
+    public boolean existsByEmailIncludingDeleted(String email) {
         return members.entrySet().stream()
                 .anyMatch(entry -> entry.getValue().getEmail().equals(email));
     }
 
     @Override
-    public boolean existsByNickname(String nickname) {
+    public boolean existsByNicknameIncludingDeleted(String nickname) {
         return members.entrySet().stream()
                 .anyMatch(entry -> entry.getValue().getNickname().equals(nickname));
     }

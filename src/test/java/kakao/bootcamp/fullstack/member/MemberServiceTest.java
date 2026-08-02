@@ -56,8 +56,10 @@ public class MemberServiceTest {
         void signsUpSuccessfully() {
             // given
             SignupReqDto request = SignupReqDtoFixture.valid();
-            given(memberRepository.existsByEmail(request.email())).willReturn(false);
-            given(memberRepository.existsByNickname(request.nickname())).willReturn(false);
+            given(memberRepository.existsByEmailIncludingDeleted(request.email()))
+                    .willReturn(false);
+            given(memberRepository.existsByNicknameIncludingDeleted(request.nickname()))
+                    .willReturn(false);
             given(passwordEncoder.hash(request.password())).willReturn("encoded-password");
 
             // when
@@ -93,7 +95,7 @@ public class MemberServiceTest {
         void throwsExceptionWhenEmailDuplicated() {
             // given
             SignupReqDto request = SignupReqDtoFixture.valid();
-            given(memberRepository.existsByEmail(request.email())).willReturn(true);
+            given(memberRepository.existsByEmailIncludingDeleted(request.email())).willReturn(true);
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)
@@ -108,8 +110,10 @@ public class MemberServiceTest {
         void throwsExceptionWhenNicknameDuplicated() {
             // given
             SignupReqDto request = SignupReqDtoFixture.valid();
-            given(memberRepository.existsByEmail(request.email())).willReturn(false);
-            given(memberRepository.existsByNickname(request.nickname())).willReturn(true);
+            given(memberRepository.existsByEmailIncludingDeleted(request.email()))
+                    .willReturn(false);
+            given(memberRepository.existsByNicknameIncludingDeleted(request.nickname()))
+                    .willReturn(true);
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)
@@ -205,7 +209,7 @@ public class MemberServiceTest {
             // then
             assertThat(member.getNickname()).isEqualTo(request.nickname());
             assertThat(member.getProfileImgUrl()).isEqualTo(request.imageUrl());
-            verify(memberRepository, never()).existsByNickname(any());
+            verify(memberRepository, never()).existsByNicknameIncludingDeleted(any());
         }
 
         @Test
@@ -216,7 +220,7 @@ public class MemberServiceTest {
             Member member = MemberFixture.activeMember(MEMBER_ID);
             ProfileUpdateReqDto request = ProfileUpdateReqDtoFixture.withNickname(newNickname);
             given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
-            given(memberRepository.existsByNickname(newNickname)).willReturn(false);
+            given(memberRepository.existsByNicknameIncludingDeleted(newNickname)).willReturn(false);
 
             // when
             memberService.updateMemberProfile(MEMBER_ID, request);
@@ -236,7 +240,8 @@ public class MemberServiceTest {
             ProfileUpdateReqDto request =
                     ProfileUpdateReqDtoFixture.withNickname(duplicatedNickname);
             given(memberRepository.findActiveById(MEMBER_ID)).willReturn(Optional.of(member));
-            given(memberRepository.existsByNickname(duplicatedNickname)).willReturn(true);
+            given(memberRepository.existsByNicknameIncludingDeleted(duplicatedNickname))
+                    .willReturn(true);
 
             // when & then
             assertThatExceptionOfType(BadRequestException.class)
