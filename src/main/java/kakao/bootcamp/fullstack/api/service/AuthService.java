@@ -47,8 +47,7 @@ public class AuthService {
         return new LoginResult(
                 issueAccessToken(member, familyId),
                 issueRefreshToken(member.getId(), familyId),
-                jwtProperties.refreshTokenExpireSeconds()
-        );
+                jwtProperties.refreshTokenExpireSeconds());
     }
 
     @Transactional(noRollbackFor = UnauthorizedException.class)
@@ -116,8 +115,7 @@ public class AuthService {
         return new LoginResult(
                 issueAccessToken(member, familyId),
                 newRefreshToken,
-                jwtProperties.refreshTokenExpireSeconds()
-        );
+                jwtProperties.refreshTokenExpireSeconds());
     }
 
     private RefreshToken loadActiveRefreshToken(String rawRefreshToken) {

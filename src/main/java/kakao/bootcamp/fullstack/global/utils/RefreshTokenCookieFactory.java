@@ -17,7 +17,7 @@ public class RefreshTokenCookieFactory {
                 .build();
     }
 
-    public static ResponseCookie delete(){
+    public static ResponseCookie delete() {
         return ResponseCookie.from(AuthCookieConstants.REFRESH_TOKEN_COOKIE, "")
                 .httpOnly(true)
                 .secure(false)

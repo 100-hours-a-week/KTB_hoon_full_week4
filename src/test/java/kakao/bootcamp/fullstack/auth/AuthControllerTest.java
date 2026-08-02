@@ -15,8 +15,8 @@ import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.dto.request.LoginReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.LoginResult;
 import kakao.bootcamp.fullstack.api.service.AuthService;
-import kakao.bootcamp.fullstack.global.constants.AuthCookieConstants;
 import kakao.bootcamp.fullstack.global.config.SecurityConfig;
+import kakao.bootcamp.fullstack.global.constants.AuthCookieConstants;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.rate_limiter.RateLimiter;
 import kakao.bootcamp.fullstack.global.security.filter.JwtAccessDeniedHandler;
@@ -158,7 +158,8 @@ public class AuthControllerTest {
                                                     refreshToken)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")));
+                    .andExpect(
+                            header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")));
 
             verify(authService).logout(null, refreshToken);
         }
@@ -170,7 +171,8 @@ public class AuthControllerTest {
             mockMvc.perform(post("/api/v1/logout"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")));
+                    .andExpect(
+                            header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")));
 
             verify(authService).logout(null, null);
         }
