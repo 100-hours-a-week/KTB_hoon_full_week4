@@ -52,7 +52,7 @@ public class AuthService {
 
     @Transactional(noRollbackFor = UnauthorizedException.class)
     public LoginResult reissue(String rawRefreshToken) {
-        RefreshToken refreshToken = loadActiveRefreshToken(rawRefreshToken);
+        RefreshToken refreshToken = loadNotDeletedRefreshToken(rawRefreshToken);
         detectReuseOrThrow(refreshToken);
         validateNotExpired(refreshToken);
         Member member = loadActiveMemberOrThrow(refreshToken.getMemberId());
@@ -118,7 +118,7 @@ public class AuthService {
                 jwtProperties.refreshTokenExpireSeconds());
     }
 
-    private RefreshToken loadActiveRefreshToken(String rawRefreshToken) {
+    private RefreshToken loadNotDeletedRefreshToken(String rawRefreshToken) {
         if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
             throw new UnauthorizedException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }

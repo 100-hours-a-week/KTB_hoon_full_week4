@@ -43,7 +43,7 @@ public class AuthReissueTransactionTest {
         String rt1 = login.refreshToken();
         LoginResult rotated = authService.reissue(rt1);
         String rt2 = rotated.refreshToken();
-        assertThat(activeTokenOf(rt2).isRevoked()).isFalse();
+        assertThat(storedTokenOf(rt2).isRevoked()).isFalse();
 
         // when
         assertThatExceptionOfType(UnauthorizedException.class)
@@ -52,10 +52,10 @@ public class AuthReissueTransactionTest {
                 .isEqualTo(AuthErrorCode.INVALID_REFRESH_TOKEN);
 
         // then
-        assertThat(activeTokenOf(rt2).isRevoked()).isTrue();
+        assertThat(storedTokenOf(rt2).isRevoked()).isTrue();
     }
 
-    private RefreshToken activeTokenOf(String rawRefreshToken) {
+    private RefreshToken storedTokenOf(String rawRefreshToken) {
         return refreshTokenRepository
                 .findNotDeletedByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
                 .orElseThrow();
