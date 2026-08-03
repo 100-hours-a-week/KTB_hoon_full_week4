@@ -59,13 +59,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwtProvider.validateToken(token);
             String jti = jwtProvider.getJti(token);
             if (tokenBlacklist.exists(jti)) {
-                // 로그아웃으로 폐기된 AT를 다시 쓰는 상황 → warn
                 log.warn("블랙리스트에 등록된 AT 사용 시도(로그아웃된 토큰). jti={}", jti);
                 throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
             }
             String fid = jwtProvider.getFid(token);
             if (fid != null && sessionBlacklist.exists(fid)) {
-                // family 폐기(재사용 감지·로그아웃 등)된 세션의 AT 사용 → warn
                 log.warn("폐기된 세션의 AT 사용 시도. fid={}", fid);
                 throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
             }

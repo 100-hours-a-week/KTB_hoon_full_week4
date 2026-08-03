@@ -18,6 +18,22 @@ public class InMemorySessionBlacklist implements SessionBlacklist {
 
     @Override
     public boolean exists(String familyId) {
-        return blacklist.containsKey(familyId);
+        Long expiresAt = blacklist.get(familyId);
+        if (expiresAt == null) {
+            return false;
+        }
+        if (expiresAt <= System.currentTimeMillis()) {
+            blacklist.remove(familyId, expiresAt);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int evictExpired() {
+        long now = System.currentTimeMillis();
+        int before = blacklist.size();
+        blacklist.entrySet().removeIf(entry -> entry.getValue() <= now);
+        return before - blacklist.size();
     }
 }

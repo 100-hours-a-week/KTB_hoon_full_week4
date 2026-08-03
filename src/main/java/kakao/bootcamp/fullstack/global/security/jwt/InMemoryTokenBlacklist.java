@@ -18,6 +18,22 @@ public class InMemoryTokenBlacklist implements TokenBlacklist {
 
     @Override
     public boolean exists(String jti) {
-        return blacklist.containsKey(jti);
+        Long expiresAt = blacklist.get(jti);
+        if (expiresAt == null) {
+            return false;
+        }
+        if (expiresAt <= System.currentTimeMillis()) {
+            blacklist.remove(jti, expiresAt);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int evictExpired() {
+        long now = System.currentTimeMillis();
+        int before = blacklist.size();
+        blacklist.entrySet().removeIf(entry -> entry.getValue() <= now);
+        return before - blacklist.size();
     }
 }

@@ -17,4 +17,12 @@ public class FakeTokenBlacklist implements TokenBlacklist {
     public boolean exists(String jti) {
         return blacklist.containsKey(jti);
     }
+
+    @Override
+    public int evictExpired() {
+        long now = System.currentTimeMillis();
+        int before = blacklist.size();
+        blacklist.entrySet().removeIf(entry -> entry.getValue() <= now);
+        return before - blacklist.size();
+    }
 }

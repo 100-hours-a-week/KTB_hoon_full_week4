@@ -22,3 +22,11 @@ jwt:
   secret: "mysecretkeymysecretkeymysecretkey123456mysecretkeymysecretkeymysecretkey123456mysecretkeymysecretkeymysecretkey123456"
   access-token-expire-seconds: 600
   refresh-token-expire-seconds: 1209600
+
+security:
+  blacklist:
+    cleanup-interval-ms: 600000
+
+logging:
+  level:
+    kakao.bootcamp.fullstack.global.security.jwt.BlacklistCleanupScheduler: debug
