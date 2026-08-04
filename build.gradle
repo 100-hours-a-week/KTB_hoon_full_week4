@@ -54,6 +54,11 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+// bootJar(실행 가능 jar)만 산출. plain jar 를 끄면 Dockerfile 의 COPY build/libs/*.jar 가 항상 1개만 매칭.
+tasks.named('jar') {
+	enabled = false
+}
+
 spotless {
 	java {
 		googleJavaFormat().aosp()

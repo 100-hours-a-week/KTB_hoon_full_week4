@@ -1,0 +1,9 @@
+.git
+.gradle
+.github
+build/tmp
+build/classes
+build/resources
+build/reports
+build/test-results
+build/generated
