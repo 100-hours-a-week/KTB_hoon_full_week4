@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" 2>/dev/null && git status --porcelain 2>/dev/null | grep -qE '\\.java$' && ./gradlew spotlessApply -q >/dev/null 2>&1 || true",
+            "statusMessage": "spotlessApply 적용 중...",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}
