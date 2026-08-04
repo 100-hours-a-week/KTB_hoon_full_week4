@@ -16,8 +16,8 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 ./gradlew test --tests 'kakao.bootcamp.fullstack.auth.AuthServiceTest'
 ./gradlew test --tests 'kakao.bootcamp.fullstack.auth.AuthServiceTest.rotatesSuccessfully'
 
-# 실행 시 설정 덮어쓰기 (예: 스케줄러/토큰 만료 짧게 두고 관찰)
-./gradlew bootRun --args='--jwt.access-token-expire-seconds=2 --security.blacklist.cleanup-interval-ms=3000'
+# 실행 시 설정 덮어쓰기 (예: 토큰 만료 짧게 두고 블랙리스트 동작 관찰)
+./gradlew bootRun --args='--jwt.access-token-expire-seconds=2'
 ```
 
 - **포맷**: spotless `googleJavaFormat().aosp()` + `removeUnusedImports`. 포맷 어긋나면 `build`가 실패하므로 항상 `spotlessApply` 후 빌드.
@@ -57,7 +57,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 
 - 무상태 JWT. **AT는 `Authorization: Bearer`**, **RT는 HttpOnly 쿠키**. 로그인/재발급 응답 body에 AT.
 - **RTR(Refresh Token Rotation)** + RT family. 이미 회전된 RT 재사용 감지 시 family 전체 폐기.
-- **블랙리스트 2종**(`global/security/jwt/`): `TokenBlacklist`(jti 기준), `SessionBlacklist`(familyId 기준). 값은 만료 epoch millis. `exists()`는 조회 시 만료분을 걸러내고(lazy-expiry), `BlacklistCleanupScheduler`(`@Scheduled`, `SchedulingConfig`의 `@EnableScheduling`)가 주기적으로 만료분을 벌크 제거. 주기는 `security.blacklist.cleanup-interval-ms`.
+- **블랙리스트 2종**(`global/security/jwt/`): `TokenBlacklist`(jti 기준), `SessionBlacklist`(familyId 기준). **Caffeine 로컬 캐시** 구현(`Caffeine*Blacklist`, `@Profile({"local","prod"})`)이 활성. 값(만료 epoch millis) 기반 **per-entry TTL**(`expireAfter(Expiry)`)로 각 엔트리가 자기 만료시각에 자동 제거 → 별도 정리 스케줄러 없음.
 - `JwtAuthenticationFilter`가 AT 검증→블랙리스트 확인. 컨트롤러는 `@LoginMember AuthMember`(`LoginMemberArgumentResolver`)로 인증 회원 주입.
 - 설정은 `jwt.*`(yaml) → `JwtProperties`.
 

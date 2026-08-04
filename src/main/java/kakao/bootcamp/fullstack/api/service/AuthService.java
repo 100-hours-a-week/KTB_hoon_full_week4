@@ -129,8 +129,6 @@ public class AuthService {
 
     private void detectReuseOrThrow(RefreshToken refreshToken) {
         if (refreshToken.isRevoked()) {
-            // 응답 코드는 INVALID_REFRESH_TOKEN으로 통일해 추측을 막고(설계 3-3),
-            // 실제 사유(이미 회전된 RT 재사용)는 서버 로그로만 남긴다.
             log.warn(
                     "RT 재사용 감지: 이미 회전된 토큰이 제출되어 family 전체를 폐기한다. familyId={}",
                     refreshToken.getFamilyId());

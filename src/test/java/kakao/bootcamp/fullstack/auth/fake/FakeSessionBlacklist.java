@@ -17,12 +17,4 @@ public class FakeSessionBlacklist implements SessionBlacklist {
     public boolean exists(String familyId) {
         return blacklist.containsKey(familyId);
     }
-
-    @Override
-    public int evictExpired() {
-        long now = System.currentTimeMillis();
-        int before = blacklist.size();
-        blacklist.entrySet().removeIf(entry -> entry.getValue() <= now);
-        return before - blacklist.size();
-    }
 }
