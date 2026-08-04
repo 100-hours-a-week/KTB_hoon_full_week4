@@ -21,6 +21,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # spotlessCheck + 컴파일 + 전체 테스트 (build 태스크가 모두 포함)
+      # 포맷 위반이면 여기서 먼저 실패 → 원인이 명확 (build 안에도 포함되지만 명시)
+      - name: Spotless check
+        run: ./gradlew spotlessCheck
+
+      # 컴파일 + 전체 테스트
       - name: Build with Gradle
         run: ./gradlew build
