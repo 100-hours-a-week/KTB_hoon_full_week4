@@ -10,10 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-/**
- * Caffeine 로컬 캐시 기반 토큰 블랙리스트. 값(만료 epoch millis)으로 per-entry TTL을 계산해, 각 jti가 자기 만료시각에 자동 제거된다. (수동
- * 스케줄러/lazy-expiry 없이 라이브러리 TTL이 만료 정리를 담당)
- */
 @Slf4j
 @Component
 @Profile({"local", "prod"})
@@ -26,7 +22,6 @@ public class CaffeineTokenBlacklist implements TokenBlacklist {
     private final Cache<String, Long> blacklist =
             Caffeine.newBuilder()
                     .maximumSize(MAX_SIZE)
-                    // 유휴 상태에서도 만료 시점에 곧바로 제거(→ removalListener 즉시 발화)되도록 예약
                     .scheduler(Scheduler.systemScheduler())
                     .expireAfter(
                             new Expiry<String, Long>() {
