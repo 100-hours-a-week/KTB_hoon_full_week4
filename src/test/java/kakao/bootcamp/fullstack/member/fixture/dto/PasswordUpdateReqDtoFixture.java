@@ -4,20 +4,19 @@ import kakao.bootcamp.fullstack.api.dto.request.PasswordUpdateReqDto;
 
 public class PasswordUpdateReqDtoFixture {
 
-    private static final String DEFAULT_CURRENT_PASSWORD = "currentPassword1!";
-    private static final String DEFAULT_PASSWORD = "newPassword1!";
+    public static final String CURRENT_PASSWORD = "currentPassword1!";
+    public static final String NEW_PASSWORD = "newPassword1!";
 
     public static PasswordUpdateReqDto valid() {
-        return new PasswordUpdateReqDto(
-                DEFAULT_CURRENT_PASSWORD, DEFAULT_PASSWORD, DEFAULT_PASSWORD);
+        return new PasswordUpdateReqDto(CURRENT_PASSWORD, NEW_PASSWORD, NEW_PASSWORD);
     }
 
     public static PasswordUpdateReqDto withCurrentPassword(String currentPassword) {
-        return new PasswordUpdateReqDto(currentPassword, DEFAULT_PASSWORD, DEFAULT_PASSWORD);
+        return new PasswordUpdateReqDto(currentPassword, NEW_PASSWORD, NEW_PASSWORD);
     }
 
     public static PasswordUpdateReqDto withPasswordConfirm(
             String password, String passwordConfirm) {
-        return new PasswordUpdateReqDto(DEFAULT_CURRENT_PASSWORD, password, passwordConfirm);
+        return new PasswordUpdateReqDto(CURRENT_PASSWORD, password, passwordConfirm);
     }
 }

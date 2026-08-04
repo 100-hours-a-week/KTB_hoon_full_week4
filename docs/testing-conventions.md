@@ -75,7 +75,7 @@ assertThatExceptionOfType(UnauthorizedException.class)
 
 > 주의: `fake`는 포트가 바뀌면 같이 갱신해야 한다(컴파일러가 강제). 포트에 메서드를 추가하면 fake·프로덕션 어댑터(jpa/inmemory)도 함께 수정한다.
 
-> 참고: 기존 `MemberServiceTest`는 Mockito(`@InjectMocks`)를 쓴다. 코드베이스에 두 방식이 공존하나, **신규 서비스 테스트는 fake를 우선**한다.
+> 서비스 유닛 테스트는 모두 fake 기반이다(`AuthServiceTest`, `MemberServiceTest`). Mockito `@Mock`/`verify`로 서비스를 조립하지 않는다.
 
 ## 픽스처
 
