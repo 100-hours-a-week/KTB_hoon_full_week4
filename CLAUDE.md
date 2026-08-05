@@ -51,11 +51,14 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 - **`BaseCode` 인터페이스**를 도메인별 에러 enum(`XxxErrorCode`)과 `CommonErrorCode`, `SuccessCode`가 구현. 각 코드는 `(HttpStatus, code, message)`.
 - **예외 계층**: `BusinessException` ← `BadRequest/Unauthorized/Forbidden/NotFound/Conflict/TooManyRequests`. 각 생성자는 `BaseCode`를 받는다. `GlobalExceptionHandler`가 처리.
 - **Bean Validation 연동(비자명)**: DTO의 `@NotBlank(message = ValidationCode.XXX)`에 쓰는 메시지는 `ValidationCode`의 상수 문자열이고, 핸들러가 `ErrorCodeMapper.from(code)`로 **그 문자열과 `getCode()`가 일치하는 `BaseCode`를 찾아** 응답을 만든다. 따라서 검증 메시지를 추가할 땐 **`ValidationCode` 상수 + 대응하는 `XxxErrorCode` 항목을 둘 다** 만들어야 한다.
+  - **`message`를 빠뜨리면 400이 아니라 500이 된다**(기본 메시지가 매핑에 실패해 `UNMAPPED_VALIDATION_ERROR`). DTO 필드뿐 아니라 **컨트롤러 파라미터의 `@Max`/`@Min`/`@Size`에도** `message = ValidationCode.XXX`를 붙일 것.
 - **보안 예외 원칙**: 인증/토큰 실패는 응답 코드를 하나로 통일해 추측을 막고, 실제 사유는 서버 로그로만 남긴다(예: RT 재사용도 `INVALID_REFRESH_TOKEN`으로 응답).
 
 ## 인증 / JWT
 
-- 무상태 JWT. **AT는 `Authorization: Bearer`**, **RT는 HttpOnly 쿠키**. 로그인/재발급 응답 body에 AT.
+- 무상태 JWT. **AT는 `Authorization: Bearer`**, **RT는 HttpOnly 쿠키**(`RefreshTokenCookieFactory`). 로그인/재발급 응답 body에 AT.
+- **RT 쿠키 `Path`는 `/api/v1`**(`AuthCookieConstants`). 재발급뿐 아니라 **로그아웃에서도 쿠키를 받아 family를 폐기**하므로 `/api/v1/reissue`로 좁히면 안 된다.
+- 공개 엔드포인트는 `PublicEndpointConstants.PUBLIC_ENDPOINTS`. **로그아웃도 포함**(permitAll)이라 토큰이 없거나 무효해도 200인 멱등 동작.
 - **RTR(Refresh Token Rotation)** + RT family. 이미 회전된 RT 재사용 감지 시 family 전체 폐기.
 - **블랙리스트 2종**(`global/security/jwt/`): `TokenBlacklist`(jti 기준), `SessionBlacklist`(familyId 기준). **Caffeine 로컬 캐시** 구현(`Caffeine*Blacklist`, `@Profile({"local","prod"})`)이 활성. 값(만료 epoch millis) 기반 **per-entry TTL**(`expireAfter(Expiry)`)로 각 엔트리가 자기 만료시각에 자동 제거 → 별도 정리 스케줄러 없음.
 - `JwtAuthenticationFilter`가 AT 검증→블랙리스트 확인. 컨트롤러는 `@LoginMember AuthMember`(`LoginMemberArgumentResolver`)로 인증 회원 주입.
@@ -63,8 +66,9 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 
 ## 기타 횡단 관심사
 
-- **레이트리밋**: `@RateLimited` + `RateLimitInterceptor`(인메모리 fixed window, 1분 3건). 예: `POST /posts`.
-- **커서 기반 페이지네이션**: 목록 조회는 `id < cursor ... ORDER BY id DESC` 방식(offset 아님).
+- **레이트리밋**: `@RateLimited` + `RateLimitInterceptor`(인메모리 fixed window, 1분 3건). 현재 `POST /posts`, `POST /posts/drafts/{id}/publish`에 적용되며 **회원 단위 카운터를 공유**한다.
+- **커서 기반 페이지네이션**: 목록 조회는 `id < cursor ... ORDER BY id DESC` 방식(offset 아님). `size`는 1~10.
+- **마스킹**: 블라인드/탈퇴 치환은 엔티티가 아니라 **응답 DTO의 `from(...)`에서** 상수로 처리(`BLINDED_POST`/`BLINDED_COMMENT`/`UNKNOWN_WRITER`) + `isBlind` 노출.
 - 설정 클래스는 `global/config/`(Security/Jwt/Cors/Jpa/Web/Scheduling).
 
 ## 테스트 컨벤션
@@ -73,6 +77,10 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 - **서비스/도메인 유닛 테스트는 Mockito 목이 아니라 손으로 쓴 fake**로 포트를 구현하고 `new XxxService(...)`로 조립. fake는 `.../<domain>/fake/`에 두고 소프트삭제 필터링을 재현. 순수 로직 협력자(해셔·생성기 등)는 fake 대신 실제 인스턴스 사용.
 - JUnit5 + AssertJ. 대상 메서드가 여럿이면 `@Nested` + 한글 `@DisplayName`, 리포지토리(`@DataJpaTest`)·검증 테스트는 평면 구조.
 - 예외 검증은 에러코드까지 확인(`extracting(BusinessException::getCode)`).
+
+## 문서
+
+`docs/api-specification.md`는 **프론트에 전달하는 계약 문서**다. 엔드포인트·요청/응답 필드·검증 규칙·에러 코드를 바꾸면 **같은 변경에서 함께 갱신**할 것(응답 필드 추가도 프론트 타입에 영향).
 
 ## 커밋 메시지
 
