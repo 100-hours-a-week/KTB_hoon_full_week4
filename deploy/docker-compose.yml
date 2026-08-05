@@ -1,9 +1,17 @@
-# EC2 ~/app/docker-compose.yml (참고본)
-# 이전 구조 그대로 nginx(리버스 프록시) + frontend + backend.
-# 백엔드 이미지만 Docker Hub → GHCR 로 변경됨.
+# EC2 ~/app/docker-compose.yml 의 사본.
 #
-# CD 는 배포 시 BACKEND_TAG=<커밋 SHA> 를 export 한 뒤 `docker compose up -d backend` 하므로
+# ⚠️ 이 파일은 배포되지 않는다. CD 는 이 디렉터리를 EC2 로 복사하지 않으며,
+#    실제로 동작하는 것은 EC2 의 ~/app/docker-compose.yml 이다.
+#    여기를 고쳐도 서버에는 아무 일도 일어나지 않으므로, 변경 시 EC2 에 수동 반영할 것.
+#
+# 이전 구조 그대로 nginx(리버스 프록시) + frontend + backend. 이미지는 둘 다 GHCR.
+# frontend 는 별도 레포(ktb_hoon_full_week7)에서 빌드·배포되며 이 레포의 CD 는 건드리지 않는다.
+#
+# 이 레포의 CD 는 배포 시 BACKEND_TAG=<커밋 SHA> 를 export 한 뒤 `docker compose up -d backend` 하므로
 # 매 배포가 특정 커밋 이미지로 고정된다. (수동 실행/재부팅 시엔 :latest 로 폴백)
+#
+# ⚠️ backend 는 prod 프로파일 + H2 인메모리(ddl-auto: create)로 뜬다. volume 이 없으므로
+#    컨테이너를 교체하는 모든 배포에서 DB 가 초기화되고 시드가 재생성된다.
 services:
   backend:
     image: ghcr.io/100-hours-a-week/ktb_hoon_full_week4:${BACKEND_TAG:-latest}
@@ -13,7 +21,7 @@ services:
       - "8080"
 
   frontend:
-    image: lee26/fullstack-frontend:latest
+    image: ghcr.io/100-hours-a-week/ktb_hoon_full_week7:${FRONTEND_TAG:-latest}
     container_name: frontend
     restart: unless-stopped
     expose:
