@@ -693,7 +693,10 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 > 각 API의 에러 표에서 401 `INVALID_TOKEN` / 404 `MEMBER_NOT_FOUND`는 생략한다.
 
 임시 저장 글은 `DRAFT` → (발행) → `PUBLISHED` 상태를 가진다.
-발행된 임시 저장 글은 **목록(4.1)에서 제외**되지만, ID로 상세 조회·수정·삭제는 여전히 가능하다.
+**발행하는 순간 조회 대상에서 완전히 빠진다.** 목록(4.1)에 안 나오는 것은 물론이고,
+상세 조회·수정·삭제·재발행(4.2·4.4·4.5·4.6) 모두 **404 `POST_DRAFT_NOT_FOUND`** 가 된다.
+저장소가 `status = DRAFT` 인 것만 조회하기 때문이며, 따라서 **같은 draft가 두 번 발행될 수 없다.**
+프론트에서는 발행 성공 시 해당 draftId를 더 이상 참조하지 않도록 처리하면 된다.
 
 ### 4.1 임시 저장 글 목록 조회
 - **GET** `/api/v1/posts/drafts`
@@ -814,7 +817,8 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 임시 저장 글을 정식 게시글로 발행한다. 발행에 사용할 최종 본문은 **요청 body의 값**이며,
 저장돼 있던 draft 내용은 사용하지 않는다. 검증 규칙은 3.3 게시글 생성과 동일하다.
-발행에 성공하면 draft는 `PUBLISHED`가 되어 목록(4.1)에서 사라지고, **같은 draft를 다시 발행할 수 없다.**
+발행에 성공하면 draft는 `PUBLISHED`가 되어 조회 대상에서 빠지므로,
+**같은 draftId로 다시 발행하면 404 `POST_DRAFT_NOT_FOUND`** 가 된다(중복 게시 불가).
 
 **Request Body**
 ```json
@@ -845,15 +849,14 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 |------|----------------------------------------------------------------------------|
 | 400  | `TITLE_REQUIRED`, `TITLE_LENGTH_EXCEEDED`, `CONTENT_REQUIRED`, `IMAGE_REQUIRED` |
 | 403  | `NOT_POST_DRAFT_WRITER`                                                    |
-| 404  | `POST_DRAFT_NOT_FOUND`                                                     |
-| 409  | `POST_DRAFT_ALREADY_PUBLISHED` (이미 발행된 임시 저장 글)                    |
+| 404  | `POST_DRAFT_NOT_FOUND` (없는 draft **또는 이미 발행된 draft**)               |
 | 429  | `POST_RATE_LIMIT_EXCEEDED`                                                 |
 
 ---
 
 ### 4.6 임시 저장 글 삭제
 - **DELETE** `/api/v1/posts/drafts/{draftId}`
-- 발행 여부와 무관하게 삭제할 수 있다. 이미 발행된 게시글에는 영향이 없다.
+- 아직 발행하지 않은 draft만 삭제할 수 있다. 이미 발행했다면 404다(발행된 게시글은 3.5로 삭제).
 
 **Response 200 OK**
 ```json
@@ -973,7 +976,6 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 |------------------------------|------|
 | POST_DRAFT_NOT_FOUND         | 404 |
 | NOT_POST_DRAFT_WRITER        | 403 |
-| POST_DRAFT_ALREADY_PUBLISHED | 409 |
 | TITLE_LENGTH_EXCEEDED        | 400 |
 
 ### CommentErrorCode
