@@ -20,12 +20,20 @@ public class PostReportHandler implements ReportTargetHandler {
     }
 
     @Override
+    public boolean isWrittenBy(Long targetId, Long memberId) {
+        return loadPostOrThrow(targetId).isWriter(memberId);
+    }
+
+    @Override
     public void handleReported(Long targetId) {
-        Post post =
-                postRepository
-                        .findActiveById(targetId)
-                        .orElseThrow(() -> new NotFoundException(PostErrorCode.POST_NOT_FOUND));
+        Post post = loadPostOrThrow(targetId);
         post.increaseReportCount();
         postRepository.save(post);
+    }
+
+    private Post loadPostOrThrow(Long targetId) {
+        return postRepository
+                .findActiveById(targetId)
+                .orElseThrow(() -> new NotFoundException(PostErrorCode.POST_NOT_FOUND));
     }
 }

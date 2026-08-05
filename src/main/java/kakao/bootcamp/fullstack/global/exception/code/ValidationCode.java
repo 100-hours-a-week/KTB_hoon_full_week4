@@ -18,6 +18,8 @@ public class ValidationCode {
 
     public static final String IMAGE_REQUIRED = "IMAGE_REQUIRED";
 
+    public static final String INVALID_PAGE_SIZE = "INVALID_PAGE_SIZE";
+
     public static final String TITLE_REQUIRED = "TITLE_REQUIRED";
     public static final String TITLE_LENGTH_EXCEEDED = "TITLE_LENGTH_EXCEEDED";
     public static final String CONTENT_REQUIRED = "CONTENT_REQUIRED";

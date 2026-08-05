@@ -77,6 +77,10 @@ public class PostDraft extends BaseEntity {
         this.imageUrl = imageUrl;
     }
 
+    public boolean isPublished() {
+        return this.status == DraftStatus.PUBLISHED;
+    }
+
     public void publish() {
         this.status = DraftStatus.PUBLISHED;
     }

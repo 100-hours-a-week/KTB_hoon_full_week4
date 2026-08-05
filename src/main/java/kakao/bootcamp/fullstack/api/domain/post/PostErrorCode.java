@@ -14,6 +14,7 @@ public enum PostErrorCode implements BaseCode {
     POST_ALREADY_UNLIKED(HttpStatus.CONFLICT, "POST_ALREADY_UNLIKED", "post_already_unliked"),
     POST_RATE_LIMIT_EXCEEDED(
             HttpStatus.TOO_MANY_REQUESTS, "POST_RATE_LIMIT_EXCEEDED", "post_rate_limited"),
+    INVALID_PAGE_SIZE(HttpStatus.BAD_REQUEST, "INVALID_PAGE_SIZE", "invalid_page_size"),
     TITLE_REQUIRED(HttpStatus.BAD_REQUEST, "TITLE_REQUIRED", "title_required"),
     CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "CONTENT_REQUIRED", "content_required"),
     POST_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "POST_IMAGE_REQUIRED", "post_image_required"),

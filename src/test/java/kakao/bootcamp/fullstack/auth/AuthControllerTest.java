@@ -60,7 +60,7 @@ public class AuthControllerTest {
     class Login {
 
         @Test
-        @DisplayName("올바른 자격증명이면 AT를 바디로, RT를 HttpOnly 쿠키(path=/api/v1/reissue)로 응답한다")
+        @DisplayName("올바른 자격증명이면 AT를 바디로, RT를 HttpOnly 쿠키(path=/api/v1)로 응답한다")
         void logsInSuccessfully() throws Exception {
             // given
             given(authService.login(new LoginReqDto(EMAIL, PASSWORD)))
@@ -83,9 +83,7 @@ public class AuthControllerTest {
                                             HttpHeaders.SET_COOKIE,
                                             containsString("refresh_token=new-refresh-token")))
                     .andExpect(
-                            header().string(
-                                            HttpHeaders.SET_COOKIE,
-                                            containsString("Path=/api/v1/reissue")))
+                            header().string(HttpHeaders.SET_COOKIE, containsString("Path=/api/v1")))
                     .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("HttpOnly")));
 
             verify(authService).login(new LoginReqDto(EMAIL, PASSWORD));
@@ -134,9 +132,7 @@ public class AuthControllerTest {
                                             HttpHeaders.SET_COOKIE,
                                             containsString("refresh_token=;")))
                     .andExpect(
-                            header().string(
-                                            HttpHeaders.SET_COOKIE,
-                                            containsString("Path=/api/v1/reissue")))
+                            header().string(HttpHeaders.SET_COOKIE, containsString("Path=/api/v1")))
                     .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
                     .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("HttpOnly")));
 
@@ -183,7 +179,7 @@ public class AuthControllerTest {
     class Reissue {
 
         @Test
-        @DisplayName("RT 쿠키가 있으면 새 AT를 바디로, 새 RT를 HttpOnly 쿠키(path=/api/v1/reissue)로 응답한다")
+        @DisplayName("RT 쿠키가 있으면 새 AT를 바디로, 새 RT를 HttpOnly 쿠키(path=/api/v1)로 응답한다")
         void reissuesWithCookie() throws Exception {
             // given
             given(authService.reissue("old-refresh-token"))
@@ -205,9 +201,7 @@ public class AuthControllerTest {
                                             HttpHeaders.SET_COOKIE,
                                             containsString("refresh_token=new-refresh-token")))
                     .andExpect(
-                            header().string(
-                                            HttpHeaders.SET_COOKIE,
-                                            containsString("Path=/api/v1/reissue")))
+                            header().string(HttpHeaders.SET_COOKIE, containsString("Path=/api/v1")))
                     .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("HttpOnly")));
 
             verify(authService).reissue("old-refresh-token");

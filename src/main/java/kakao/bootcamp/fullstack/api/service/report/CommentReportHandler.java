@@ -20,13 +20,20 @@ public class CommentReportHandler implements ReportTargetHandler {
     }
 
     @Override
+    public boolean isWrittenBy(Long targetId, Long memberId) {
+        return loadCommentOrThrow(targetId).isWriter(memberId);
+    }
+
+    @Override
     public void handleReported(Long targetId) {
-        Comment comment =
-                commentRepository
-                        .findActiveById(targetId)
-                        .orElseThrow(
-                                () -> new NotFoundException(CommentErrorCode.COMMENT_NOT_FOUND));
+        Comment comment = loadCommentOrThrow(targetId);
         comment.increaseReportCount();
         commentRepository.save(comment);
+    }
+
+    private Comment loadCommentOrThrow(Long targetId) {
+        return commentRepository
+                .findActiveById(targetId)
+                .orElseThrow(() -> new NotFoundException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 }

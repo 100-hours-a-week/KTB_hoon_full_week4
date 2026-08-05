@@ -13,6 +13,7 @@ import kakao.bootcamp.fullstack.api.dto.request.PostReportReqDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.report.ReportRepository;
 import kakao.bootcamp.fullstack.api.service.report.ReportTargetHandler;
+import kakao.bootcamp.fullstack.global.exception.BadRequestException;
 import kakao.bootcamp.fullstack.global.exception.ConflictException;
 import kakao.bootcamp.fullstack.global.exception.InternalServerException;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
@@ -54,12 +55,14 @@ public class ReportService {
     @Transactional
     public void report(Long memberId, PostReportReqDto request) {
         checkMemberExists(memberId);
+        ReportTargetHandler handler = resolveHandler(request.targetType());
+        checkNotSelfReport(handler, request.targetId(), memberId);
         checkNotAlreadyReported(request.targetId(), request.targetType(), memberId);
         Report report =
                 Report.create(
                         request.targetId(), request.targetType(), memberId, request.reportReason());
         reportRepository.save(report);
-        resolveHandler(request.targetType()).handleReported(request.targetId());
+        handler.handleReported(request.targetId());
     }
 
     private ReportTargetHandler resolveHandler(TargetType targetType) {
@@ -75,6 +78,12 @@ public class ReportService {
     private void checkMemberExists(Long memberId) {
         if (!memberRepository.existsById(memberId)) {
             throw new UnauthorizedException(MemberErrorCode.MEMBER_NOT_FOUND);
+        }
+    }
+
+    private void checkNotSelfReport(ReportTargetHandler handler, Long targetId, Long memberId) {
+        if (handler.isWrittenBy(targetId, memberId)) {
+            throw new BadRequestException(ReportErrorCode.SELF_REPORT_NOT_ALLOWED);
         }
     }
 

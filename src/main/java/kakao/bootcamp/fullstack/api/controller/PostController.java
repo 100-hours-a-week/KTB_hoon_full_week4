@@ -2,6 +2,7 @@ package kakao.bootcamp.fullstack.api.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import kakao.bootcamp.fullstack.api.dto.request.CommentCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.CommentUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostCreateReqDto;
@@ -14,6 +15,7 @@ import kakao.bootcamp.fullstack.api.dto.response.PostSummaryPageResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostUpdateResDto;
 import kakao.bootcamp.fullstack.api.service.PostService;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
+import kakao.bootcamp.fullstack.global.exception.code.ValidationCode;
 import kakao.bootcamp.fullstack.global.rate_limiter.RateLimited;
 import kakao.bootcamp.fullstack.global.response.ApiResponse;
 import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
@@ -41,7 +43,10 @@ public class PostController {
     public ResponseEntity<ApiResponse<PostSummaryPageResDto>> getPosts(
             @LoginMember AuthMember authMember,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") @Max(10) Long size) {
+            @RequestParam(defaultValue = "10")
+                    @Min(value = 1, message = ValidationCode.INVALID_PAGE_SIZE)
+                    @Max(value = 10, message = ValidationCode.INVALID_PAGE_SIZE)
+                    Long size) {
         PostSummaryPageResDto response =
                 postService.getPostSummariesList(authMember.memberId(), cursor, size);
         return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())

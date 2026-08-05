@@ -16,6 +16,7 @@ import kakao.bootcamp.fullstack.api.dto.response.PostDraftsSummaryResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
+import kakao.bootcamp.fullstack.global.exception.ConflictException;
 import kakao.bootcamp.fullstack.global.exception.ForbiddenException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
@@ -70,6 +71,7 @@ public class PostDraftService {
         Member member = loadMemberOrThrow(memberId);
         PostDraft postDraft = loadPostDraftOrThrow(postDraftId);
         checkPostDraftWriter(memberId, postDraft);
+        checkNotPublished(postDraft);
         Post post = Post.create(member, request.title(), request.content(), request.imageUrl());
         postRepository.save(post);
         postDraft.publish();
@@ -87,6 +89,12 @@ public class PostDraftService {
     private static void checkPostDraftWriter(Long memberId, PostDraft postDraft) {
         if (!postDraft.isWriter(memberId)) {
             throw new ForbiddenException(PostDraftErrorCode.NOT_POST_DRAFT_WRITER);
+        }
+    }
+
+    private static void checkNotPublished(PostDraft postDraft) {
+        if (postDraft.isPublished()) {
+            throw new ConflictException(PostDraftErrorCode.POST_DRAFT_ALREADY_PUBLISHED);
         }
     }
 

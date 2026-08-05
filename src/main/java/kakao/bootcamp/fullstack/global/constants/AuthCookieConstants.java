@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AuthCookieConstants {
     public static final String REFRESH_TOKEN_COOKIE = "refresh_token";
-    public static final String REFRESH_TOKEN_PATH = "/api/v1/reissue";
+    // 로그아웃(/api/v1/logout)에서도 RT 쿠키를 받아 family를 폐기해야 하므로 /api/v1/reissue보다 넓게 잡는다.
+    public static final String REFRESH_TOKEN_PATH = "/api/v1";
 
     // 현재 HTTP 환경이라 미사용. HTTPS 전환 후 Secure와 함께 다시 적용한다. (SameSite=None은 Secure 전제)
     public static final String SAME_SITE = "None";
