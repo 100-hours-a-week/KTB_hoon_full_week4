@@ -1,6 +1,5 @@
 package kakao.bootcamp.fullstack.api.service;
 
-import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -18,23 +17,28 @@ import kakao.bootcamp.fullstack.global.exception.ConflictException;
 import kakao.bootcamp.fullstack.global.exception.InternalServerException;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class ReportService {
 
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
-    private final List<ReportTargetHandler> handlers;
+    private final Map<TargetType, ReportTargetHandler> handlerMap;
 
-    private Map<TargetType, ReportTargetHandler> handlerMap;
+    public ReportService(
+            ReportRepository reportRepository,
+            MemberRepository memberRepository,
+            List<ReportTargetHandler> handlers) {
+        this.reportRepository = reportRepository;
+        this.memberRepository = memberRepository;
+        this.handlerMap = registerAndVerifyHandlers(handlers);
+    }
 
-    @PostConstruct
-    void registerAndVerifyHandlers() {
-        handlerMap =
+    private static Map<TargetType, ReportTargetHandler> registerAndVerifyHandlers(
+            List<ReportTargetHandler> handlers) {
+        Map<TargetType, ReportTargetHandler> handlerMap =
                 handlers.stream()
                         .collect(
                                 Collectors.toMap(
@@ -50,6 +54,7 @@ public class ReportService {
                 throw new IllegalStateException("No ReportTargetHandler registered for: " + type);
             }
         }
+        return handlerMap;
     }
 
     @Transactional
