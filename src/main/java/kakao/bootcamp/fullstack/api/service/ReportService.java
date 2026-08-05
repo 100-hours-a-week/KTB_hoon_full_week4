@@ -36,27 +36,6 @@ public class ReportService {
         this.handlerMap = registerAndVerifyHandlers(handlers);
     }
 
-    private static Map<TargetType, ReportTargetHandler> registerAndVerifyHandlers(
-            List<ReportTargetHandler> handlers) {
-        Map<TargetType, ReportTargetHandler> handlerMap =
-                handlers.stream()
-                        .collect(
-                                Collectors.toMap(
-                                        ReportTargetHandler::getTargetType,
-                                        Function.identity(),
-                                        (existing, duplicate) -> {
-                                            throw new IllegalStateException(
-                                                    "Duplicate ReportTargetHandler for: "
-                                                            + existing.getTargetType());
-                                        }));
-        for (TargetType type : TargetType.values()) {
-            if (!handlerMap.containsKey(type)) {
-                throw new IllegalStateException("No ReportTargetHandler registered for: " + type);
-            }
-        }
-        return handlerMap;
-    }
-
     @Transactional
     public void report(Long memberId, PostReportReqDto request) {
         checkMemberExists(memberId);
@@ -96,5 +75,26 @@ public class ReportService {
         if (reportRepository.existsByTargetAndMember(targetId, targetType, memberId)) {
             throw new ConflictException(ReportErrorCode.ALREADY_REPORTED);
         }
+    }
+
+    private static Map<TargetType, ReportTargetHandler> registerAndVerifyHandlers(
+            List<ReportTargetHandler> handlers) {
+        Map<TargetType, ReportTargetHandler> handlerMap =
+                handlers.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        ReportTargetHandler::getTargetType,
+                                        Function.identity(),
+                                        (existing, duplicate) -> {
+                                            throw new IllegalStateException(
+                                                    "Duplicate ReportTargetHandler for: "
+                                                            + existing.getTargetType());
+                                        }));
+        for (TargetType type : TargetType.values()) {
+            if (!handlerMap.containsKey(type)) {
+                throw new IllegalStateException("No ReportTargetHandler registered for: " + type);
+            }
+        }
+        return handlerMap;
     }
 }
