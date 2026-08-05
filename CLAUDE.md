@@ -84,4 +84,28 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 
 ## 커밋 메시지
 
-기존 이력 컨벤션: `type : 한글 설명` (`feat`/`refactor`/`test`/`docs`/`style`/`perf`). 예: `refactor : findActiveByTokenHash → findNotDeletedByTokenHash 리네임`.
+[Conventional Commits](https://www.conventionalcommits.org/ko/v1.0.0/) 기반이되, **구분자는 이 저장소 이력대로 공백+콜론**(`type : 설명`)이고 **설명은 한글**이다.
+
+```
+type : 한글 요약
+
+본문(선택) — 무엇을 했는지보다 왜 했는지. 72자 근처에서 줄바꿈.
+```
+
+| type | 용도 |
+|---|---|
+| `feat` | 기능 추가 |
+| `fix` | 버그 수정 |
+| `refactor` | 동작 변화 없는 구조 개선 (리네임 포함) |
+| `test` | 테스트 추가·이관·정리 |
+| `docs` | 문서·주석 |
+| `style` | 포맷팅(spotless 등), 로직 변화 없음 |
+| `perf` | 성능 개선 (인덱스 추가 등) |
+| `build` | Gradle·Dockerfile 등 빌드 |
+| `ci` | GitHub Actions 등 CI/CD |
+| `chore` | 그 외 잡무 |
+
+- 요약은 **마침표 없이**, 한 줄 50자 안팎. 예: `refactor : findActiveByTokenHash → findNotDeletedByTokenHash 리네임`
+- 한 커밋은 한 가지 목적만. 기능 수정과 포맷 정리가 섞이면 나눈다.
+- 호환성을 깨면 `feat!` 처럼 `!`를 붙이거나 본문 뒤에 `BREAKING CHANGE:` 푸터를 단다.
+- **트레일러(`Co-Authored-By` 등)는 넣지 않는다.**
