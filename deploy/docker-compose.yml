@@ -10,8 +10,18 @@
 # 이 레포의 CD 는 배포 시 BACKEND_TAG=<커밋 SHA> 를 export 한 뒤 `docker compose up -d backend` 하므로
 # 매 배포가 특정 커밋 이미지로 고정된다. (수동 실행/재부팅 시엔 :latest 로 폴백)
 #
-# ⚠️ backend 는 prod 프로파일 + H2 인메모리(ddl-auto: create)로 뜬다. volume 이 없으므로
-#    컨테이너를 교체하는 모든 배포에서 DB 가 초기화되고 시드가 재생성된다.
+# ⚠️ backend 는 prod 프로파일 + RDS(MySQL 8)로 뜬다. DB 접속 정보와 JWT 시크릿은 이미지에
+#    굽지 않고 EC2 의 ~/app/.env 에서 주입한다. compose 는 같은 디렉터리의 .env 를 자동으로 읽는다.
+#
+#    ~/app/.env  (git 에 올리지 말 것)
+#      DB_HOST=xxxx.ap-northeast-2.rds.amazonaws.com
+#      DB_NAME=fullstack
+#      DB_USERNAME=admin
+#      DB_PASSWORD=********
+#      JWT_SECRET=<openssl rand -base64 64 결과. Base64 여야 한다>
+#
+# ⚠️ prod 는 ddl-auto: create 라 배포·재기동마다 RDS 테이블이 DROP 후 재생성된다(시드도 재생성).
+#    보존이 필요해지면 아래 environment 에 SPRING_JPA_HIBERNATE_DDLAUTO=none 을 추가한다.
 services:
   backend:
     image: ghcr.io/100-hours-a-week/ktb_hoon_full_week4:${BACKEND_TAG:-latest}
@@ -19,6 +29,13 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
 
   frontend:
     image: ghcr.io/100-hours-a-week/ktb_hoon_full_week7:${FRONTEND_TAG:-latest}

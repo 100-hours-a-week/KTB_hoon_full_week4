@@ -35,6 +35,7 @@ dependencies {
 	// Persistence
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'com.mysql:mysql-connector-j'
 
 	// Cache (로컬 캐시 - per-entry TTL)
 	implementation 'com.github.ben-manes.caffeine:caffeine'

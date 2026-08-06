@@ -10,7 +10,8 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 ./gradlew build                 # 컴파일 + 전체 테스트
 ./gradlew test                  # 전체 테스트
 ./gradlew spotlessApply         # 포맷 적용 (커밋/빌드 전 필수)
-./gradlew bootRun               # 서버 실행 (기본 prod 프로파일, H2 인메모리)
+./gradlew bootRun --args='--spring.profiles.active=local'   # 로컬 실행 (H2, 환경변수 불필요)
+./gradlew bootRun               # 기본 prod 프로파일 = RDS. DB_*/JWT_SECRET 환경변수 필요
 
 # 단일 테스트
 ./gradlew test --tests 'kakao.bootcamp.fullstack.auth.AuthServiceTest'
@@ -21,19 +22,27 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 ```
 
 - **포맷**: spotless `googleJavaFormat().aosp()` + `removeUnusedImports`. 포맷 어긋나면 `build`가 실패하므로 항상 `spotlessApply` 후 빌드.
-- **스키마**: `ddl-auto: create` (운영/로컬), 테스트는 `create-drop`. **마이그레이션 도구 없음** — 엔티티 변경이 곧 스키마. 부팅 시 시드 데이터가 재생성된다.
+- **스키마**: 마이그레이션 도구 없음 — **엔티티 변경이 곧 스키마**. `ddl-auto`는 prod `update`, local `create`, test `create-drop`.
+
+### 설정 파일 (프로파일별로 분리)
+- `application.yaml` — 공통. `spring.application.name`과 `spring.profiles.active: prod`뿐
+- `application-prod.yml` — **RDS(MySQL 8)**. 접속정보와 `jwt.secret`을 **환경변수로 요구**(`DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USERNAME`/`DB_PASSWORD`/`JWT_SECRET`). 값이 없으면 기동 실패
+- `application-local.yml` — H2 인메모리 + h2 콘솔 + 개발용 jwt 시크릿
+- `src/test/resources/application-test.yml` — 테스트 환경의 단일 출처(H2 `create-drop` + 개발용 jwt)
+
+> `JWT_SECRET`은 **Base64 문자열**이어야 한다. `JjwtProvider`가 `Decoders.BASE64.decode()` 후 `Keys.hmacShaKeyFor()`에 넘기므로 디코딩 결과가 32바이트(HS256) 이상이어야 한다. 생성: `openssl rand -base64 64 | tr -d '\n'`
 
 ## 프로파일 = 아키텍처의 핵심 축
 
 이 프로젝트의 가장 중요한 구조. 프로파일에 따라 저장소 구현과 시드 러너가 통째로 바뀐다.
 
-- **`prod`** (기본 active): `Jpa*RepositoryAdapter`(`@Profile("prod")`) + `JpaDataInitializer` 시드. DB는 H2 인메모리.
+- **`prod`** (기본 active): `Jpa*RepositoryAdapter` + `JpaDataInitializer` 시드. DB는 **AWS RDS(MySQL 8)**.
 - **`local`**: `InMemory*Repository`(`@Profile("local")`) + `DataInitializer` 시드. DB 없이 `ConcurrentHashMap`.
-- **`test`**: `src/test/resources/application-test.yml`, H2 `create-drop`.
+- **`test`**: prod와 **같은 JPA 배선 + H2**. 시드는 없다(`JpaDataInitializer`만 prod 전용). **모든 테스트에 `@ActiveProfiles("test")`를 명시할 것** — 빠뜨리면 prod를 물려받아 RDS를 찾다 실패한다.
 
 ### 저장소 포트 + 2중 구현 패턴 (필수 인지)
 모든 저장소는 **포트 인터페이스**(`api/repository/<domain>/XxxRepository`)이고 구현이 **두 벌**이다:
-- `.../jpa/JpaXxxRepositoryAdapter` (`@Profile("prod")`, 내부에 Spring Data `JpaXxxRepository` 위임)
+- `.../jpa/JpaXxxRepositoryAdapter` (`@Profile({"prod", "test"})`, 내부에 Spring Data `JpaXxxRepository` 위임)
 - `.../inmemory/InMemoryXxxRepository` (`@Profile("local")`)
 
 **저장소 인터페이스에 메서드를 추가하면 JPA·InMemory 두 구현 모두**에 반영해야 하고, 테스트 fake에도 반영해야 컴파일된다. InMemory 구현은 소프트삭제 필터링(`!isDeleted()`)까지 재현하므로 테스트 fake의 참고 원본이 된다.
@@ -60,7 +69,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 - **RT 쿠키 `Path`는 `/api/v1`**(`AuthCookieConstants`). 재발급뿐 아니라 **로그아웃에서도 쿠키를 받아 family를 폐기**하므로 `/api/v1/reissue`로 좁히면 안 된다.
 - 공개 엔드포인트는 `PublicEndpointConstants.PUBLIC_ENDPOINTS`. **로그아웃도 포함**(permitAll)이라 토큰이 없거나 무효해도 200인 멱등 동작.
 - **RTR(Refresh Token Rotation)** + RT family. 이미 회전된 RT 재사용 감지 시 family 전체 폐기.
-- **블랙리스트 2종**(`global/security/jwt/`): `TokenBlacklist`(jti 기준), `SessionBlacklist`(familyId 기준). **Caffeine 로컬 캐시** 구현(`Caffeine*Blacklist`, `@Profile({"local","prod"})`)이 활성. 값(만료 epoch millis) 기반 **per-entry TTL**(`expireAfter(Expiry)`)로 각 엔트리가 자기 만료시각에 자동 제거 → 별도 정리 스케줄러 없음.
+- **블랙리스트 2종**(`global/security/jwt/`): `TokenBlacklist`(jti 기준), `SessionBlacklist`(familyId 기준). **Caffeine 로컬 캐시** 구현(`Caffeine*Blacklist`, `@Profile({"local","prod","test"})`)이 활성. 값(만료 epoch millis) 기반 **per-entry TTL**(`expireAfter(Expiry)`)로 각 엔트리가 자기 만료시각에 자동 제거 → 별도 정리 스케줄러 없음.
 - `JwtAuthenticationFilter`가 AT 검증→블랙리스트 확인. 컨트롤러는 `@LoginMember AuthMember`(`LoginMemberArgumentResolver`)로 인증 회원 주입.
 - 설정은 `jwt.*`(yaml) → `JwtProperties`.
 
