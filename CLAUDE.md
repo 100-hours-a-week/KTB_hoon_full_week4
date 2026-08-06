@@ -22,7 +22,9 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 ```
 
 - **포맷**: spotless `googleJavaFormat().aosp()` + `removeUnusedImports`. 포맷 어긋나면 `build`가 실패하므로 항상 `spotlessApply` 후 빌드.
-- **스키마**: 마이그레이션 도구 없음 — **엔티티 변경이 곧 스키마**. `ddl-auto`는 prod `update`, local `create`, test `create-drop`.
+- **스키마**: 마이그레이션 도구 없음 — **엔티티 변경이 곧 스키마**. `ddl-auto`는 prod·local `create`, test `create-drop`.
+  ⚠️ prod 가 `create`라 **배포·재기동마다 RDS 테이블이 DROP 후 재생성**되고 시드가 다시 깔린다.
+  데이터를 보존해야 할 땐 코드 수정 없이 `SPRING_JPA_HIBERNATE_DDLAUTO=none` 환경변수로 끈다.
 
 ### 설정 파일 (프로파일별로 분리)
 - `application.yaml` — 공통. `spring.application.name`과 `spring.profiles.active: prod`뿐
