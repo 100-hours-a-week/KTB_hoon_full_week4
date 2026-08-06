@@ -41,7 +41,7 @@ public class SearchService {
         checkDateRange(from, to);
         PostSearchCond cond =
                 new PostSearchCond(
-                        requireKeyword(keyword),
+                        blankToNull(keyword),
                         category,
                         meetingType,
                         recruitStatus,
@@ -52,13 +52,6 @@ public class SearchService {
                         cursor,
                         size + 1);
         return PostSummaryPageResDto.of(searchRepository.searchPostPage(cond), size);
-    }
-
-    private String requireKeyword(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            throw new BadRequestException(SearchErrorCode.SEARCH_KEYWORD_REQUIRED);
-        }
-        return keyword.trim();
     }
 
     private void checkDateRange(LocalDate from, LocalDate to) {

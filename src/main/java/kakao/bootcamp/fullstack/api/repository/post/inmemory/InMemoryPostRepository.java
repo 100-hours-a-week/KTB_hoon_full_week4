@@ -1,6 +1,5 @@
 package kakao.bootcamp.fullstack.api.repository.post.inmemory;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,16 +30,6 @@ public class InMemoryPostRepository implements PostRepository {
     @Override
     public Optional<Post> findActiveById(Long id) {
         return Optional.ofNullable(posts.get(id)).filter(post -> !post.isDeleted());
-    }
-
-    @Override
-    public List<Post> findPage(Long cursor, Long size) {
-        return posts.values().stream()
-                .filter(post -> !post.isDeleted())
-                .filter(post -> cursor == null || post.getId() < cursor)
-                .sorted(Comparator.comparingLong(Post::getId).reversed())
-                .limit(size)
-                .toList();
     }
 
     public List<Post> findAllActive() {

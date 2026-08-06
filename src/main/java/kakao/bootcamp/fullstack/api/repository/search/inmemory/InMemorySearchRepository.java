@@ -30,9 +30,10 @@ public class InMemorySearchRepository implements SearchRepository {
     }
 
     private Predicate<Post> matches(PostSearchCond cond) {
-        String lowered = cond.keyword().toLowerCase();
+        String lowered = cond.keyword() == null ? null : cond.keyword().toLowerCase();
         return post ->
-                (post.getTitle().toLowerCase().contains(lowered)
+                (lowered == null
+                                || post.getTitle().toLowerCase().contains(lowered)
                                 || post.getContent().toLowerCase().contains(lowered))
                         && (cond.category() == null || post.getCategory() == cond.category())
                         && (cond.meetingType() == null

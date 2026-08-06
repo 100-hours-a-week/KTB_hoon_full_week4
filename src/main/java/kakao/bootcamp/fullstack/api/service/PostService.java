@@ -21,7 +21,6 @@ import kakao.bootcamp.fullstack.api.dto.response.CommentResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostCreateResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDetailsResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostLikeResDto;
-import kakao.bootcamp.fullstack.api.dto.response.PostSummaryPageResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostUpdateResDto;
 import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.edit_revision.EditRevisionRepository;
@@ -48,12 +47,6 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final EditRevisionRepository editRevisionRepository;
     private final PostViewLogRepository postViewLogRepository;
-
-    public PostSummaryPageResDto getPostSummariesList(Long memberId, Long cursor, Long size) {
-        loadMemberOrThrow(memberId);
-        List<Post> posts = postRepository.findPage(cursor, size + 1);
-        return PostSummaryPageResDto.of(posts, size);
-    }
 
     @Transactional
     public PostDetailsResDto getPostDetails(Long memberId, Long postId) {

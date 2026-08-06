@@ -39,7 +39,7 @@ import org.springframework.test.web.servlet.MockMvc;
 })
 public class SearchControllerTest {
 
-    private static final String SEARCH_URL = "/api/v1/posts/search";
+    private static final String SEARCH_URL = "/api/v1/posts";
     private static final String KEYWORD = "농구";
     private static final long MAX_PAGE_SIZE = 10L;
 
@@ -173,18 +173,18 @@ public class SearchControllerTest {
 
     @Test
     @WithMockAuthMember
-    @DisplayName("키워드가 없으면 400 SEARCH_KEYWORD_REQUIRED를 응답한다")
-    void rejectsMissingKeyword() throws Exception {
+    @DisplayName("조건을 하나도 주지 않으면 전체 목록을 반환한다")
+    void acceptsNoCondition() throws Exception {
         // given
-        willThrow(new BadRequestException(SearchErrorCode.SEARCH_KEYWORD_REQUIRED))
-                .given(searchService)
-                .searchPosts(
-                        any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                        any());
+        given(
+                        searchService.searchPosts(
+                                any(), any(), any(), any(), any(), any(), any(), any(), any(),
+                                any(), any()))
+                .willReturn(new PostSummaryPageResDto(List.of(), null, false));
 
         // when & then
         mockMvc.perform(get(SEARCH_URL))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("SEARCH_KEYWORD_REQUIRED"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"));
     }
 }

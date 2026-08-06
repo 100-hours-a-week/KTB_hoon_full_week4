@@ -28,7 +28,7 @@ public class SearchController {
 
     private final SearchService searchService;
 
-    @GetMapping("/search")
+    @GetMapping
     public ResponseEntity<ApiResponse<PostSummaryPageResDto>> searchPosts(
             @LoginMember AuthMember authMember,
             @RequestParam(required = false) String keyword,

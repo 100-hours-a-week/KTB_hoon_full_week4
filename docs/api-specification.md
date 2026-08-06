@@ -371,17 +371,34 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 > 모든 Post API는 **인증 필요**.
 > 아래 각 API의 에러 표에서는 공통 응답인 401 `INVALID_TOKEN` / 404 `MEMBER_NOT_FOUND`를 생략한다.
 
-### 3.1 게시글 목록 조회 (커서 페이지네이션)
-- **GET** `/api/v1/posts?cursor={cursor}&size={size}`
+### 3.1 게시글 목록·검색 조회 (커서 페이지네이션)
+- **GET** `/api/v1/posts?keyword={keyword}&category={category}&meetingType={meetingType}&recruitStatus={recruitStatus}&sido={sido}&sigungu={sigungu}&from={from}&to={to}&cursor={cursor}&size={size}`
 
-**Query Parameters**
-| 이름   | 타입    | 필수 | 기본값 | 설명                       |
-|------|-------|----|-----|--------------------------|
-| cursor | Long  | X  | -   | 직전 페이지의 `nextCursor`. 첫 페이지는 생략 |
-| size   | Long  | X  | 10  | 한 페이지 항목 수. **1 이상 10 이하** |
+**목록 조회와 검색이 하나의 엔드포인트로 통합되어 있다.** 조건을 하나도 주지 않으면 전체 목록,
+조건을 주면 그만큼 좁혀진 결과가 나온다. 별도의 `/posts/search`는 없다.
 
+**Query Parameters** — **전부 선택**이다.
+| 이름 | 타입 | 필수 | 기본값 | 설명 |
+|------|------|----|-----|------|
+| keyword | string | X | - | **제목 또는 본문** 부분 일치. 대소문자 무시. 공백만 있으면 미지정 취급 |
+| category | enum | X | - | 모임 분류. 6.3 참고 |
+| meetingType | enum | X | - | `ONLINE` / `OFFLINE`. 6.4 참고 |
+| recruitStatus | enum | X | - | `RECRUITING` / `CLOSED`. 6.5 참고 |
+| sido | string | X | - | 시도 **완전 일치**. 예: `서울특별시` |
+| sigungu | string | X | - | 시군구 **완전 일치**. 예: `강남구` |
+| from | date | X | - | 작성일 시작(`yyyy-MM-dd`). **해당 일자 00:00부터 포함** |
+| to | date | X | - | 작성일 끝(`yyyy-MM-dd`). **해당 일자를 포함**(내부적으로 다음날 00:00 미만) |
+| cursor | Long | X | - | 직전 페이지의 `nextCursor`. 첫 페이지는 생략 |
+| size | Long | X | 10 | 한 페이지 항목 수. **1 이상 10 이하** |
+
+- 여러 조건을 함께 주면 **AND로 결합**된다.
 - 최신순(`id DESC`) 정렬이며, `cursor`보다 작은 id부터 조회한다.
-- `size`가 범위를 벗어나면 **400 `INVALID_PAGE_SIZE`**.
+- `sido`/`sigungu`는 공백만 있으면 미지정으로 취급한다.
+- **블라인드 게시글(`isBlind = true`)은 결과에서 제외된다.**
+  본문이 가려진 글이 조건에 걸리면 매칭됐다는 사실 자체가 가려진 내용을 노출하기 때문이다.
+  (상세 조회 `GET /posts/{postId}`는 그대로 접근 가능하며 마스킹된 형태로 응답한다.)
+
+> **온라인 모임은 주소가 `null`** 이므로 `sido`/`sigungu`를 지정하면 오프라인 모임만 조회된다.
 
 **Response 200 OK**
 ```json
@@ -435,61 +452,22 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | recruitStatus | enum | `RECRUITING` / `CLOSED`. 6.5 참고 |
 | capacity | int \| null | 모집 인원 |
 
-- 블라인드 게시글: `isBlind = true`, `title`은 `"숨김 처리된 게시글"`로 마스킹된다.
-  **`category`·`meetingType`·`address`·`placeName`·`recruitStatus`·`capacity`는 마스킹되지 않고 그대로 내려간다.**
 - 탈퇴 회원의 게시글: `writerNickname`이 `"알수없음"` (`memberId`는 그대로 내려간다).
-
-**에러**
-| HTTP | code                |
-|------|---------------------|
-| 400  | `INVALID_PAGE_SIZE` |
-
----
-
-### 3.2 게시글 검색
-- **GET** `/api/v1/posts/search?keyword={keyword}&category={category}&meetingType={meetingType}&recruitStatus={recruitStatus}&sido={sido}&sigungu={sigungu}&from={from}&to={to}&cursor={cursor}&size={size}`
-
-**Query Parameters**
-| 이름 | 타입 | 필수 | 기본값 | 설명 |
-|------|------|----|-----|------|
-| keyword | string | **O** | - | 검색어. 비어 있거나 공백만 있으면 400 |
-| category | enum | X | - | 모임 분류. 6.3 참고 |
-| meetingType | enum | X | - | `ONLINE` / `OFFLINE`. 6.4 참고 |
-| recruitStatus | enum | X | - | `RECRUITING` / `CLOSED`. 6.5 참고 |
-| sido | string | X | - | 시도 **완전 일치**. 예: `서울특별시` |
-| sigungu | string | X | - | 시군구 **완전 일치**. 예: `강남구` |
-| from | date | X | - | 작성일 시작(`yyyy-MM-dd`). **해당 일자 00:00부터 포함** |
-| to | date | X | - | 작성일 끝(`yyyy-MM-dd`). **해당 일자를 포함**(내부적으로 다음날 00:00 미만) |
-| cursor | Long | X | - | 직전 페이지의 `nextCursor`. 첫 페이지는 생략 |
-| size | Long | X | 10 | 한 페이지 항목 수. **1 이상 10 이하** |
-
-- `keyword`를 제외한 **모든 필터는 선택**이며, 주지 않으면 그 조건으로 좁히지 않는다.
-- 여러 필터를 함께 주면 **AND로 결합**된다.
-- **제목 또는 본문**에 `keyword`가 포함된 모집글을 찾는다. **대소문자를 구분하지 않으며 부분 일치**다.
-- 앞뒤 공백은 제거하고 검색한다. `sido`/`sigungu`도 공백만 있으면 미지정으로 취급한다.
-- 정렬·페이지네이션은 3.1과 같다(`id DESC`, 커서 기반).
-- 응답 형식은 **3.1 목록 조회와 완전히 동일**하다(같은 `PostSummaryPageResDto`).
-- **블라인드 게시글(`isBlind = true`)은 검색 결과에서 제외된다.** 목록 조회(3.1)가 마스킹해서
-  보여주는 것과 다르다. 본문이 가려진 글이 검색어에 걸리면 **매칭됐다는 사실 자체가 가려진 내용을
-  노출**하기 때문이다. (상세 조회 `GET /posts/{postId}`는 그대로 접근 가능하며 마스킹된 형태로 응답한다.)
-
-> **온라인 모임은 주소가 `null`** 이므로 `sido`/`sigungu`를 지정하면 오프라인 모임만 조회된다.
-
-**Response 200 OK**
-- 3.1과 동일한 구조. 조건에 맞는 글이 없으면 `data: []`, `nextCursor: null`, `hasNext: false`.
 
 **에러**
 | HTTP | code | 상황 |
 |------|---------------------------|---|
-| 400  | `SEARCH_KEYWORD_REQUIRED` | `keyword` 누락 또는 공백뿐 |
 | 400  | `INVALID_PAGE_SIZE`       | `size`가 1~10 범위 밖 |
 | 400  | `INVALID_DATE_RANGE`      | `from`이 `to`보다 뒤 |
 | 400  | `INVALID_ENUM_VALUE`      | 정의되지 않은 `category`/`meetingType`/`recruitStatus` |
 | 400  | `INVALID_PARAMETER_TYPE`  | `cursor`가 숫자가 아니거나 날짜 형식이 `yyyy-MM-dd`가 아님 |
 
+> ⚠️ **`GET /api/v1/posts/search`는 더 이상 존재하지 않는다.** 호출하면 `search`가 3.2의
+> `postId`로 해석되어 **404가 아니라 400 `INVALID_PARAMETER_TYPE`** 이 반환되므로 주의할 것.
+
 ---
 
-### 3.3 게시글 상세 조회
+### 3.2 게시글 상세 조회
 - **GET** `/api/v1/posts/{postId}`
 
 **Path Parameter**
@@ -566,7 +544,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.4 게시글 생성
+### 3.3 게시글 생성
 - **POST** `/api/v1/posts`
 - **레이트리밋 적용**: 회원당 **1분에 3건**. 초과 시 429 `POST_RATE_LIMIT_EXCEEDED`.
   (4.5 임시 저장 글 발행과 **동일한 카운터**를 공유한다.)
@@ -629,7 +607,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.5 게시글 수정
+### 3.4 게시글 수정
 - **PATCH** `/api/v1/posts/{postId}`
 - PATCH지만 **부분 수정이 아니다.** 필수 필드를 모두 보내야 하며 전달한 값으로 덮어쓴다.
 - 수정하면 이전 내용이 수정 이력으로 보관되고, 목록의 `isEdited`가 `true`가 된다.
@@ -659,7 +637,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | placeName | string | O | NotBlank, 최대 50자 |
 | capacity | int | X | 보내면 양수여야 한다 |
 
-> 검증 규칙은 3.4 게시글 생성과 동일하다(`imageUrl`만 NotBlank → NotEmpty).
+> 검증 규칙은 3.3 게시글 생성과 동일하다(`imageUrl`만 NotBlank → NotEmpty).
 > **`recruitStatus`는 수정할 수 없다.** 모집 마감 API는 아직 없다.
 > 수정 이력에는 `title`·`content`·`imageUrl`만 보관되며, **모집 정보 변경 이력은 남지 않는다.**
 
@@ -686,7 +664,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.6 게시글 삭제
+### 3.5 게시글 삭제
 - **DELETE** `/api/v1/posts/{postId}`
 
 **Response 200 OK**
@@ -702,7 +680,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.7 게시글 좋아요
+### 3.6 게시글 좋아요
 - **POST** `/api/v1/posts/{postId}/likes`
 
 **Response 200 OK**
@@ -722,7 +700,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.8 게시글 좋아요 취소
+### 3.7 게시글 좋아요 취소
 - **DELETE** `/api/v1/posts/{postId}/likes`
 
 **Response 200 OK**
@@ -742,7 +720,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.9 댓글 작성
+### 3.8 댓글 작성
 - **POST** `/api/v1/posts/{postId}/comments`
 
 **Request Body**
@@ -771,7 +749,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.10 댓글 수정
+### 3.9 댓글 수정
 - **PATCH** `/api/v1/posts/{postId}/comments/{commentId}`
 
 **Request Body**
@@ -793,7 +771,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.11 댓글 삭제
+### 3.10 댓글 삭제
 - **DELETE** `/api/v1/posts/{postId}/comments/{commentId}`
 
 **Response 200 OK**
@@ -935,15 +913,15 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ### 4.5 임시 저장 글 게시(발행)
 - **POST** `/api/v1/posts/drafts/{draftId}/publish`
-- **레이트리밋 적용**: 회원당 **1분에 3건** (3.4 게시글 생성과 카운터 공유). 초과 시 429.
+- **레이트리밋 적용**: 회원당 **1분에 3건** (3.3 게시글 생성과 카운터 공유). 초과 시 429.
 
 임시 저장 글을 정식 게시글로 발행한다. 발행에 사용할 최종 본문은 **요청 body의 값**이며,
-저장돼 있던 draft 내용은 사용하지 않는다. 검증 규칙은 3.4 게시글 생성과 동일하다.
+저장돼 있던 draft 내용은 사용하지 않는다. 검증 규칙은 3.3 게시글 생성과 동일하다.
 발행에 성공하면 draft는 `PUBLISHED`가 되어 조회 대상에서 빠지므로,
 **같은 draftId로 다시 발행하면 404 `POST_DRAFT_NOT_FOUND`** 가 된다(중복 게시 불가).
 
 **Request Body**
-- **3.4 게시글 생성과 동일한 body**(`PostCreateReqDto`)를 보낸다.
+- **3.3 게시글 생성과 동일한 body**(`PostCreateReqDto`)를 보낸다.
 
 ```json
 {
@@ -1001,7 +979,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ### 4.6 임시 저장 글 삭제
 - **DELETE** `/api/v1/posts/drafts/{draftId}`
-- 아직 발행하지 않은 draft만 삭제할 수 있다. 이미 발행했다면 404다(발행된 게시글은 3.6으로 삭제).
+- 아직 발행하지 않은 draft만 삭제할 수 있다. 이미 발행했다면 404다(발행된 게시글은 3.5로 삭제).
 
 **Response 200 OK**
 ```json
@@ -1055,7 +1033,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | 409  | `ALREADY_REPORTED`                              |
 
 > 게시글·댓글 모두 누적 신고 **5회**에 도달하면 자동으로 블라인드 처리된다.
-> 블라인드되면 응답의 `isBlind`가 `true`가 되고 본문이 마스킹된다(3.1·3.3 참고).
+> 블라인드되면 응답의 `isBlind`가 `true`가 되고 본문이 마스킹된다(3.1·3.2 참고).
 
 ---
 
@@ -1155,10 +1133,9 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 ### SearchErrorCode
 | code                     | HTTP |
 |--------------------------|------|
-| SEARCH_KEYWORD_REQUIRED  | 400 |
 | INVALID_DATE_RANGE       | 400 |
 
-> 검색(3.2)은 `SearchController` / `SearchService` / `SearchRepository`로 Post와 분리되어 있다.
+> 목록·검색 조회(3.1)는 `SearchController` / `SearchService` / `SearchRepository`로 Post 의 CRUD 와 분리되어 있다.
 > `size` 검증 위반은 `PostErrorCode.INVALID_PAGE_SIZE`(400)를 그대로 쓴다.
 
 ### PostDraftErrorCode

@@ -82,6 +82,10 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 
 - **레이트리밋**: `@RateLimited` + `RateLimitInterceptor`(인메모리 fixed window, 1분 3건). 현재 `POST /posts`, `POST /posts/drafts/{id}/publish`에 적용되며 **회원 단위 카운터를 공유**한다.
 - **커서 기반 페이지네이션**: 목록 조회는 `id < cursor ... ORDER BY id DESC` 방식(offset 아님). `size`는 1~10.
+- **목록·검색은 `GET /api/v1/posts` 하나로 통합**되어 있고 `SearchController`/`SearchService`/`SearchRepository`가
+  담당한다(`PostController` 는 CRUD 만). 조건이 없으면 목록, 있으면 검색이며 **모든 조건이 선택**이다.
+  `keyword` 유무로 저장소가 쿼리를 분기한다 — LIKE 는 선행 와일드카드라 인덱스를 못 쓰므로,
+  키워드 없는 요청까지 같은 쿼리로 보내면 불필요한 스캔 비용을 낸다.
 - **마스킹**: 블라인드/탈퇴 치환은 엔티티가 아니라 **응답 DTO의 `from(...)`에서** 상수로 처리(`BLINDED_POST`/`BLINDED_COMMENT`/`UNKNOWN_WRITER`) + `isBlind` 노출.
 - 설정 클래스는 `global/config/`(Security/Jwt/Cors/Jpa/Web/Scheduling).
 
