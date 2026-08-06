@@ -1,7 +1,10 @@
 package kakao.bootcamp.fullstack.api.domain.post;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -58,15 +61,49 @@ public class Post extends BaseEntity {
     @Column(nullable = false)
     private boolean blinded = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PostCategory category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MeetingType meetingType;
+
+    @Embedded private Address address;
+
+    @Column(nullable = false, length = PostConstants.PLACE_NAME_MAX_LENGTH)
+    private String placeName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RecruitStatus recruitStatus = RecruitStatus.RECRUITING;
+
+    @Column private Integer capacity;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    private Post(Member member, String title, String content, String imageUrl) {
+    private Post(
+            Member member,
+            String title,
+            String content,
+            String imageUrl,
+            PostCategory category,
+            MeetingType meetingType,
+            Address address,
+            String placeName,
+            Integer capacity) {
         this.member = member;
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
+        this.category = category;
+        this.meetingType = meetingType;
+        this.address = address;
+        this.placeName = placeName;
+        this.capacity = capacity;
+        this.recruitStatus = RecruitStatus.RECRUITING;
     }
 
     public boolean isNew() {
@@ -113,20 +150,55 @@ public class Post extends BaseEntity {
         return member.isDeleted();
     }
 
-    public void updatePost(String title, String content, String imageUrl) {
+    public void updatePost(
+            String title,
+            String content,
+            String imageUrl,
+            PostCategory category,
+            MeetingType meetingType,
+            Address address,
+            String placeName,
+            Integer capacity) {
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
+        this.category = category;
+        this.meetingType = meetingType;
+        this.address = address;
+        this.placeName = placeName;
+        this.capacity = capacity;
         if (!edited) {
             this.edited = true;
         }
+    }
+
+    public void closeRecruiting() {
+        this.recruitStatus = RecruitStatus.CLOSED;
     }
 
     public boolean isWriter(Long memberId) {
         return member.getId().equals(memberId);
     }
 
-    public static Post create(Member writer, String title, String content, String imageUrl) {
-        return new Post(writer, title, content, imageUrl);
+    public static Post create(
+            Member writer,
+            String title,
+            String content,
+            String imageUrl,
+            PostCategory category,
+            MeetingType meetingType,
+            Address address,
+            String placeName,
+            Integer capacity) {
+        return new Post(
+                writer,
+                title,
+                content,
+                imageUrl,
+                category,
+                meetingType,
+                address,
+                placeName,
+                capacity);
     }
 }

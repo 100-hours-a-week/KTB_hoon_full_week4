@@ -5,12 +5,21 @@ import static kakao.bootcamp.fullstack.global.constants.PostConstants.UNKNOWN_WR
 
 import java.time.LocalDateTime;
 import java.util.List;
+import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
+import kakao.bootcamp.fullstack.api.domain.post.PostCategory;
+import kakao.bootcamp.fullstack.api.domain.post.RecruitStatus;
 
 public record PostDetailsResDto(
         Long postId,
         String title,
         String content,
+        PostCategory category,
+        MeetingType meetingType,
+        AddressResDto address,
+        String placeName,
+        RecruitStatus recruitStatus,
+        Integer capacity,
         long likeCount,
         long viewCount,
         Long memberId,
@@ -28,6 +37,12 @@ public record PostDetailsResDto(
                 post.getId(),
                 blinded ? BLINDED_POST : post.getTitle(),
                 blinded ? BLINDED_POST : post.getContent(),
+                post.getCategory(),
+                post.getMeetingType(),
+                AddressResDto.from(post.getAddress()),
+                post.getPlaceName(),
+                post.getRecruitStatus(),
+                post.getCapacity(),
                 post.getLikeCount(),
                 post.getViewCount(),
                 post.getMember().getId(),

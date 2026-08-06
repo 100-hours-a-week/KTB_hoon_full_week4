@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
+import kakao.bootcamp.fullstack.api.domain.post.Address;
+import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
+import kakao.bootcamp.fullstack.api.domain.post.PostCategory;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
 import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
@@ -69,39 +72,69 @@ public class DataInitializer implements CommandLineRunner {
         Post post1 =
                 Post.create(
                         alice,
-                        "스프링 부트로 시작하는 백엔드",
-                        "오늘은 스프링 부트 프로젝트를 처음 세팅해봤어요. 의존성 설정이 생각보다 간단했습니다.",
-                        "https://picsum.photos/seed/post1/600/400");
+                        "주말 농구 같이 하실 분 구해요",
+                        "일요일 오전에 동네 농구장에서 반코트 게임 합니다. 두세 명만 더 오면 딱 좋아요. 초보도 환영합니다.",
+                        "https://picsum.photos/seed/post1/600/400",
+                        PostCategory.EXERCISE,
+                        MeetingType.OFFLINE,
+                        Address.of("서울특별시", "강남구", "대치동", null),
+                        "대치중학교 운동장",
+                        6);
         Post post2 =
                 Post.create(
                         bob,
-                        "JWT 인증 흐름 정리",
-                        "Access/Refresh 토큰을 분리하고 블랙리스트로 로그아웃을 처리한 경험을 공유합니다.",
-                        "https://picsum.photos/seed/post2/600/400");
+                        "자바 알고리즘 스터디 모집합니다",
+                        "주 2회 온라인으로 코딩테스트 문제 풀고 리뷰해요. 꾸준히 하실 분만. 노쇼 벌금 있습니다.",
+                        "https://picsum.photos/seed/post2/600/400",
+                        PostCategory.STUDY,
+                        MeetingType.ONLINE,
+                        null,
+                        "온라인(디스코드)",
+                        5);
         Post post3 =
                 Post.create(
                         carol,
-                        "도메인 주도 설계 입문기",
-                        "엔티티와 값 객체의 차이를 이해하는 데 시간이 좀 걸렸네요. 추천 자료 있을까요?",
-                        "https://picsum.photos/seed/post3/600/400");
+                        "보드게임 모임 새 멤버 구해요",
+                        "매주 토요일 오후에 모여 보드게임 합니다. 룰 몰라도 알려드려요. 처음 오시는 분도 편하게 오세요.",
+                        "https://picsum.photos/seed/post3/600/400",
+                        PostCategory.GAME,
+                        MeetingType.OFFLINE,
+                        Address.of("서울특별시", "마포구", "서교동", null),
+                        "홍대입구역 보드게임카페",
+                        8);
         Post post4 =
                 Post.create(
                         alice,
-                        "인메모리 저장소로 빠른 프로토타이핑",
-                        "DB 붙이기 전 ConcurrentHashMap만으로도 충분히 검증이 가능합니다.",
-                        "https://picsum.photos/seed/post4/600/400");
+                        "한강 러닝 크루 같이 뛰어요",
+                        "화요일 저녁 7시 여의도 한강공원에서 가볍게 5km 뜁니다. 러닝 끝나고 스트레칭도 같이 해요.",
+                        "https://picsum.photos/seed/post4/600/400",
+                        PostCategory.EXERCISE,
+                        MeetingType.OFFLINE,
+                        Address.of("서울특별시", "영등포구", "여의도동", null),
+                        "여의도한강공원 물빛광장",
+                        10);
         Post post5 =
                 Post.create(
                         dave,
-                        "프론트엔드 상태관리 비교",
-                        "Redux, Zustand, Recoil을 작은 프로젝트에 적용해본 후기입니다.",
-                        "https://picsum.photos/seed/post5/600/400");
+                        "동네 맛집 탐방 모임 구합니다",
+                        "격주로 숨은 맛집 찾아다니며 같이 먹어요. 이번엔 성수동 골목입니다. 먹는 거 좋아하면 누구나 환영.",
+                        "https://picsum.photos/seed/post5/600/400",
+                        PostCategory.FOOD,
+                        MeetingType.OFFLINE,
+                        Address.of("서울특별시", "성동구", "성수동", null),
+                        "성수역 3번 출구",
+                        4);
         Post post6 =
                 Post.create(
                         bob,
-                        "테스트 코드, 어디까지 작성하나요?",
-                        "단위 테스트와 통합 테스트의 균형이 늘 고민입니다. 다들 어떻게 하시나요?",
-                        "https://picsum.photos/seed/post6/600/400");
+                        "주말 유기견 산책 봉사 함께 가요",
+                        "토요일 아침 보호소에서 강아지 산책과 청소를 돕습니다. 카풀 가능해요. 강아지 좋아하는 분 환영합니다.",
+                        "https://picsum.photos/seed/post6/600/400",
+                        PostCategory.VOLUNTEER,
+                        MeetingType.OFFLINE,
+                        Address.of("서울특별시", "은평구", "응암동", null),
+                        "응암역 2번 출구",
+                        6);
         List<Post> posts = new ArrayList<>(List.of(post1, post2, post3, post4, post5, post6));
         posts.addAll(createSamplePosts(members));
         posts.forEach(postRepository::save);
@@ -169,12 +202,22 @@ public class DataInitializer implements CommandLineRunner {
         String[][] data = SamplePosts.DATA;
         for (int i = 0; i < data.length; i++) {
             Member author = authors.get(i % authors.size());
+            MeetingType meetingType = MeetingType.valueOf(data[i][3]);
+            Address address =
+                    meetingType == MeetingType.OFFLINE
+                            ? Address.of(data[i][4], data[i][5], data[i][6], null)
+                            : null;
             posts.add(
                     Post.create(
                             author,
                             data[i][0],
                             data[i][1],
-                            "https://picsum.photos/seed/post" + (i + 7) + "/600/400"));
+                            "https://picsum.photos/seed/post" + (i + 7) + "/600/400",
+                            PostCategory.valueOf(data[i][2]),
+                            meetingType,
+                            address,
+                            data[i][7],
+                            4 + (i % 5)));
         }
         return posts;
     }

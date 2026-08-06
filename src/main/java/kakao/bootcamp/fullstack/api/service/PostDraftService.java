@@ -3,6 +3,8 @@ package kakao.bootcamp.fullstack.api.service;
 import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
+import kakao.bootcamp.fullstack.api.domain.post.Address;
+import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraftErrorCode;
@@ -70,7 +72,19 @@ public class PostDraftService {
         Member member = loadMemberOrThrow(memberId);
         PostDraft postDraft = loadPostDraftOrThrow(postDraftId);
         checkPostDraftWriter(memberId, postDraft);
-        Post post = Post.create(member, request.title(), request.content(), request.imageUrl());
+        Address address =
+                request.meetingType() == MeetingType.OFFLINE ? request.address().toAddress() : null;
+        Post post =
+                Post.create(
+                        member,
+                        request.title(),
+                        request.content(),
+                        request.imageUrl(),
+                        request.category(),
+                        request.meetingType(),
+                        address,
+                        request.placeName(),
+                        request.capacity());
         postRepository.save(post);
         postDraft.publish();
         return PostCreateResDto.from(post);

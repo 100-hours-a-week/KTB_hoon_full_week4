@@ -6,6 +6,8 @@ import kakao.bootcamp.fullstack.api.domain.comment.CommentErrorCode;
 import kakao.bootcamp.fullstack.api.domain.edit_revision.EditRevision;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
+import kakao.bootcamp.fullstack.api.domain.post.Address;
+import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.PostLike;
@@ -20,7 +22,6 @@ import kakao.bootcamp.fullstack.api.dto.response.PostCreateResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDetailsResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostLikeResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostSummaryPageResDto;
-import kakao.bootcamp.fullstack.api.dto.response.PostSummaryResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostUpdateResDto;
 import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.edit_revision.EditRevisionRepository;
@@ -49,13 +50,9 @@ public class PostService {
     private final PostViewLogRepository postViewLogRepository;
 
     public PostSummaryPageResDto getPostSummariesList(Long memberId, Long cursor, Long size) {
-        Member member = loadMemberOrThrow(memberId);
+        loadMemberOrThrow(memberId);
         List<Post> posts = postRepository.findPage(cursor, size + 1);
-        boolean hasNext = posts.size() > size;
-        List<Post> page = hasNext ? posts.subList(0, size.intValue()) : posts;
-        List<PostSummaryResDto> summaries = page.stream().map(PostSummaryResDto::from).toList();
-        Long nextCursor = hasNext ? page.get(page.size() - 1).getId() : null;
-        return new PostSummaryPageResDto(summaries, nextCursor, hasNext);
+        return PostSummaryPageResDto.of(posts, size);
     }
 
     @Transactional
@@ -82,7 +79,19 @@ public class PostService {
     @Transactional
     public PostCreateResDto createPost(Long memberId, PostCreateReqDto request) {
         Member member = loadMemberOrThrow(memberId);
-        Post post = Post.create(member, request.title(), request.content(), request.imageUrl());
+        Address address =
+                request.meetingType() == MeetingType.OFFLINE ? request.address().toAddress() : null;
+        Post post =
+                Post.create(
+                        member,
+                        request.title(),
+                        request.content(),
+                        request.imageUrl(),
+                        request.category(),
+                        request.meetingType(),
+                        address,
+                        request.placeName(),
+                        request.capacity());
         postRepository.save(post);
         return PostCreateResDto.from(post);
     }
@@ -93,7 +102,17 @@ public class PostService {
         Post post = loadPostOrThrow(postId);
         checkPostWriter(memberId, post);
         editRevisionRepository.save(EditRevision.fromPost(post));
-        post.updatePost(request.title(), request.content(), request.imageUrl());
+        Address address =
+                request.meetingType() == MeetingType.OFFLINE ? request.address().toAddress() : null;
+        post.updatePost(
+                request.title(),
+                request.content(),
+                request.imageUrl(),
+                request.category(),
+                request.meetingType(),
+                address,
+                request.placeName(),
+                request.capacity());
         return PostUpdateResDto.from(post);
     }
 

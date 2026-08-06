@@ -24,6 +24,16 @@ public class ValidationCode {
     public static final String TITLE_LENGTH_EXCEEDED = "TITLE_LENGTH_EXCEEDED";
     public static final String CONTENT_REQUIRED = "CONTENT_REQUIRED";
 
+    public static final String CATEGORY_REQUIRED = "CATEGORY_REQUIRED";
+    public static final String MEETING_TYPE_REQUIRED = "MEETING_TYPE_REQUIRED";
+    public static final String ADDRESS_REQUIRED_FOR_OFFLINE = "ADDRESS_REQUIRED_FOR_OFFLINE";
+    public static final String SIDO_REQUIRED = "SIDO_REQUIRED";
+    public static final String SIGUNGU_REQUIRED = "SIGUNGU_REQUIRED";
+    public static final String EUPMYEONDONG_REQUIRED = "EUPMYEONDONG_REQUIRED";
+    public static final String PLACE_NAME_REQUIRED = "PLACE_NAME_REQUIRED";
+    public static final String PLACE_NAME_LENGTH_EXCEEDED = "PLACE_NAME_LENGTH_EXCEEDED";
+    public static final String CAPACITY_POSITIVE = "CAPACITY_POSITIVE";
+
     public static final String COMMENT_REQUIRED = "COMMENT_REQUIRED";
 
     public static final String REPORT_REASON_REQUIRED = "REPORT_REASON_REQUIRED";

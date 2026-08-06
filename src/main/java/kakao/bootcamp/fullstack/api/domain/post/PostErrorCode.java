@@ -18,6 +18,17 @@ public enum PostErrorCode implements BaseCode {
     TITLE_REQUIRED(HttpStatus.BAD_REQUEST, "TITLE_REQUIRED", "title_required"),
     CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "CONTENT_REQUIRED", "content_required"),
     POST_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "POST_IMAGE_REQUIRED", "post_image_required"),
+    CATEGORY_REQUIRED(HttpStatus.BAD_REQUEST, "CATEGORY_REQUIRED", "category_required"),
+    MEETING_TYPE_REQUIRED(HttpStatus.BAD_REQUEST, "MEETING_TYPE_REQUIRED", "meeting_type_required"),
+    ADDRESS_REQUIRED_FOR_OFFLINE(
+            HttpStatus.BAD_REQUEST, "ADDRESS_REQUIRED_FOR_OFFLINE", "address_required_for_offline"),
+    SIDO_REQUIRED(HttpStatus.BAD_REQUEST, "SIDO_REQUIRED", "sido_required"),
+    SIGUNGU_REQUIRED(HttpStatus.BAD_REQUEST, "SIGUNGU_REQUIRED", "sigungu_required"),
+    EUPMYEONDONG_REQUIRED(HttpStatus.BAD_REQUEST, "EUPMYEONDONG_REQUIRED", "eupmyeondong_required"),
+    PLACE_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "PLACE_NAME_REQUIRED", "place_name_required"),
+    PLACE_NAME_LENGTH_EXCEEDED(
+            HttpStatus.BAD_REQUEST, "PLACE_NAME_LENGTH_EXCEEDED", "place_name_length_exceeded"),
+    CAPACITY_POSITIVE(HttpStatus.BAD_REQUEST, "CAPACITY_POSITIVE", "capacity_positive"),
     ;
 
     private final HttpStatus httpStatus;

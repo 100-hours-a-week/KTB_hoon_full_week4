@@ -4,11 +4,20 @@ import static kakao.bootcamp.fullstack.global.constants.PostConstants.BLINDED_PO
 import static kakao.bootcamp.fullstack.global.constants.PostConstants.UNKNOWN_WRITER;
 
 import java.time.LocalDateTime;
+import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
+import kakao.bootcamp.fullstack.api.domain.post.PostCategory;
+import kakao.bootcamp.fullstack.api.domain.post.RecruitStatus;
 
 public record PostSummaryResDto(
         Long postId,
         String title,
+        PostCategory category,
+        MeetingType meetingType,
+        AddressResDto address,
+        String placeName,
+        RecruitStatus recruitStatus,
+        Integer capacity,
         long likeCount,
         long commentCount,
         long viewCount,
@@ -21,6 +30,12 @@ public record PostSummaryResDto(
         return new PostSummaryResDto(
                 post.getId(),
                 post.isBlinded() ? BLINDED_POST : post.getTitle(),
+                post.getCategory(),
+                post.getMeetingType(),
+                AddressResDto.from(post.getAddress()),
+                post.getPlaceName(),
+                post.getRecruitStatus(),
+                post.getCapacity(),
                 post.getLikeCount(),
                 post.getCommentCount(),
                 post.getViewCount(),
