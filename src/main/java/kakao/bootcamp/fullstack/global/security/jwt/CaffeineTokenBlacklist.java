@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@Profile({"local", "prod"})
+@Profile({"local", "prod", "test"})
 public class CaffeineTokenBlacklist implements TokenBlacklist {
 
     private static final long MAX_SIZE = 100_000;

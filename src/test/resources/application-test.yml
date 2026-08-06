@@ -5,3 +5,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+jwt:
+  secret: "mysecretkeymysecretkeymysecretkey123456mysecretkeymysecretkeymysecretkey123456mysecretkeymysecretkeymysecretkey123456"
+  access-token-expire-seconds: 600
+  refresh-token-expire-seconds: 1209600

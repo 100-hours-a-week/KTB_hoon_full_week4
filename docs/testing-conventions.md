@@ -124,14 +124,23 @@ public class RefreshTokenRepositoryTest {
 
 참고: `src/test/.../member/MemberRepositoryTest.java`, `src/test/.../auth/RefreshTokenRepositoryTest.java`.
 
-## 프로파일 빈 배선 주의 (중요)
+## 프로파일 빈 배선 (중요)
 
-`test` 프로파일에는 일부 빈이 **존재하지 않는다.** 리포지토리 어댑터 중 `@Profile({"prod","test"})`인 것만 test에서 살아있고(`JpaMemberRepositoryAdapter`, `JpaRefreshTokenRepositoryAdapter`), 나머지 도메인 어댑터와 **`InMemoryTokenBlacklist`·`InMemorySessionBlacklist`(`@Profile({"local","prod"})`)는 test 프로파일에 빈이 없다.**
+**모든 테스트는 `@ActiveProfiles("test")`를 명시한다.** 붙이지 않으면 `application.yaml`의 `spring.profiles.active: prod`를 물려받아 **운영 설정(RDS 주소, `${JWT_SECRET}` 환경변수)으로 뜨려다 실패**한다.
 
-결과:
-- **`@SpringBootTest(@ActiveProfiles("test"))`로는 `AuthService`를 배선할 수 없다** — `TokenBlacklist`/`SessionBlacklist` 빈이 없어 컨텍스트 로딩이 실패한다.
-- 그래서 서비스 로직은 **fake 기반 유닛 테스트**로 검증한다(위 참조).
-- 컨트롤러 레이어는 아래 "웹 · 시큐리티 테스트"처럼 **`@WebMvcTest` 슬라이스**로 간다(협력자는 `@MockitoBean`으로 채운다).
+`test` 프로파일은 **prod와 같은 JPA 배선 + H2**다:
+- 리포지토리 어댑터 9개 전부 `@Profile({"prod","test"})`
+- `CaffeineTokenBlacklist`·`CaffeineSessionBlacklist`·`InMemoryPostRateLimiter`는 `@Profile({"local","prod","test"})`
+- **`JpaDataInitializer`만 `@Profile("prod")`로 남겨 시드가 테스트 DB에 들어가지 않게 한다**
+
+즉 `@SpringBootTest` + `@ActiveProfiles("test")`로 전체 컨텍스트를 띄울 수 있다(`FullstackApplicationTests`, `AuthReissueTransactionTest`가 그렇게 한다). 테스트 환경 설정의 단일 출처는 `src/test/resources/application-test.yml`이다.
+
+다만 전체 컨텍스트는 느리므로 **기본 선택지는 아니다**:
+- 서비스 로직 → **fake 기반 유닛 테스트**(위 참조)
+- 컨트롤러 레이어 → **`@WebMvcTest` 슬라이스**(협력자는 `@MockitoBean`)
+- 전체 `@SpringBootTest`는 **트랜잭션 시맨틱처럼 실제 배선이 있어야만 증명되는 것**에만 쓴다
+
+> 저장소 포트에 구현을 추가할 때 `@Profile`을 빠뜨리면 컨텍스트 로딩 실패로 바로 드러난다.
 
 ## 웹 · 시큐리티 테스트
 

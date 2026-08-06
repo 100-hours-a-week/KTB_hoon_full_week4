@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile({"local", "prod"})
+@Profile({"local", "prod", "test"})
 public class InMemoryPostRateLimiter implements RateLimiter {
 
     private final Map<Long, Window> windows = new HashMap<>();

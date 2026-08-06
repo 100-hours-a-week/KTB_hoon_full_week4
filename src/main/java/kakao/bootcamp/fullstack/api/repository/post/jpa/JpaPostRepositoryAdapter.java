@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("prod")
+@Profile({"prod", "test"})
 @RequiredArgsConstructor
 public class JpaPostRepositoryAdapter implements PostRepository {
 
