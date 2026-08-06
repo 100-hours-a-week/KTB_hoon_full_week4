@@ -42,4 +42,8 @@ public class InMemoryPostRepository implements PostRepository {
                 .limit(size)
                 .toList();
     }
+
+    public List<Post> findAllActive() {
+        return posts.values().stream().filter(post -> !post.isDeleted()).toList();
+    }
 }

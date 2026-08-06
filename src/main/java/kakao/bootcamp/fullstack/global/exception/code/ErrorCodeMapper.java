@@ -8,6 +8,7 @@ import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraftErrorCode;
 import kakao.bootcamp.fullstack.api.domain.report.ReportErrorCode;
+import kakao.bootcamp.fullstack.api.domain.search.SearchErrorCode;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -21,6 +22,7 @@ public class ErrorCodeMapper {
                         Arrays.stream(PostDraftErrorCode.values()),
                         Arrays.stream(CommentErrorCode.values()),
                         Arrays.stream(ReportErrorCode.values()),
+                        Arrays.stream(SearchErrorCode.values()),
                         Arrays.stream(CommonErrorCode.values()))
                 .flatMap(stream -> stream)
                 .map(errorCode -> (BaseCode) errorCode)
