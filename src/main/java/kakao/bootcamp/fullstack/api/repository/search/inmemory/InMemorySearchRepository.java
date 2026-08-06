@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("local")
+@Profile("inmemory")
 @RequiredArgsConstructor
 public class InMemorySearchRepository implements SearchRepository {
 
@@ -20,6 +20,7 @@ public class InMemorySearchRepository implements SearchRepository {
     public List<Post> searchPostPage(String keyword, Long cursor, Long size) {
         String lowered = keyword.toLowerCase();
         return inMemoryPostRepository.findAllActive().stream()
+                .filter(post -> !post.isBlinded())
                 .filter(post -> cursor == null || post.getId() < cursor)
                 .filter(
                         post ->

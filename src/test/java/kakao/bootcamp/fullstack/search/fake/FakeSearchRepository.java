@@ -25,6 +25,7 @@ public class FakeSearchRepository implements SearchRepository {
         String lowered = keyword.toLowerCase();
         return store.values().stream()
                 .filter(post -> !post.isDeleted())
+                .filter(post -> !post.isBlinded())
                 .filter(post -> cursor == null || post.getId() < cursor)
                 .filter(
                         post ->
