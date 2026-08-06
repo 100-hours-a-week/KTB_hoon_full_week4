@@ -2,11 +2,11 @@ package kakao.bootcamp.fullstack.api.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
-import kakao.bootcamp.fullstack.api.domain.post.Post;
+import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
+import kakao.bootcamp.fullstack.api.domain.post.PostCategory;
+import kakao.bootcamp.fullstack.api.domain.post.RecruitStatus;
 import kakao.bootcamp.fullstack.api.domain.search.SearchErrorCode;
-import kakao.bootcamp.fullstack.api.dto.request.PostSearchReqDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostSummaryPageResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.search.PostSearchCond;
@@ -25,24 +25,33 @@ public class SearchService {
     private final SearchRepository searchRepository;
     private final MemberRepository memberRepository;
 
-    public PostSummaryPageResDto searchPosts(Long memberId, PostSearchReqDto request) {
+    public PostSummaryPageResDto searchPosts(
+            Long memberId,
+            String keyword,
+            PostCategory category,
+            MeetingType meetingType,
+            RecruitStatus recruitStatus,
+            String sido,
+            String sigungu,
+            LocalDate from,
+            LocalDate to,
+            Long cursor,
+            Long size) {
         loadMemberOrThrow(memberId);
-        List<Post> posts = searchRepository.searchPostPage(toCond(request));
-        return PostSummaryPageResDto.of(posts, request.size());
-    }
-
-    private PostSearchCond toCond(PostSearchReqDto request) {
-        return new PostSearchCond(
-                requireKeyword(request.keyword()),
-                request.category(),
-                request.meetingType(),
-                request.recruitStatus(),
-                blankToNull(request.sido()),
-                blankToNull(request.sigungu()),
-                startOfDay(request.from()),
-                startOfNextDay(request.to()),
-                request.cursor(),
-                request.size() + 1);
+        checkDateRange(from, to);
+        PostSearchCond cond =
+                new PostSearchCond(
+                        requireKeyword(keyword),
+                        category,
+                        meetingType,
+                        recruitStatus,
+                        blankToNull(sido),
+                        blankToNull(sigungu),
+                        startOfDay(from),
+                        startOfNextDay(to),
+                        cursor,
+                        size + 1);
+        return PostSummaryPageResDto.of(searchRepository.searchPostPage(cond), size);
     }
 
     private String requireKeyword(String keyword) {
@@ -50,6 +59,12 @@ public class SearchService {
             throw new BadRequestException(SearchErrorCode.SEARCH_KEYWORD_REQUIRED);
         }
         return keyword.trim();
+    }
+
+    private void checkDateRange(LocalDate from, LocalDate to) {
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new BadRequestException(SearchErrorCode.INVALID_DATE_RANGE);
+        }
     }
 
     private String blankToNull(String value) {

@@ -12,7 +12,6 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -50,11 +49,6 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException e) {
         log.error(e.getMessage(), e);
-        BaseCode bindingFailure = resolveBindingFailure(e.getBindingResult());
-        if (bindingFailure != null) {
-            return ResponseEntity.status(bindingFailure.getHttpStatus())
-                    .body(ApiResponse.error(bindingFailure));
-        }
         String validationCode =
                 e.getBindingResult().getAllErrors().stream()
                         .findFirst()
@@ -91,27 +85,6 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage(), e);
         return ResponseEntity.status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
                 .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR));
-    }
-
-    /**
-     * 값 자체가 타입으로 변환되지 않은 경우(@ModelAttribute 바인딩 실패)는 검증 메시지가 없어 ErrorCodeMapper 로 풀 수 없다. 필드의 실패
-     * 코드로 직접 구분한다.
-     */
-    private BaseCode resolveBindingFailure(BindingResult bindingResult) {
-        return bindingResult.getFieldErrors().stream()
-                .filter(fieldError -> fieldError.isBindingFailure())
-                .findFirst()
-                .map(
-                        fieldError ->
-                                isEnumTarget(bindingResult, fieldError.getField())
-                                        ? CommonErrorCode.INVALID_ENUM_VALUE
-                                        : CommonErrorCode.INVALID_PARAMETER_TYPE)
-                .orElse(null);
-    }
-
-    private boolean isEnumTarget(BindingResult bindingResult, String field) {
-        Class<?> type = bindingResult.getFieldType(field);
-        return type != null && type.isEnum();
     }
 
     private BaseCode resolveRequestBodyErrorCode(Throwable cause) {

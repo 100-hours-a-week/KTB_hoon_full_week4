@@ -56,7 +56,10 @@ public class SearchControllerTest {
     @DisplayName("키워드와 허용 범위의 size를 주면 검색 결과를 반환한다")
     void acceptsKeywordWithSizeWithinRange() throws Exception {
         // given
-        given(searchService.searchPosts(any(), any()))
+        given(
+                        searchService.searchPosts(
+                                any(), any(), any(), any(), any(), any(), any(), any(), any(),
+                                any(), any()))
                 .willReturn(new PostSummaryPageResDto(List.of(), null, false));
 
         // when & then
@@ -96,7 +99,10 @@ public class SearchControllerTest {
     @DisplayName("category를 주지 않아도 검색이 동작한다")
     void acceptsMissingCategory() throws Exception {
         // given
-        given(searchService.searchPosts(any(), any()))
+        given(
+                        searchService.searchPosts(
+                                any(), any(), any(), any(), any(), any(), any(), any(), any(),
+                                any(), any()))
                 .willReturn(new PostSummaryPageResDto(List.of(), null, false));
 
         // when & then
@@ -123,7 +129,10 @@ public class SearchControllerTest {
     @DisplayName("여러 필터를 함께 주면 검색이 동작한다")
     void acceptsAllFilters() throws Exception {
         // given
-        given(searchService.searchPosts(any(), any()))
+        given(
+                        searchService.searchPosts(
+                                any(), any(), any(), any(), any(), any(), any(), any(), any(),
+                                any(), any()))
                 .willReturn(new PostSummaryPageResDto(List.of(), null, false));
 
         // when & then
@@ -145,6 +154,13 @@ public class SearchControllerTest {
     @WithMockAuthMember
     @DisplayName("from이 to보다 뒤면 400 INVALID_DATE_RANGE를 응답한다")
     void rejectsReversedDateRange() throws Exception {
+        // given
+        willThrow(new BadRequestException(SearchErrorCode.INVALID_DATE_RANGE))
+                .given(searchService)
+                .searchPosts(
+                        any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+                        any());
+
         // when & then
         mockMvc.perform(
                         get(SEARCH_URL)
@@ -162,7 +178,9 @@ public class SearchControllerTest {
         // given
         willThrow(new BadRequestException(SearchErrorCode.SEARCH_KEYWORD_REQUIRED))
                 .given(searchService)
-                .searchPosts(any(), any());
+                .searchPosts(
+                        any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+                        any());
 
         // when & then
         mockMvc.perform(get(SEARCH_URL))
