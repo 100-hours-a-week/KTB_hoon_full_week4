@@ -447,35 +447,45 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 ---
 
 ### 3.2 게시글 검색
-- **GET** `/api/v1/posts/search?keyword={keyword}&category={category}&cursor={cursor}&size={size}`
+- **GET** `/api/v1/posts/search?keyword={keyword}&category={category}&meetingType={meetingType}&recruitStatus={recruitStatus}&sido={sido}&sigungu={sigungu}&from={from}&to={to}&cursor={cursor}&size={size}`
 
 **Query Parameters**
 | 이름 | 타입 | 필수 | 기본값 | 설명 |
 |------|------|----|-----|------|
 | keyword | string | **O** | - | 검색어. 비어 있거나 공백만 있으면 400 |
-| category | enum | X | - | 모임 분류로 좁힌다. **생략하면 전체 분류가 대상**이다. 6.3 참고 |
+| category | enum | X | - | 모임 분류. 6.3 참고 |
+| meetingType | enum | X | - | `ONLINE` / `OFFLINE`. 6.4 참고 |
+| recruitStatus | enum | X | - | `RECRUITING` / `CLOSED`. 6.5 참고 |
+| sido | string | X | - | 시도 **완전 일치**. 예: `서울특별시` |
+| sigungu | string | X | - | 시군구 **완전 일치**. 예: `강남구` |
+| from | date | X | - | 작성일 시작(`yyyy-MM-dd`). **해당 일자 00:00부터 포함** |
+| to | date | X | - | 작성일 끝(`yyyy-MM-dd`). **해당 일자를 포함**(내부적으로 다음날 00:00 미만) |
 | cursor | Long | X | - | 직전 페이지의 `nextCursor`. 첫 페이지는 생략 |
 | size | Long | X | 10 | 한 페이지 항목 수. **1 이상 10 이하** |
 
+- `keyword`를 제외한 **모든 필터는 선택**이며, 주지 않으면 그 조건으로 좁히지 않는다.
+- 여러 필터를 함께 주면 **AND로 결합**된다.
 - **제목 또는 본문**에 `keyword`가 포함된 모집글을 찾는다. **대소문자를 구분하지 않으며 부분 일치**다.
-- 앞뒤 공백은 제거하고 검색한다.
+- 앞뒤 공백은 제거하고 검색한다. `sido`/`sigungu`도 공백만 있으면 미지정으로 취급한다.
 - 정렬·페이지네이션은 3.1과 같다(`id DESC`, 커서 기반).
 - 응답 형식은 **3.1 목록 조회와 완전히 동일**하다(같은 `PostSummaryPageResDto`).
 - **블라인드 게시글(`isBlind = true`)은 검색 결과에서 제외된다.** 목록 조회(3.1)가 마스킹해서
   보여주는 것과 다르다. 본문이 가려진 글이 검색어에 걸리면 **매칭됐다는 사실 자체가 가려진 내용을
-  노출**하기 때문이다. 따라서 검색 결과에는 `isBlind = true`인 항목이 나오지 않는다.
-  (상세 조회 `GET /posts/{postId}`는 그대로 접근 가능하며 마스킹된 형태로 응답한다.)
+  노출**하기 때문이다. (상세 조회 `GET /posts/{postId}`는 그대로 접근 가능하며 마스킹된 형태로 응답한다.)
+
+> **온라인 모임은 주소가 `null`** 이므로 `sido`/`sigungu`를 지정하면 오프라인 모임만 조회된다.
 
 **Response 200 OK**
 - 3.1과 동일한 구조. 조건에 맞는 글이 없으면 `data: []`, `nextCursor: null`, `hasNext: false`.
 
 **에러**
-| HTTP | code                      | 상황 |
+| HTTP | code | 상황 |
 |------|---------------------------|---|
 | 400  | `SEARCH_KEYWORD_REQUIRED` | `keyword` 누락 또는 공백뿐 |
 | 400  | `INVALID_PAGE_SIZE`       | `size`가 1~10 범위 밖 |
-| 400  | `INVALID_ENUM_VALUE`      | 정의되지 않은 `category` 값 |
-| 400  | `INVALID_PARAMETER_TYPE`  | `cursor`가 숫자가 아님 |
+| 400  | `INVALID_DATE_RANGE`      | `from`이 `to`보다 뒤 |
+| 400  | `INVALID_ENUM_VALUE`      | 정의되지 않은 `category`/`meetingType`/`recruitStatus` |
+| 400  | `INVALID_PARAMETER_TYPE`  | `cursor`가 숫자가 아니거나 날짜 형식이 `yyyy-MM-dd`가 아님 |
 
 ---
 
@@ -1146,6 +1156,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | code                     | HTTP |
 |--------------------------|------|
 | SEARCH_KEYWORD_REQUIRED  | 400 |
+| INVALID_DATE_RANGE       | 400 |
 
 > 검색(3.2)은 `SearchController` / `SearchService` / `SearchRepository`로 Post와 분리되어 있다.
 > `size` 검증 위반은 `PostErrorCode.INVALID_PAGE_SIZE`(400)를 그대로 쓴다.

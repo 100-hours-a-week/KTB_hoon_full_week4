@@ -56,7 +56,7 @@ public class SearchControllerTest {
     @DisplayName("키워드와 허용 범위의 size를 주면 검색 결과를 반환한다")
     void acceptsKeywordWithSizeWithinRange() throws Exception {
         // given
-        given(searchService.searchPosts(any(), any(), any(), any(), any()))
+        given(searchService.searchPosts(any(), any()))
                 .willReturn(new PostSummaryPageResDto(List.of(), null, false));
 
         // when & then
@@ -96,7 +96,7 @@ public class SearchControllerTest {
     @DisplayName("category를 주지 않아도 검색이 동작한다")
     void acceptsMissingCategory() throws Exception {
         // given
-        given(searchService.searchPosts(any(), any(), any(), any(), any()))
+        given(searchService.searchPosts(any(), any()))
                 .willReturn(new PostSummaryPageResDto(List.of(), null, false));
 
         // when & then
@@ -120,12 +120,49 @@ public class SearchControllerTest {
 
     @Test
     @WithMockAuthMember
+    @DisplayName("여러 필터를 함께 주면 검색이 동작한다")
+    void acceptsAllFilters() throws Exception {
+        // given
+        given(searchService.searchPosts(any(), any()))
+                .willReturn(new PostSummaryPageResDto(List.of(), null, false));
+
+        // when & then
+        mockMvc.perform(
+                        get(SEARCH_URL)
+                                .param("keyword", KEYWORD)
+                                .param("category", "EXERCISE")
+                                .param("meetingType", "OFFLINE")
+                                .param("recruitStatus", "RECRUITING")
+                                .param("sido", "서울특별시")
+                                .param("sigungu", "강남구")
+                                .param("from", "2026-01-01")
+                                .param("to", "2026-12-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"));
+    }
+
+    @Test
+    @WithMockAuthMember
+    @DisplayName("from이 to보다 뒤면 400 INVALID_DATE_RANGE를 응답한다")
+    void rejectsReversedDateRange() throws Exception {
+        // when & then
+        mockMvc.perform(
+                        get(SEARCH_URL)
+                                .param("keyword", KEYWORD)
+                                .param("from", "2026-12-31")
+                                .param("to", "2026-01-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_DATE_RANGE"));
+    }
+
+    @Test
+    @WithMockAuthMember
     @DisplayName("키워드가 없으면 400 SEARCH_KEYWORD_REQUIRED를 응답한다")
     void rejectsMissingKeyword() throws Exception {
         // given
         willThrow(new BadRequestException(SearchErrorCode.SEARCH_KEYWORD_REQUIRED))
                 .given(searchService)
-                .searchPosts(any(), any(), any(), any(), any());
+                .searchPosts(any(), any());
 
         // when & then
         mockMvc.perform(get(SEARCH_URL))
