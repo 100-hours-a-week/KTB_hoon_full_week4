@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile({"prod", "test"})
+@Profile({"prod", "test", "local"})
 @RequiredArgsConstructor
 public class JpaSearchRepositoryAdapter implements SearchRepository {
 

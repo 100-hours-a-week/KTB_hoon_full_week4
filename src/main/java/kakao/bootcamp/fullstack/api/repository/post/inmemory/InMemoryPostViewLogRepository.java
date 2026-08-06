@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("local")
+@Profile("inmemory")
 public class InMemoryPostViewLogRepository implements PostViewLogRepository {
 
     private final Map<Long, PostViewLog> logs = new ConcurrentHashMap<>();

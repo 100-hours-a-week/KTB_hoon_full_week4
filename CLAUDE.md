@@ -10,7 +10,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 ./gradlew build                 # 컴파일 + 전체 테스트
 ./gradlew test                  # 전체 테스트
 ./gradlew spotlessApply         # 포맷 적용 (커밋/빌드 전 필수)
-./gradlew bootRun --args='--spring.profiles.active=local'   # 로컬 실행 (H2, 환경변수 불필요)
+./gradlew bootRun --args='--spring.profiles.active=local'   # 로컬 실행 (Docker MySQL, 환경변수 불필요)
 ./gradlew bootRun               # 기본 prod 프로파일 = RDS. DB_*/JWT_SECRET 환경변수 필요
 
 # 단일 테스트
@@ -22,14 +22,14 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 ```
 
 - **포맷**: spotless `googleJavaFormat().aosp()` + `removeUnusedImports`. 포맷 어긋나면 `build`가 실패하므로 항상 `spotlessApply` 후 빌드.
-- **스키마**: 마이그레이션 도구 없음 — **엔티티 변경이 곧 스키마**. `ddl-auto`는 prod·local `create`, test `create-drop`.
+- **스키마**: 마이그레이션 도구 없음 — **엔티티 변경이 곧 스키마**. `ddl-auto`는 prod `create`, local `none`, test `create-drop`.
   ⚠️ prod 가 `create`라 **배포·재기동마다 RDS 테이블이 DROP 후 재생성**되고 시드가 다시 깔린다.
   데이터를 보존해야 할 땐 코드 수정 없이 `SPRING_JPA_HIBERNATE_DDLAUTO=none` 환경변수로 끈다.
 
 ### 설정 파일 (프로파일별로 분리)
 - `application.yaml` — 공통. `spring.application.name`과 `spring.profiles.active: prod`뿐
 - `application-prod.yml` — **RDS(MySQL 8)**. 접속정보와 `jwt.secret`을 **환경변수로 요구**(`DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USERNAME`/`DB_PASSWORD`/`JWT_SECRET`). 값이 없으면 기동 실패
-- `application-local.yml` — H2 인메모리 + h2 콘솔 + 개발용 jwt 시크릿
+- `application-local.yml` — **로컬 Docker MySQL**(`localhost:13306`) + 개발용 jwt 시크릿. `ddl-auto: none`
 - `src/test/resources/application-test.yml` — 테스트 환경의 단일 출처(H2 `create-drop` + 개발용 jwt)
 
 > `JWT_SECRET`은 **Base64 문자열**이어야 한다. `JjwtProvider`가 `Decoders.BASE64.decode()` 후 `Keys.hmacShaKeyFor()`에 넘기므로 디코딩 결과가 32바이트(HS256) 이상이어야 한다. 생성: `openssl rand -base64 64 | tr -d '\n'`
@@ -39,13 +39,16 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 이 프로젝트의 가장 중요한 구조. 프로파일에 따라 저장소 구현과 시드 러너가 통째로 바뀐다.
 
 - **`prod`** (기본 active): `Jpa*RepositoryAdapter` + `JpaDataInitializer` 시드. DB는 **AWS RDS(MySQL 8)**.
-- **`local`**: `InMemory*Repository`(`@Profile("local")`) + `DataInitializer` 시드. DB 없이 `ConcurrentHashMap`.
+- **`local`**: prod 와 **같은 JPA 배선 + 로컬 Docker MySQL**(`localhost:13306`). `ddl-auto: none` 이라
+  데이터를 보존한다. 시드 러너는 돌지 않는다(`JpaDataInitializer` 는 prod 전용).
+- **`inmemory`**: `InMemory*Repository` + `DataInitializer` 시드. DB 없이 `ConcurrentHashMap`.
+  기본으로 쓰이지 않으며 `--spring.profiles.active=inmemory` 로만 켠다.
 - **`test`**: prod와 **같은 JPA 배선 + H2**. 시드는 없다(`JpaDataInitializer`만 prod 전용). **모든 테스트에 `@ActiveProfiles("test")`를 명시할 것** — 빠뜨리면 prod를 물려받아 RDS를 찾다 실패한다.
 
 ### 저장소 포트 + 2중 구현 패턴 (필수 인지)
 모든 저장소는 **포트 인터페이스**(`api/repository/<domain>/XxxRepository`)이고 구현이 **두 벌**이다:
-- `.../jpa/JpaXxxRepositoryAdapter` (`@Profile({"prod", "test"})`, 내부에 Spring Data `JpaXxxRepository` 위임)
-- `.../inmemory/InMemoryXxxRepository` (`@Profile("local")`)
+- `.../jpa/JpaXxxRepositoryAdapter` (`@Profile({"prod", "test", "local"})`, 내부에 Spring Data `JpaXxxRepository` 위임)
+- `.../inmemory/InMemoryXxxRepository` (`@Profile("inmemory")`)
 
 **저장소 인터페이스에 메서드를 추가하면 JPA·InMemory 두 구현 모두**에 반영해야 하고, 테스트 fake에도 반영해야 컴파일된다. InMemory 구현은 소프트삭제 필터링(`!isDeleted()`)까지 재현하므로 테스트 fake의 참고 원본이 된다.
 

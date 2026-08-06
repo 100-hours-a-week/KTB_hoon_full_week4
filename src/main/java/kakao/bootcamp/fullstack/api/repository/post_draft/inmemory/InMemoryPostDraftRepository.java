@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("local")
+@Profile("inmemory")
 public class InMemoryPostDraftRepository implements PostDraftRepository {
 
     private final IdGenerator idGenerator = new AtomicLongIdGenerator();

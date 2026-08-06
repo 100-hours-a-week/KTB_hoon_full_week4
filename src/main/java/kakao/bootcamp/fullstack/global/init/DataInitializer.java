@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@Profile("local")
+@Profile("inmemory")
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 

@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile({"prod", "test"})
+@Profile({"prod", "test", "local"})
 @RequiredArgsConstructor
 public class JpaEditRevisionRepositoryAdapter implements EditRevisionRepository {
 
