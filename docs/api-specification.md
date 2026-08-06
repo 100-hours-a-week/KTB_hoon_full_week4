@@ -391,7 +391,18 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
     "data": [
       {
         "postId": 12,
-        "title": "예시 게시글",
+        "title": "같이 농구하실 분",
+        "category": "EXERCISE",
+        "meetingType": "OFFLINE",
+        "address": {
+          "sido": "서울특별시",
+          "sigungu": "강남구",
+          "eupmyeondong": "대치동",
+          "detail": null
+        },
+        "placeName": "대치중학교 운동장",
+        "recruitStatus": "RECRUITING",
+        "capacity": 6,
         "likeCount": 3,
         "commentCount": 1,
         "viewCount": 100,
@@ -410,11 +421,21 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 | 필드 | 설명 |
 |---|---|
-| data | 게시글 요약 목록 |
+| data | 모집글 요약 목록 |
 | nextCursor | 다음 페이지 요청에 쓸 커서. `hasNext`가 false면 `null` |
 | hasNext | 다음 페이지 존재 여부 |
 
+| 항목 필드 | 타입 | 설명 |
+|---|---|---|
+| category | enum | 모임 분류. 6.3 참고 |
+| meetingType | enum | `ONLINE` / `OFFLINE`. 6.4 참고 |
+| address | object \| null | 시도·시군구·읍면동·상세. **온라인 모임은 `null`** |
+| placeName | string | 장소명 |
+| recruitStatus | enum | `RECRUITING` / `CLOSED`. 6.5 참고 |
+| capacity | int \| null | 모집 인원 |
+
 - 블라인드 게시글: `isBlind = true`, `title`은 `"숨김 처리된 게시글"`로 마스킹된다.
+  **`category`·`meetingType`·`address`·`placeName`·`recruitStatus`·`capacity`는 마스킹되지 않고 그대로 내려간다.**
 - 탈퇴 회원의 게시글: `writerNickname`이 `"알수없음"` (`memberId`는 그대로 내려간다).
 
 **에러**
@@ -424,7 +445,33 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.2 게시글 상세 조회
+### 3.2 게시글 검색
+- **GET** `/api/v1/posts/search?keyword={keyword}&cursor={cursor}&size={size}`
+
+**Query Parameters**
+| 이름 | 타입 | 필수 | 기본값 | 설명 |
+|------|------|----|-----|------|
+| keyword | string | **O** | - | 검색어. 비어 있거나 공백만 있으면 400 |
+| cursor | Long | X | - | 직전 페이지의 `nextCursor`. 첫 페이지는 생략 |
+| size | Long | X | 10 | 한 페이지 항목 수. **1 이상 10 이하** |
+
+- **제목 또는 본문**에 `keyword`가 포함된 모집글을 찾는다. **대소문자를 구분하지 않으며 부분 일치**다.
+- 앞뒤 공백은 제거하고 검색한다.
+- 정렬·페이지네이션은 3.1과 같다(`id DESC`, 커서 기반).
+- 응답 형식은 **3.1 목록 조회와 완전히 동일**하다(같은 `PostSummaryPageResDto`).
+
+**Response 200 OK**
+- 3.1과 동일한 구조. 조건에 맞는 글이 없으면 `data: []`, `nextCursor: null`, `hasNext: false`.
+
+**에러**
+| HTTP | code                      |
+|------|---------------------------|
+| 400  | `SEARCH_KEYWORD_REQUIRED` |
+| 400  | `INVALID_PAGE_SIZE`       |
+
+---
+
+### 3.3 게시글 상세 조회
 - **GET** `/api/v1/posts/{postId}`
 
 **Path Parameter**
@@ -437,8 +484,19 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
   "code": "SUCCESS",
   "data": {
     "postId": 12,
-    "title": "예시 게시글",
+    "title": "같이 농구하실 분",
     "content": "본문 …",
+    "category": "EXERCISE",
+    "meetingType": "OFFLINE",
+    "address": {
+      "sido": "서울특별시",
+      "sigungu": "강남구",
+      "eupmyeondong": "대치동",
+      "detail": null
+    },
+    "placeName": "대치중학교 운동장",
+    "recruitStatus": "RECRUITING",
+    "capacity": 6,
     "likeCount": 3,
     "viewCount": 101,
     "memberId": 7,
@@ -469,7 +527,10 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | title | `"숨김 처리된 게시글"` |
 | content | `"숨김 처리된 게시글"` |
 | imageUrl | `null` |
-| 그 외 | 정상 값 (댓글도 그대로 내려감) |
+| 그 외 | 정상 값 (모집 정보와 댓글도 그대로 내려감) |
+
+> `category`·`meetingType`·`address`·`placeName`·`recruitStatus`·`capacity`는 블라인드돼도 마스킹되지 않는다.
+> `address`는 **온라인 모임이면 `null`** 이다.
 
 - 댓글은 최신순이 아닌 등록 순(`createdAt ASC`)으로 전부 내려오며 **페이지네이션이 없다.**
 - 탈퇴 회원의 댓글은 `writerNickname`이 `"알수없음"`.
@@ -487,7 +548,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.3 게시글 생성
+### 3.4 게시글 생성
 - **POST** `/api/v1/posts`
 - **레이트리밋 적용**: 회원당 **1분에 3건**. 초과 시 429 `POST_RATE_LIMIT_EXCEEDED`.
   (4.5 임시 저장 글 발행과 **동일한 카운터**를 공유한다.)
@@ -495,17 +556,40 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 **Request Body**
 ```json
 {
-  "title": "제목",
+  "title": "같이 농구하실 분",
   "content": "본문",
-  "imageUrl": "https://cdn.example.com/post/new.png"
+  "imageUrl": "https://cdn.example.com/post/new.png",
+  "category": "EXERCISE",
+  "meetingType": "OFFLINE",
+  "address": {
+    "sido": "서울특별시",
+    "sigungu": "강남구",
+    "eupmyeondong": "대치동",
+    "detail": "정문 앞"
+  },
+  "placeName": "대치중학교 운동장",
+  "capacity": 6
 }
 ```
 
-| 필드     | 타입   | 필수 | 검증                                          |
+| 필드 | 타입 | 필수 | 검증 |
 |--------|------|----|---------------------------------------------|
-| title    | string | O | NotEmpty, 최대 30자                          |
-| content  | string | O | NotEmpty                                    |
-| imageUrl | string | O | NotBlank                                    |
+| title | string | O | NotEmpty, 최대 30자 |
+| content | string | O | NotEmpty |
+| imageUrl | string | O | NotBlank |
+| category | enum | O | NotNull. 6.3 참고 |
+| meetingType | enum | O | NotNull. `ONLINE` / `OFFLINE` |
+| address | object | 조건부 | **`meetingType`이 `OFFLINE`이면 필수**, `ONLINE`이면 생략 가능 |
+| address.sido | string | O* | NotBlank (address를 보낼 때) |
+| address.sigungu | string | O* | NotBlank (address를 보낼 때) |
+| address.eupmyeondong | string | O* | NotBlank (address를 보낼 때) |
+| address.detail | string | X | 상세 주소 |
+| placeName | string | O | NotBlank, 최대 50자 |
+| capacity | int | X | 보내면 양수여야 한다(Positive) |
+
+> **`meetingType`이 `ONLINE`이면 `address`를 보내도 무시되고 `null`로 저장된다.**
+> 오프라인인데 `address`가 없으면 400 `ADDRESS_REQUIRED_FOR_OFFLINE`.
+> `recruitStatus`는 요청으로 받지 않는다. 생성 시 항상 `RECRUITING`으로 시작한다.
 
 **Response 201 Created**
 ```json
@@ -520,13 +604,16 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | HTTP | code                                          |
 |------|-----------------------------------------------|
 | 400  | `TITLE_REQUIRED`, `TITLE_LENGTH_EXCEEDED`, `CONTENT_REQUIRED`, `IMAGE_REQUIRED` |
+| 400  | `CATEGORY_REQUIRED`, `MEETING_TYPE_REQUIRED`, `ADDRESS_REQUIRED_FOR_OFFLINE` |
+| 400  | `SIDO_REQUIRED`, `SIGUNGU_REQUIRED`, `EUPMYEONDONG_REQUIRED` |
+| 400  | `PLACE_NAME_REQUIRED`, `PLACE_NAME_LENGTH_EXCEEDED`, `CAPACITY_POSITIVE` |
 | 429  | `POST_RATE_LIMIT_EXCEEDED`                    |
 
 ---
 
-### 3.4 게시글 수정
+### 3.5 게시글 수정
 - **PATCH** `/api/v1/posts/{postId}`
-- PATCH지만 **부분 수정이 아니다.** 세 필드 모두 필수이며 전달한 값으로 덮어쓴다.
+- PATCH지만 **부분 수정이 아니다.** 필수 필드를 모두 보내야 하며 전달한 값으로 덮어쓴다.
 - 수정하면 이전 내용이 수정 이력으로 보관되고, 목록의 `isEdited`가 `true`가 된다.
 
 **Request Body**
@@ -534,15 +621,29 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 {
   "title": "수정된 제목",
   "content": "수정된 본문",
-  "imageUrl": "https://cdn.example.com/post/13-edit.png"
+  "imageUrl": "https://cdn.example.com/post/13-edit.png",
+  "category": "STUDY",
+  "meetingType": "ONLINE",
+  "address": null,
+  "placeName": "디스코드",
+  "capacity": 10
 }
 ```
 
-| 필드     | 타입   | 필수 | 검증                                          |
+| 필드 | 타입 | 필수 | 검증 |
 |--------|------|----|---------------------------------------------|
-| title    | string | O | NotEmpty, 최대 30자                          |
-| content  | string | O | NotEmpty                                    |
-| imageUrl | string | O | NotEmpty                                    |
+| title | string | O | NotEmpty, 최대 30자 |
+| content | string | O | NotEmpty |
+| imageUrl | string | O | NotEmpty |
+| category | enum | O | NotNull |
+| meetingType | enum | O | NotNull |
+| address | object | 조건부 | `meetingType`이 `OFFLINE`이면 필수 |
+| placeName | string | O | NotBlank, 최대 50자 |
+| capacity | int | X | 보내면 양수여야 한다 |
+
+> 검증 규칙은 3.4 게시글 생성과 동일하다(`imageUrl`만 NotBlank → NotEmpty).
+> **`recruitStatus`는 수정할 수 없다.** 모집 마감 API는 아직 없다.
+> 수정 이력에는 `title`·`content`·`imageUrl`만 보관되며, **모집 정보 변경 이력은 남지 않는다.**
 
 **Response 200 OK**
 ```json
@@ -557,6 +658,9 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | HTTP | code                                         |
 |------|----------------------------------------------|
 | 400  | `TITLE_REQUIRED`, `TITLE_LENGTH_EXCEEDED`, `CONTENT_REQUIRED`, `IMAGE_REQUIRED`, `POST_IMAGE_REQUIRED` |
+| 400  | `CATEGORY_REQUIRED`, `MEETING_TYPE_REQUIRED`, `ADDRESS_REQUIRED_FOR_OFFLINE` |
+| 400  | `SIDO_REQUIRED`, `SIGUNGU_REQUIRED`, `EUPMYEONDONG_REQUIRED` |
+| 400  | `PLACE_NAME_REQUIRED`, `PLACE_NAME_LENGTH_EXCEEDED`, `CAPACITY_POSITIVE` |
 | 403  | `NOT_POST_WRITER`                            |
 | 404  | `POST_NOT_FOUND`                             |
 
@@ -564,7 +668,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.5 게시글 삭제
+### 3.6 게시글 삭제
 - **DELETE** `/api/v1/posts/{postId}`
 
 **Response 200 OK**
@@ -580,7 +684,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.6 게시글 좋아요
+### 3.7 게시글 좋아요
 - **POST** `/api/v1/posts/{postId}/likes`
 
 **Response 200 OK**
@@ -600,7 +704,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.7 게시글 좋아요 취소
+### 3.8 게시글 좋아요 취소
 - **DELETE** `/api/v1/posts/{postId}/likes`
 
 **Response 200 OK**
@@ -620,7 +724,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.8 댓글 작성
+### 3.9 댓글 작성
 - **POST** `/api/v1/posts/{postId}/comments`
 
 **Request Body**
@@ -649,7 +753,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.9 댓글 수정
+### 3.10 댓글 수정
 - **PATCH** `/api/v1/posts/{postId}/comments/{commentId}`
 
 **Request Body**
@@ -671,7 +775,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ---
 
-### 3.10 댓글 삭제
+### 3.11 댓글 삭제
 - **DELETE** `/api/v1/posts/{postId}/comments/{commentId}`
 
 **Response 200 OK**
@@ -813,27 +917,47 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ### 4.5 임시 저장 글 게시(발행)
 - **POST** `/api/v1/posts/drafts/{draftId}/publish`
-- **레이트리밋 적용**: 회원당 **1분에 3건** (3.3 게시글 생성과 카운터 공유). 초과 시 429.
+- **레이트리밋 적용**: 회원당 **1분에 3건** (3.4 게시글 생성과 카운터 공유). 초과 시 429.
 
 임시 저장 글을 정식 게시글로 발행한다. 발행에 사용할 최종 본문은 **요청 body의 값**이며,
-저장돼 있던 draft 내용은 사용하지 않는다. 검증 규칙은 3.3 게시글 생성과 동일하다.
+저장돼 있던 draft 내용은 사용하지 않는다. 검증 규칙은 3.4 게시글 생성과 동일하다.
 발행에 성공하면 draft는 `PUBLISHED`가 되어 조회 대상에서 빠지므로,
 **같은 draftId로 다시 발행하면 404 `POST_DRAFT_NOT_FOUND`** 가 된다(중복 게시 불가).
 
 **Request Body**
+- **3.4 게시글 생성과 동일한 body**(`PostCreateReqDto`)를 보낸다.
+
 ```json
 {
   "title": "최종 제목",
   "content": "최종 본문",
-  "imageUrl": "https://cdn.example.com/post/from-draft.png"
+  "imageUrl": "https://cdn.example.com/post/from-draft.png",
+  "category": "STUDY",
+  "meetingType": "OFFLINE",
+  "address": {
+    "sido": "서울특별시",
+    "sigungu": "마포구",
+    "eupmyeondong": "서교동",
+    "detail": null
+  },
+  "placeName": "홍대입구 스터디카페",
+  "capacity": 8
 }
 ```
 
-| 필드     | 타입   | 필수 | 검증                    |
+| 필드 | 타입 | 필수 | 검증 |
 |--------|------|----|-----------------------|
-| title    | string | O | NotEmpty, 최대 30자    |
-| content  | string | O | NotEmpty              |
-| imageUrl | string | O | NotBlank              |
+| title | string | O | NotEmpty, 최대 30자 |
+| content | string | O | NotEmpty |
+| imageUrl | string | O | NotBlank |
+| category | enum | O | NotNull |
+| meetingType | enum | O | NotNull |
+| address | object | 조건부 | `meetingType`이 `OFFLINE`이면 필수 |
+| placeName | string | O | NotBlank, 최대 50자 |
+| capacity | int | X | 보내면 양수여야 한다 |
+
+> **임시 저장 글(`PostDraft`)에는 모집 정보 필드가 없다.** `category`·`meetingType`·`address`·
+> `placeName`·`capacity`는 저장돼 있지 않으므로 **발행 요청에서 반드시 새로 지정**해야 한다.
 
 **Response 201 Created**
 ```json
@@ -848,6 +972,9 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | HTTP | code                                                                       |
 |------|----------------------------------------------------------------------------|
 | 400  | `TITLE_REQUIRED`, `TITLE_LENGTH_EXCEEDED`, `CONTENT_REQUIRED`, `IMAGE_REQUIRED` |
+| 400  | `CATEGORY_REQUIRED`, `MEETING_TYPE_REQUIRED`, `ADDRESS_REQUIRED_FOR_OFFLINE` |
+| 400  | `SIDO_REQUIRED`, `SIGUNGU_REQUIRED`, `EUPMYEONDONG_REQUIRED` |
+| 400  | `PLACE_NAME_REQUIRED`, `PLACE_NAME_LENGTH_EXCEEDED`, `CAPACITY_POSITIVE` |
 | 403  | `NOT_POST_DRAFT_WRITER`                                                    |
 | 404  | `POST_DRAFT_NOT_FOUND` (없는 draft **또는 이미 발행된 draft**)               |
 | 429  | `POST_RATE_LIMIT_EXCEEDED`                                                 |
@@ -856,7 +983,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 ### 4.6 임시 저장 글 삭제
 - **DELETE** `/api/v1/posts/drafts/{draftId}`
-- 아직 발행하지 않은 draft만 삭제할 수 있다. 이미 발행했다면 404다(발행된 게시글은 3.5로 삭제).
+- 아직 발행하지 않은 draft만 삭제할 수 있다. 이미 발행했다면 404다(발행된 게시글은 3.6으로 삭제).
 
 **Response 200 OK**
 ```json
@@ -910,7 +1037,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | 409  | `ALREADY_REPORTED`                              |
 
 > 게시글·댓글 모두 누적 신고 **5회**에 도달하면 자동으로 블라인드 처리된다.
-> 블라인드되면 응답의 `isBlind`가 `true`가 되고 본문이 마스킹된다(3.1·3.2 참고).
+> 블라인드되면 응답의 `isBlind`가 `true`가 되고 본문이 마스킹된다(3.1·3.3 참고).
 
 ---
 
@@ -930,6 +1057,33 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | INAPPROPRIATE | 부적절한 콘텐츠       |
 | ADVERTISEMENT | 광고             |
 | ETC           | 기타             |
+
+### 6.3 `PostCategory`
+| 값 | label |
+|---|---|
+| EXERCISE | 운동/스포츠 |
+| STUDY | 스터디 |
+| HOBBY | 취미 |
+| GAME | 게임/오락 |
+| FOOD | 맛집/모임 |
+| VOLUNTEER | 봉사/나눔 |
+| ETC | 기타 |
+
+### 6.4 `MeetingType`
+| 값 | label |
+|---|---|
+| ONLINE | 온라인 |
+| OFFLINE | 오프라인 |
+
+### 6.5 `RecruitStatus`
+| 값 | label |
+|---|---|
+| RECRUITING | 모집중 |
+| CLOSED | 모집완료 |
+
+> 요청·응답 모두 **enum 이름**(`EXERCISE` 등)을 쓴다. label은 화면 표시용 참고값이며 API로 내려가지 않는다.
+> 정의되지 않은 값을 보내면 400 `INVALID_ENUM_VALUE`.
+> `RecruitStatus`는 생성 시 항상 `RECRUITING`이며, 현재 이를 `CLOSED`로 바꾸는 API는 없다.
 
 > 요청에는 **enum 이름**(`SPAM` 등)을 그대로 보낸다. 정의되지 않은 값이면 400 `INVALID_ENUM_VALUE`.
 
@@ -967,9 +1121,26 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | TITLE_REQUIRED           | 400 |
 | CONTENT_REQUIRED         | 400 |
 | POST_IMAGE_REQUIRED      | 400 |
+| CATEGORY_REQUIRED        | 400 |
+| MEETING_TYPE_REQUIRED    | 400 |
+| ADDRESS_REQUIRED_FOR_OFFLINE | 400 |
+| SIDO_REQUIRED            | 400 |
+| SIGUNGU_REQUIRED         | 400 |
+| EUPMYEONDONG_REQUIRED    | 400 |
+| PLACE_NAME_REQUIRED      | 400 |
+| PLACE_NAME_LENGTH_EXCEEDED | 400 |
+| CAPACITY_POSITIVE        | 400 |
 
 > 게시글 본문 검증에 쓰이는 `TITLE_LENGTH_EXCEEDED`(400)는 `PostDraftErrorCode`에 정의되어 있으나,
 > **게시글 생성·수정·발행에서도 동일하게 반환**된다.
+
+### SearchErrorCode
+| code                     | HTTP |
+|--------------------------|------|
+| SEARCH_KEYWORD_REQUIRED  | 400 |
+
+> 검색(3.2)은 `SearchController` / `SearchService` / `SearchRepository`로 Post와 분리되어 있다.
+> `size` 검증 위반은 `PostErrorCode.INVALID_PAGE_SIZE`(400)를 그대로 쓴다.
 
 ### PostDraftErrorCode
 | code                         | HTTP |
