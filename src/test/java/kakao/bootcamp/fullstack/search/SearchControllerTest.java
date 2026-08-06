@@ -14,6 +14,7 @@ import kakao.bootcamp.fullstack.api.dto.response.PostSummaryPageResDto;
 import kakao.bootcamp.fullstack.api.service.SearchService;
 import kakao.bootcamp.fullstack.global.config.SecurityConfig;
 import kakao.bootcamp.fullstack.global.exception.BadRequestException;
+import kakao.bootcamp.fullstack.global.exception.handler.GlobalExceptionHandler;
 import kakao.bootcamp.fullstack.global.rate_limiter.RateLimiter;
 import kakao.bootcamp.fullstack.global.security.filter.JwtAccessDeniedHandler;
 import kakao.bootcamp.fullstack.global.security.filter.JwtAuthenticationEntryPoint;
@@ -30,7 +31,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(SearchController.class)
-@Import({SecurityConfig.class, JwtAuthenticationEntryPoint.class, JwtAccessDeniedHandler.class})
+@Import({
+    SecurityConfig.class,
+    JwtAuthenticationEntryPoint.class,
+    JwtAccessDeniedHandler.class,
+    GlobalExceptionHandler.class
+})
 public class SearchControllerTest {
 
     private static final String SEARCH_URL = "/api/v1/posts/search";
@@ -50,7 +56,7 @@ public class SearchControllerTest {
     @DisplayName("키워드와 허용 범위의 size를 주면 검색 결과를 반환한다")
     void acceptsKeywordWithSizeWithinRange() throws Exception {
         // given
-        given(searchService.searchPosts(any(), any(), any(), any()))
+        given(searchService.searchPosts(any(), any(), any(), any(), any()))
                 .willReturn(new PostSummaryPageResDto(List.of(), null, false));
 
         // when & then
@@ -87,12 +93,39 @@ public class SearchControllerTest {
 
     @Test
     @WithMockAuthMember
+    @DisplayName("category를 주지 않아도 검색이 동작한다")
+    void acceptsMissingCategory() throws Exception {
+        // given
+        given(searchService.searchPosts(any(), any(), any(), any(), any()))
+                .willReturn(new PostSummaryPageResDto(List.of(), null, false));
+
+        // when & then
+        mockMvc.perform(get(SEARCH_URL).param("keyword", KEYWORD))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"));
+    }
+
+    @Test
+    @WithMockAuthMember
+    @DisplayName("정의되지 않은 category를 주면 400 INVALID_ENUM_VALUE를 응답한다")
+    void rejectsUnknownCategory() throws Exception {
+        // when & then
+        mockMvc.perform(
+                        get(SEARCH_URL)
+                                .param("keyword", KEYWORD)
+                                .param("category", "NOT_A_CATEGORY"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_ENUM_VALUE"));
+    }
+
+    @Test
+    @WithMockAuthMember
     @DisplayName("키워드가 없으면 400 SEARCH_KEYWORD_REQUIRED를 응답한다")
     void rejectsMissingKeyword() throws Exception {
         // given
         willThrow(new BadRequestException(SearchErrorCode.SEARCH_KEYWORD_REQUIRED))
                 .given(searchService)
-                .searchPosts(any(), any(), any(), any());
+                .searchPosts(any(), any(), any(), any(), any());
 
         // when & then
         mockMvc.perform(get(SEARCH_URL))

@@ -2,6 +2,7 @@ package kakao.bootcamp.fullstack.api.controller;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import kakao.bootcamp.fullstack.api.domain.post.PostCategory;
 import kakao.bootcamp.fullstack.api.dto.response.PostSummaryPageResDto;
 import kakao.bootcamp.fullstack.api.service.SearchService;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
@@ -27,13 +28,14 @@ public class SearchController {
     public ResponseEntity<ApiResponse<PostSummaryPageResDto>> searchPosts(
             @LoginMember AuthMember authMember,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) PostCategory category,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10")
+            @RequestParam(defaultValue = "9")
                     @Min(value = 1, message = ValidationCode.INVALID_PAGE_SIZE)
                     @Max(value = 10, message = ValidationCode.INVALID_PAGE_SIZE)
                     Long size) {
         PostSummaryPageResDto response =
-                searchService.searchPosts(authMember.memberId(), keyword, cursor, size);
+                searchService.searchPosts(authMember.memberId(), keyword, category, cursor, size);
         return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(SuccessCode.SUCCESS, response));
     }

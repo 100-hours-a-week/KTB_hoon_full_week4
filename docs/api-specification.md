@@ -90,9 +90,10 @@ Set-Cookie: refresh_token={rt}; Max-Age={jwt.refresh-token-expire-seconds}; Path
 | ALREADY_ASSIGNED_ID        | 500                       | `ALREADY_ASSIGNED_ID`        | 서버 내부 오류 |
 | UNMAPPED_VALIDATION_ERROR  | 500                       | `UNMAPPED_VALIDATION_ERROR`  | 검증 메시지가 에러 코드에 매핑되지 않음(서버 버그) |
 | HANDLER_NOT_FOUND          | 500                       | `HANDLER_NOT_FOUND`          | 서버 내부 오류 |
-| INVALID_ENUM_VALUE         | 400 Bad Request           | `INVALID_ENUM_VALUE`         | enum 필드에 정의되지 않은 값 전달 |
+| INVALID_ENUM_VALUE         | 400 Bad Request           | `INVALID_ENUM_VALUE`         | enum에 정의되지 않은 값 전달 (**body·쿼리 파라미터 모두**) |
 | INVALID_REQUEST_BODY       | 400                       | `INVALID_REQUEST_BODY`       | 타입 불일치 등 body 구조 오류 |
 | MALFORMED_REQUEST_BODY     | 400                       | `MALFORMED_REQUEST_BODY`     | JSON 파싱 실패 / body 누락 |
+| INVALID_PARAMETER_TYPE     | 400                       | `INVALID_PARAMETER_TYPE`     | 쿼리 파라미터 타입 불일치 (예: `cursor=abc`) |
 
 ### 0.6 인증 관련 에러 코드 (`AuthErrorCode`)
 | code                    | HTTP | 발생 상황 |
@@ -446,12 +447,13 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 ---
 
 ### 3.2 게시글 검색
-- **GET** `/api/v1/posts/search?keyword={keyword}&cursor={cursor}&size={size}`
+- **GET** `/api/v1/posts/search?keyword={keyword}&category={category}&cursor={cursor}&size={size}`
 
 **Query Parameters**
 | 이름 | 타입 | 필수 | 기본값 | 설명 |
 |------|------|----|-----|------|
 | keyword | string | **O** | - | 검색어. 비어 있거나 공백만 있으면 400 |
+| category | enum | X | - | 모임 분류로 좁힌다. **생략하면 전체 분류가 대상**이다. 6.3 참고 |
 | cursor | Long | X | - | 직전 페이지의 `nextCursor`. 첫 페이지는 생략 |
 | size | Long | X | 10 | 한 페이지 항목 수. **1 이상 10 이하** |
 
@@ -468,10 +470,12 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 - 3.1과 동일한 구조. 조건에 맞는 글이 없으면 `data: []`, `nextCursor: null`, `hasNext: false`.
 
 **에러**
-| HTTP | code                      |
-|------|---------------------------|
-| 400  | `SEARCH_KEYWORD_REQUIRED` |
-| 400  | `INVALID_PAGE_SIZE`       |
+| HTTP | code                      | 상황 |
+|------|---------------------------|---|
+| 400  | `SEARCH_KEYWORD_REQUIRED` | `keyword` 누락 또는 공백뿐 |
+| 400  | `INVALID_PAGE_SIZE`       | `size`가 1~10 범위 밖 |
+| 400  | `INVALID_ENUM_VALUE`      | 정의되지 않은 `category` 값 |
+| 400  | `INVALID_PARAMETER_TYPE`  | `cursor`가 숫자가 아님 |
 
 ---
 

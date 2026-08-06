@@ -17,6 +17,8 @@ public enum CommonErrorCode implements BaseCode {
             "unmapped_validation_error"),
     HANDLER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "HANDLER_NOT_FOUND", "handler_not_found"),
     INVALID_ENUM_VALUE(HttpStatus.BAD_REQUEST, "INVALID_ENUM_VALUE", "invalid_enum_value"),
+    INVALID_PARAMETER_TYPE(
+            HttpStatus.BAD_REQUEST, "INVALID_PARAMETER_TYPE", "invalid_parameter_type"),
     INVALID_REQUEST_BODY(HttpStatus.BAD_REQUEST, "INVALID_REQUEST_BODY", "invalid_request_body"),
     MALFORMED_REQUEST_BODY(
             HttpStatus.BAD_REQUEST, "MALFORMED_REQUEST_BODY", "malformed_request_body"),

@@ -16,6 +16,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @RestControllerAdvice
@@ -65,6 +66,17 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException e) {
         log.error(e.getMessage(), e);
         BaseCode code = resolveRequestBodyErrorCode(e.getCause());
+        return ResponseEntity.status(code.getHttpStatus()).body(ApiResponse.error(code));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    protected ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException e) {
+        log.error(e.getMessage(), e);
+        BaseCode code =
+                e.getRequiredType() != null && e.getRequiredType().isEnum()
+                        ? CommonErrorCode.INVALID_ENUM_VALUE
+                        : CommonErrorCode.INVALID_PARAMETER_TYPE;
         return ResponseEntity.status(code.getHttpStatus()).body(ApiResponse.error(code));
     }
 

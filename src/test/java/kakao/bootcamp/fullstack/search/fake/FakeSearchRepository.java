@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
+import kakao.bootcamp.fullstack.api.domain.post.PostCategory;
 import kakao.bootcamp.fullstack.api.repository.search.SearchRepository;
 
 public class FakeSearchRepository implements SearchRepository {
@@ -21,11 +22,13 @@ public class FakeSearchRepository implements SearchRepository {
     }
 
     @Override
-    public List<Post> searchPostPage(String keyword, Long cursor, Long size) {
+    public List<Post> searchPostPage(
+            String keyword, PostCategory category, Long cursor, Long size) {
         String lowered = keyword.toLowerCase();
         return store.values().stream()
                 .filter(post -> !post.isDeleted())
                 .filter(post -> !post.isBlinded())
+                .filter(post -> category == null || post.getCategory() == category)
                 .filter(post -> cursor == null || post.getId() < cursor)
                 .filter(
                         post ->
