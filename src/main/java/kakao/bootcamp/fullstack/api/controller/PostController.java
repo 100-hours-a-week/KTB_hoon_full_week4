@@ -9,6 +9,7 @@ import kakao.bootcamp.fullstack.api.dto.response.CommentCreateResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostCreateResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDetailsResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostLikeResDto;
+import kakao.bootcamp.fullstack.api.dto.response.PostRecruitStatusResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostUpdateResDto;
 import kakao.bootcamp.fullstack.api.service.PostService;
 import kakao.bootcamp.fullstack.global.exception.code.SuccessCode;
@@ -57,6 +58,15 @@ public class PostController {
             @PathVariable Long postId,
             @Valid @RequestBody PostUpdateReqDto request) {
         PostUpdateResDto response = postService.updatePost(authMember.memberId(), postId, request);
+        return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
+                .body(ApiResponse.success(SuccessCode.SUCCESS, response));
+    }
+
+    @PatchMapping("/{postId}/recruit-status")
+    public ResponseEntity<ApiResponse<PostRecruitStatusResDto>> closeRecruiting(
+            @LoginMember AuthMember authMember, @PathVariable Long postId) {
+        PostRecruitStatusResDto response =
+                postService.closeRecruiting(authMember.memberId(), postId);
         return ResponseEntity.status(SuccessCode.SUCCESS.getHttpStatus())
                 .body(ApiResponse.success(SuccessCode.SUCCESS, response));
     }

@@ -21,6 +21,7 @@ import kakao.bootcamp.fullstack.api.dto.response.CommentResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostCreateResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostDetailsResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostLikeResDto;
+import kakao.bootcamp.fullstack.api.dto.response.PostRecruitStatusResDto;
 import kakao.bootcamp.fullstack.api.dto.response.PostUpdateResDto;
 import kakao.bootcamp.fullstack.api.repository.comment.CommentRepository;
 import kakao.bootcamp.fullstack.api.repository.edit_revision.EditRevisionRepository;
@@ -107,6 +108,15 @@ public class PostService {
                 request.placeName(),
                 request.capacity());
         return PostUpdateResDto.from(post);
+    }
+
+    @Transactional
+    public PostRecruitStatusResDto closeRecruiting(Long memberId, Long postId) {
+        Member member = loadMemberOrThrow(memberId);
+        Post post = loadPostOrThrow(postId);
+        checkPostWriter(memberId, post);
+        post.closeRecruiting();
+        return PostRecruitStatusResDto.from(post);
     }
 
     @Transactional

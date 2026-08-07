@@ -638,8 +638,8 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | capacity | int | X | 보내면 양수여야 한다 |
 
 > 검증 규칙은 3.3 게시글 생성과 동일하다(`imageUrl`만 NotBlank → NotEmpty).
-> **`recruitStatus`는 수정할 수 없다.** 모집 마감 API는 아직 없다.
-> 수정 이력에는 `title`·`content`·`imageUrl`만 보관되며, **모집 정보 변경 이력은 남지 않는다.**
+> **`recruitStatus`는 이 API로 수정할 수 없다.** 마감은 3.11 모집 마감 API를 쓴다.
+> 수정 이력에는 `title`·`content`·`imageUrl`과 함께 `category`·`meetingType`·`address`·`placeName`·`capacity`(수정 "전" 값)도 함께 보관된다.
 
 **Response 200 OK**
 ```json
@@ -784,6 +784,29 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 |------|-----------------------|
 | 403  | `NOT_COMMENT_WRITER`  |
 | 404  | `POST_NOT_FOUND`, `COMMENT_NOT_FOUND` |
+
+---
+
+### 3.11 모집 마감
+- **PATCH** `/api/v1/posts/{postId}/recruit-status`
+- 요청 바디 없음. 호출하면 `recruitStatus`가 `CLOSED`로 바뀐다.
+- **재모집(다시 RECRUITING으로 되돌리는 기능)은 없다.**
+- 이미 `CLOSED`인 글에 다시 호출해도 에러 없이 200이 반환된다(멱등).
+
+**Response 200 OK**
+```json
+{
+  "message": "success",
+  "code": "SUCCESS",
+  "data": { "postId": 13, "recruitStatus": "CLOSED" }
+}
+```
+
+**에러**
+| HTTP | code               |
+|------|--------------------|
+| 403  | `NOT_POST_WRITER`  |
+| 404  | `POST_NOT_FOUND`   |
 
 ---
 
@@ -1079,7 +1102,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 > 요청·응답 모두 **enum 이름**(`EXERCISE` 등)을 쓴다. label은 화면 표시용 참고값이며 API로 내려가지 않는다.
 > 정의되지 않은 값을 보내면 400 `INVALID_ENUM_VALUE`.
-> `RecruitStatus`는 생성 시 항상 `RECRUITING`이며, 현재 이를 `CLOSED`로 바꾸는 API는 없다.
+> `RecruitStatus`는 생성 시 항상 `RECRUITING`이다. `CLOSED`로 바꾸는 API는 3.11 모집 마감을 참고. `CLOSED`에서 `RECRUITING`으로 되돌리는 기능은 없다.
 
 > 요청에는 **enum 이름**(`SPAM` 등)을 그대로 보낸다. 정의되지 않은 값이면 400 `INVALID_ENUM_VALUE`.
 
