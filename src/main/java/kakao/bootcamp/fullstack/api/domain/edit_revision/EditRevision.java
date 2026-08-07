@@ -1,6 +1,7 @@
 package kakao.bootcamp.fullstack.api.domain.edit_revision;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -10,9 +11,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import kakao.bootcamp.fullstack.api.domain.comment.Comment;
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
+import kakao.bootcamp.fullstack.api.domain.post.Address;
+import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
+import kakao.bootcamp.fullstack.api.domain.post.PostCategory;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 import kakao.bootcamp.fullstack.global.BaseEntity;
+import kakao.bootcamp.fullstack.global.constants.PostConstants;
 import kakao.bootcamp.fullstack.global.exception.BadRequestException;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.code.CommonErrorCode;
@@ -52,19 +57,42 @@ public class EditRevision extends BaseEntity {
     @Column(nullable = false)
     private TargetType targetType;
 
+    @Enumerated(EnumType.STRING)
+    private PostCategory category;
+
+    @Enumerated(EnumType.STRING)
+    private MeetingType meetingType;
+
+    @Embedded private Address address;
+
+    @Column(length = PostConstants.PLACE_NAME_MAX_LENGTH)
+    private String placeName;
+
+    private Integer capacity;
+
     private EditRevision(
             TargetType targetType,
             Long targetId,
             Long memberId,
             String title,
             String content,
-            String imageUrl) {
+            String imageUrl,
+            PostCategory category,
+            MeetingType meetingType,
+            Address address,
+            String placeName,
+            Integer capacity) {
         this.targetType = targetType;
         this.targetId = targetId;
         this.memberId = memberId;
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
+        this.category = category;
+        this.meetingType = meetingType;
+        this.address = address;
+        this.placeName = placeName;
+        this.capacity = capacity;
     }
 
     public boolean isNew() {
@@ -88,7 +116,12 @@ public class EditRevision extends BaseEntity {
                 post.getMember().getId(),
                 post.getTitle(),
                 post.getContent(),
-                post.getImageUrl());
+                post.getImageUrl(),
+                post.getCategory(),
+                post.getMeetingType(),
+                post.getAddress(),
+                post.getPlaceName(),
+                post.getCapacity());
     }
 
     public static EditRevision fromComment(Comment comment) {
@@ -98,6 +131,11 @@ public class EditRevision extends BaseEntity {
                 comment.getMember().getId(),
                 null,
                 comment.getContent(),
+                null,
+                null,
+                null,
+                null,
+                null,
                 null);
     }
 }
