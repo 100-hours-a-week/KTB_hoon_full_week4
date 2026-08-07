@@ -1,5 +1,17 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" 2>/dev/null; cmd=$(jq -r '.tool_input.command'); if echo \"$cmd\" | grep -qE '(^|[;&|])[[:space:]]*git[[:space:]]+commit\\b'; then if echo \"$cmd\" | grep -qE '[[:space:]](-a|--all)([[:space:]]|$)'; then content=$(cat src/main/resources/application.yaml 2>/dev/null); else content=$(git show :src/main/resources/application.yaml 2>/dev/null); fi; if echo \"$content\" | grep -q 'active: *local'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"application.yaml profiles.active=local — 커밋 차단. prod 배포 시 EC2가 localhost:13306 을 찾다 기동 실패한다. prod 로 되돌리거나 이 파일을 커밋에서 제외할 것.\"}}'; fi; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": ".*",
