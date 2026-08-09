@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -26,7 +27,13 @@ import org.hibernate.annotations.SQLDelete;
 @SQLDelete(
         sql =
                 "UPDATE posts SET deleted = true, deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
-@Table(name = "posts")
+@Table(
+        name = "posts",
+        indexes = {
+            @Index(
+                    name = "idx_posts_created_at_deleted_blinded",
+                    columnList = "created_at, deleted, blinded")
+        })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Post extends BaseEntity {
