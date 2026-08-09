@@ -33,15 +33,20 @@ public class JpaSearchRepositoryAdapter implements SearchRepository {
                     pageable);
         }
         return jpaSearchRepository.searchActivePostPage(
-                cond.keyword(),
-                cond.category(),
-                cond.meetingType(),
-                cond.recruitStatus(),
+                sanitizeKeyword(cond.keyword()),
+                cond.category() == null ? null : cond.category().name(),
+                cond.meetingType() == null ? null : cond.meetingType().name(),
+                cond.recruitStatus() == null ? null : cond.recruitStatus().name(),
                 cond.sido(),
                 cond.sigungu(),
                 cond.createdFrom(),
                 cond.createdTo(),
                 cond.cursor(),
                 pageable);
+    }
+
+    // FULLTEXT BOOLEAN MODE 의 phrase 구문(따옴표)이 깨지지 않도록 제거한다.
+    private String sanitizeKeyword(String keyword) {
+        return keyword.replace("\"", "");
     }
 }
