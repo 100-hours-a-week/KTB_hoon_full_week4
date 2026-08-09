@@ -57,7 +57,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 - **공통 조상 `global/BaseEntity`**: `createdAt/updatedAt`(JPA Auditing), `deleted/deletedAt` + `delete()/restore()`.
 - **소프트삭제**: 모든 엔티티가 `@SQLDelete`로 물리삭제 대신 `deleted=true` UPDATE. 조회 쿼리는 항상 `deleted = false` 조건을 건다. (상태 플래그와 공존시키며 `@SQLDelete`는 유지)
 - 엔티티는 정적 팩토리(`Xxx.create(...)`) + `@NoArgsConstructor(PROTECTED)`. 상태 변경은 도메인 메서드로.
-- 도메인은 `api/domain/<name>` 아래: auth, member, post, post_draft, comment, report, edit_revision, common.
+- 도메인은 `api/domain/<name>` 아래: auth, member, post, post_draft, comment, report, edit_revision, search, common.
 
 ## 응답 · 에러 코드 체계
 
@@ -80,12 +80,17 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 
 ## 기타 횡단 관심사
 
-- **레이트리밋**: `@RateLimited` + `RateLimitInterceptor`(인메모리 fixed window, 1분 3건). 현재 `POST /posts`, `POST /posts/drafts/{id}/publish`에 적용되며 **회원 단위 카운터를 공유**한다.
+- **레이트리밋**: `@RateLimited(limit, windowMinutes)` + `RateLimitInterceptor`(인메모리 **sliding window** — 회원별 요청 타임스탬프 deque에서 창 밖 항목을 제거하며 카운트, `InMemoryPostRateLimiter`). 기본값은 1분 3건이며 애노테이션 인자로 메서드별 조정 가능. 현재 `POST /posts`, `POST /posts/drafts/{id}/publish`에 적용되며 **회원 단위 카운터를 공유**한다.
 - **커서 기반 페이지네이션**: 목록 조회는 `id < cursor ... ORDER BY id DESC` 방식(offset 아님). `size`는 1~10.
 - **목록·검색은 `GET /api/v1/posts` 하나로 통합**되어 있고 `SearchController`/`SearchService`/`SearchRepository`가
   담당한다(`PostController` 는 CRUD 만). 조건이 없으면 목록, 있으면 검색이며 **모든 조건이 선택**이다.
-  `keyword` 유무로 저장소가 쿼리를 분기한다 — LIKE 는 선행 와일드카드라 인덱스를 못 쓰므로,
-  키워드 없는 요청까지 같은 쿼리로 보내면 불필요한 스캔 비용을 낸다.
+  `keyword` 유무로 `JpaSearchRepository`가 쿼리를 분기한다: 키워드가 있으면 `FULLTEXT(title, content) WITH PARSER ngram`
+  인덱스(`bench/sql/06_fulltext_index.sql`)에 `MATCH ... AGAINST(... IN BOOLEAN MODE)` 네이티브 쿼리(`searchActivePostPage`)를,
+  없으면 JPQL(`findActivePostPage`)을 탄다 — 키워드 없는 요청까지 FULLTEXT 매치 비용을 치르지 않기 위한 분리.
+  네이티브 쿼리는 JPQL과 달리 enum을 못 읽어 category/meetingType/recruitStatus를 문자열로 변환해 넘기고,
+  Pageable에 Sort를 싣지 않는다(임의 SQL에 안전하게 ORDER BY를 주입할 수 없음). 날짜 범위 조건에는
+  `posts`에 `(created_at, deleted, blinded)` 복합 인덱스가 있지만 넓은 range에서는 옵티마이저가 힌트 없이
+  자연 선택하지 않는 것이 확인됐다 — 실험 기록은 `docs/created-at-index-experiment.md` 참고.
 - **마스킹**: 블라인드/탈퇴 치환은 엔티티가 아니라 **응답 DTO의 `from(...)`에서** 상수로 처리(`BLINDED_POST`/`BLINDED_COMMENT`/`UNKNOWN_WRITER`) + `isBlind` 노출.
 - 설정 클래스는 `global/config/`(Security/Jwt/Cors/Jpa/Web/Scheduling).
 
@@ -99,6 +104,10 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 ## 문서
 
 `docs/api-specification.md`는 **프론트에 전달하는 계약 문서**다. 엔드포인트·요청/응답 필드·검증 규칙·에러 코드를 바꾸면 **같은 변경에서 함께 갱신**할 것(응답 필드 추가도 프론트 타입에 영향).
+
+## 배포
+
+`main` push → CI(`ci.yml`: spotlessCheck + build) 통과 시 CD(`cd.yml`)가 자동으로 이어져 GHCR에 이미지를 올리고 EC2에서 `docker compose up -d backend`로 backend 컨테이너만 교체한다. EC2에는 nginx(`/api/*` → backend, 나머지 → frontend) + frontend + backend 3개 컨테이너가 떠 있으며 이 파이프라인은 backend만 건드린다. 상세는 `docs/cicd.md`(워크플로우 스텝) · `docs/infra.md`(런타임 구성 + CI/CD 흐름을 다이어그램으로 정리) 참고.
 
 ## 커밋 메시지
 
