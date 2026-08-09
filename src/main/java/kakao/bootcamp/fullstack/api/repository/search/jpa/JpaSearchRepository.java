@@ -25,15 +25,6 @@ public interface JpaSearchRepository extends JpaRepository<Post, Long> {
                     + " AND p.deleted = false AND p.blinded = false"
                     + " ORDER BY p.id DESC";
 
-    // 키워드가 있을 때만 FULLTEXT 를 태운다. 키워드가 없는 요청까지 이 쿼리로 보내면
-    // 불필요한 매치 비용을 지불하게 된다(findActivePostPage 와 동일한 이유로 분리 유지).
-    // FULLTEXT(title, content) WITH PARSER ngram 인덱스 필요(bench/sql/06_fulltext_index.sql).
-    // BOOLEAN MODE + 따옴표 구문(phrase search)으로 LIKE '%kw%' 의 부분 문자열 매칭에 근접시킨다
-    // (NATURAL LANGUAGE MODE 는 50% 이상 매치되는 토큰을 스톱워드로 취급해 흔한 키워드가
-    // 조용히 빠질 위험이 있어 배제했다). 네이티브 쿼리라 JPQL 처럼 enum 매핑 타입을 못 읽으므로
-    // category/meetingType/recruitStatus 는 어댑터에서 문자열로 변환해 넘긴다. Pageable 은
-    // Sort 없는 채로 유지할 것 — 네이티브 쿼리는 JPQL 과 달리 임의의 SQL 에 안전하게 ORDER BY 를
-    // 주입할 수 없다.
     String NATIVE_FILTERS =
             " AND (:category IS NULL OR p.category = :category)"
                     + " AND (:meetingType IS NULL OR p.meeting_type = :meetingType)"
