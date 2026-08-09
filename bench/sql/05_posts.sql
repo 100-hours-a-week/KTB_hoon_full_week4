@@ -91,19 +91,7 @@ SELECT
                  '커뮤니티센터', '스터디룸', '공원', '체육관',
                  '카페', '도서관', '문화센터', '공방')), 50)
     END AS place_name,
-    CASE WHEN s.meeting_type = 'ONLINE' THEN NULL ELSE LEFT(
-        CONCAT(
-            ELT(1 + MOD(CRC32(CONCAT('dt', s.n)), 6),
-                '초보자도 편하게 참여할 수 있습니다.',
-                '정해진 시간에 꾸준히 활동합니다.',
-                '서로 배려하며 즐겁게 진행합니다.',
-                '준비물과 세부 일정은 신청 후 안내합니다.',
-                '소규모로 깊이 있게 진행합니다.',
-                '경험보다 성실한 참여를 중요하게 생각합니다.'),
-            ' 정원 ', COALESCE(4 + MOD(CRC32(CONCAT('cp', s.n)), 17), 10), '명.'
-        ),
-        100
-    ) END AS detail,
+    NULL AS detail,
     dc.body AS content,
     CASE
         WHEN MOD(CRC32(CONCAT('im', s.n)), 5) = 0
