@@ -1,34 +1,41 @@
 package kakao.bootcamp.fullstack.global.rate_limiter;
 
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
 @Profile({"local", "prod", "test"})
+@RequiredArgsConstructor
 public class InMemoryPostRateLimiter implements RateLimiter {
 
-    private final Map<Long, Window> windows = new HashMap<>();
+    private final Clock clock;
+
+    private final Map<Long, Deque<Instant>> requestLogs = new HashMap<>();
 
     @Override
     public synchronized boolean tryAcquire(Long memberId, int limit, long windowMinutes) {
-        LocalDateTime now = LocalDateTime.now();
-        Window window = windows.get(memberId);
+        Instant now = clock.instant();
+        Instant windowStart = now.minus(Duration.ofMinutes(windowMinutes));
 
-        if (window == null || now.isAfter(window.expiresAt())) {
-            windows.put(memberId, new Window(now.plusMinutes(windowMinutes), 1));
-            return true;
+        Deque<Instant> log = requestLogs.computeIfAbsent(memberId, key -> new ArrayDeque<>());
+
+        while (!log.isEmpty() && log.peekFirst().isBefore(windowStart)) {
+            log.pollFirst();
         }
 
-        if (window.count() >= limit) {
+        if (log.size() >= limit) {
             return false;
         }
 
-        windows.put(memberId, new Window(window.expiresAt(), window.count() + 1));
+        log.addLast(now);
         return true;
     }
-
-    private record Window(LocalDateTime expiresAt, int count) {}
 }
