@@ -84,13 +84,7 @@ public class AuthService {
         }
         refreshTokenRepository
                 .findNotDeletedByTokenHash(refreshTokenHasher.hash(rawRefreshToken))
-                .ifPresent(this::revokeFamilyForLogout);
-    }
-
-    private void revokeFamilyForLogout(RefreshToken refreshToken) {
-        String familyId = refreshToken.getFamilyId();
-        sessionBlacklist.add(familyId, ExpiryTimeCalculator.of(refreshToken.getExpiresAt()));
-        refreshTokenRepository.revokeAllByFamilyId(familyId);
+                .ifPresent(refreshToken -> revokeFamily(refreshToken.getFamilyId()));
     }
 
     private String issueRefreshToken(Long memberId, String familyId) {
