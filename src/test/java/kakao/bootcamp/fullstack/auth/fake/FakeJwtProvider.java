@@ -12,7 +12,12 @@ public class FakeJwtProvider implements JwtProvider {
     private static final long ACCESS_TOKEN_TTL_MILLIS = 600_000L;
 
     private final AtomicLong sequence = new AtomicLong(0);
+    private final AtomicLong parseCount = new AtomicLong(0);
     private final Map<String, Issued> issued = new HashMap<>();
+
+    public long parseCount() {
+        return parseCount.get();
+    }
 
     @Override
     public String createAccessToken(Long memberId, String email, Role role, String familyId) {
@@ -32,6 +37,7 @@ public class FakeJwtProvider implements JwtProvider {
 
     @Override
     public AccessTokenPayload parseAccessToken(String token) {
+        parseCount.incrementAndGet();
         Issued value = require(token);
         return new AccessTokenPayload(
                 value.memberId(),
