@@ -12,6 +12,8 @@ public interface RefreshTokenRepository {
 
     List<String> findNotRevokedFamilyIdsByMemberId(Long memberId);
 
+    boolean revokeIfNotRevoked(Long id);
+
     void revokeAllByFamilyId(String familyId);
 
     void revokeAllByMemberId(Long memberId);

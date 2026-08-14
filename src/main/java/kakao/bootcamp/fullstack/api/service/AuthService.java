@@ -104,8 +104,12 @@ public class AuthService {
     }
 
     private LoginResult rotate(RefreshToken refreshToken, Member member) {
-        refreshToken.revoke();
         String familyId = refreshToken.getFamilyId();
+        if (!refreshTokenRepository.revokeIfNotRevoked(refreshToken.getId())) {
+            log.warn("RT 동시 회전 감지: 조회 이후 다른 요청이 먼저 회전해 family 전체를 폐기한다. familyId={}", familyId);
+            revokeFamily(familyId);
+            throw new UnauthorizedException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+        }
         String newRefreshToken = issueRefreshToken(member.getId(), familyId);
         return new LoginResult(
                 issueAccessToken(member, familyId),

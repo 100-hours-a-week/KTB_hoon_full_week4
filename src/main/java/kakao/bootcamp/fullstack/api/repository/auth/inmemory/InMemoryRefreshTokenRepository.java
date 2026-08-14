@@ -48,6 +48,16 @@ public class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
     }
 
     @Override
+    public synchronized boolean revokeIfNotRevoked(Long id) {
+        RefreshToken token = refreshTokens.get(id);
+        if (token == null || token.isDeleted() || token.isRevoked()) {
+            return false;
+        }
+        token.revoke();
+        return true;
+    }
+
+    @Override
     public void revokeAllByFamilyId(String familyId) {
         refreshTokens.values().stream()
                 .filter(token -> !token.isDeleted())

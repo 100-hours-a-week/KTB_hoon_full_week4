@@ -31,6 +31,11 @@ public class JpaRefreshTokenRepositoryAdapter implements RefreshTokenRepository 
     }
 
     @Override
+    public boolean revokeIfNotRevoked(Long id) {
+        return jpaRefreshTokenRepository.revokeIfNotRevoked(id) == 1;
+    }
+
+    @Override
     public void revokeAllByFamilyId(String familyId) {
         jpaRefreshTokenRepository.revokeAllByFamilyId(familyId);
     }

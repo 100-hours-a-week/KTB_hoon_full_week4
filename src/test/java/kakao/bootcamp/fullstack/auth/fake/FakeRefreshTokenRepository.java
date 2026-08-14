@@ -42,6 +42,16 @@ public class FakeRefreshTokenRepository implements RefreshTokenRepository {
     }
 
     @Override
+    public synchronized boolean revokeIfNotRevoked(Long id) {
+        RefreshToken token = store.get(id);
+        if (token == null || token.isDeleted() || token.isRevoked()) {
+            return false;
+        }
+        token.revoke();
+        return true;
+    }
+
+    @Override
     public void revokeAllByFamilyId(String familyId) {
         store.values().stream()
                 .filter(token -> !token.isDeleted())

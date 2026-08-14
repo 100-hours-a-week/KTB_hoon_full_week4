@@ -101,6 +101,40 @@ public class RefreshTokenRepositoryTest {
     }
 
     @Test
+    @DisplayName("revokeIfNotRevoked는 처음 한 번만 성공한다")
+    void revokesOnlyOnce() {
+        // given
+        RefreshToken token = active("family-a", "hash-1");
+        refreshTokenRepository.save(token);
+
+        // when
+        boolean first = refreshTokenRepository.revokeIfNotRevoked(token.getId());
+        boolean second = refreshTokenRepository.revokeIfNotRevoked(token.getId());
+
+        // then
+        assertThat(first).isTrue();
+        assertThat(second).isFalse();
+        assertThat(refreshTokenRepository.findNotDeletedByTokenHash("hash-1").orElseThrow())
+                .extracting(RefreshToken::isRevoked)
+                .isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("revokeIfNotRevoked는 이미 폐기된 RT에 대해 실패한다")
+    void doesNotRevokeAlreadyRevokedToken() {
+        // given
+        RefreshToken token = active("family-a", "hash-1");
+        refreshTokenRepository.save(token);
+        refreshTokenRepository.revokeAllByFamilyId("family-a");
+
+        // when
+        boolean revoked = refreshTokenRepository.revokeIfNotRevoked(token.getId());
+
+        // then
+        assertThat(revoked).isFalse();
+    }
+
+    @Test
     @DisplayName("회원의 폐기되지 않은 RT family id를 중복 없이 조회한다")
     void findsNotRevokedFamilyIdsByMemberId() {
         // given

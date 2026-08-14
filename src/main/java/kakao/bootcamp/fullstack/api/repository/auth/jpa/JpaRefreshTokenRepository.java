@@ -20,6 +20,12 @@ public interface JpaRefreshTokenRepository extends JpaRepository<RefreshToken, L
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(
             "UPDATE RefreshToken r SET r.revoked = true "
+                    + "WHERE r.id = :id AND r.revoked = false AND r.deleted = false")
+    int revokeIfNotRevoked(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+            "UPDATE RefreshToken r SET r.revoked = true "
                     + "WHERE r.familyId = :familyId AND r.revoked = false AND r.deleted = false")
     void revokeAllByFamilyId(@Param("familyId") String familyId);
 
