@@ -11,13 +11,13 @@ public interface JpaRefreshTokenRepository extends JpaRepository<RefreshToken, L
 
     Optional<RefreshToken> findByTokenHashAndDeletedFalse(String tokenHash);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(
             "UPDATE RefreshToken r SET r.revoked = true "
                     + "WHERE r.familyId = :familyId AND r.revoked = false AND r.deleted = false")
     void revokeAllByFamilyId(@Param("familyId") String familyId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(
             "UPDATE RefreshToken r SET r.revoked = true "
                     + "WHERE r.memberId = :memberId AND r.revoked = false AND r.deleted = false")
