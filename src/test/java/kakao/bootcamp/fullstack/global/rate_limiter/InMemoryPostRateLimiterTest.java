@@ -91,6 +91,48 @@ public class InMemoryPostRateLimiterTest {
         }
     }
 
+    @Nested
+    @DisplayName("엔트리 수명")
+    class EntryLifetime {
+
+        @Test
+        @DisplayName("윈도우가 지나도록 요청이 없으면 회원 엔트리가 제거된다")
+        void evictsIdleMemberEntry() {
+            rateLimiter.tryAcquire(MEMBER_ID, LIMIT, WINDOW_MINUTES);
+            assertThat(rateLimiter.trackedMembers()).isEqualTo(1);
+
+            clock.advance(Duration.ofMinutes(WINDOW_MINUTES).plusSeconds(1));
+
+            assertThat(rateLimiter.trackedMembers()).isZero();
+        }
+
+        @Test
+        @DisplayName("윈도우 안에서 다시 요청하면 엔트리가 유지된다")
+        void keepsEntryWhileActive() {
+            rateLimiter.tryAcquire(MEMBER_ID, LIMIT, WINDOW_MINUTES);
+
+            clock.advance(Duration.ofSeconds(30));
+            rateLimiter.tryAcquire(MEMBER_ID, LIMIT, WINDOW_MINUTES);
+            clock.advance(Duration.ofSeconds(30));
+
+            assertThat(rateLimiter.trackedMembers()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("엔트리가 제거돼도 허용 횟수는 처음부터 다시 센다")
+        void evictionDoesNotChangeBehavior() {
+            for (int i = 0; i < LIMIT; i++) {
+                rateLimiter.tryAcquire(MEMBER_ID, LIMIT, WINDOW_MINUTES);
+            }
+            assertThat(rateLimiter.tryAcquire(MEMBER_ID, LIMIT, WINDOW_MINUTES)).isFalse();
+
+            clock.advance(Duration.ofMinutes(WINDOW_MINUTES).plusSeconds(1));
+
+            assertThat(rateLimiter.trackedMembers()).isZero();
+            assertThat(rateLimiter.tryAcquire(MEMBER_ID, LIMIT, WINDOW_MINUTES)).isTrue();
+        }
+    }
+
     private static final class MutableClock extends Clock {
 
         private Instant instant;
