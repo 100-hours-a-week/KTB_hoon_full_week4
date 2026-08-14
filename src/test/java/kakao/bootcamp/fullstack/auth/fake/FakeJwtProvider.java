@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import kakao.bootcamp.fullstack.api.domain.member.Role;
+import kakao.bootcamp.fullstack.global.security.dto.AccessTokenPayload;
 import kakao.bootcamp.fullstack.global.security.jwt.provider.JwtProvider;
 
 public class FakeJwtProvider implements JwtProvider {
@@ -30,36 +31,23 @@ public class FakeJwtProvider implements JwtProvider {
     }
 
     @Override
-    public void validateToken(String token) {}
-
-    @Override
-    public Long getMemberId(String token) {
-        return require(token).memberId();
+    public AccessTokenPayload parseAccessToken(String token) {
+        Issued value = require(token);
+        return new AccessTokenPayload(
+                value.memberId(),
+                value.email(),
+                value.role(),
+                value.jti(),
+                value.familyId(),
+                value.expirationMillis());
     }
 
-    @Override
-    public String getEmail(String token) {
-        return require(token).email();
-    }
-
-    @Override
     public String getJti(String token) {
         return require(token).jti();
     }
 
-    @Override
     public String getFid(String token) {
         return require(token).familyId();
-    }
-
-    @Override
-    public Role getRole(String token) {
-        return require(token).role();
-    }
-
-    @Override
-    public long getExpirationMillis(String token) {
-        return require(token).expirationMillis();
     }
 
     private Issued require(String token) {

@@ -1,6 +1,5 @@
 package kakao.bootcamp.fullstack.global.security.filter;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +11,7 @@ import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.global.constants.JwtConstants;
 import kakao.bootcamp.fullstack.global.constants.PublicEndpointConstants;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
+import kakao.bootcamp.fullstack.global.security.dto.AccessTokenPayload;
 import kakao.bootcamp.fullstack.global.security.dto.AuthMember;
 import kakao.bootcamp.fullstack.global.security.jwt.SessionBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.TokenBlacklist;
@@ -55,33 +55,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        try {
-            jwtProvider.validateToken(token);
-            String jti = jwtProvider.getJti(token);
-            if (tokenBlacklist.exists(jti)) {
-                log.warn("블랙리스트에 등록된 AT 사용 시도(로그아웃된 토큰). jti={}", jti);
-                throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
-            }
-            String fid = jwtProvider.getFid(token);
-            if (fid != null && sessionBlacklist.exists(fid)) {
-                log.warn("폐기된 세션의 AT 사용 시도. fid={}", fid);
-                throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
-            }
-            Long memberId = jwtProvider.getMemberId(token);
-            String email = jwtProvider.getEmail(token);
-            String role = jwtProvider.getRole(token).name();
-            AuthMember authMember = new AuthMember(memberId, email, role);
-            Authentication authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            authMember,
-                            null,
-                            List.of(new SimpleGrantedAuthority(authMember.role())));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            filterChain.doFilter(request, response);
-        } catch (UnauthorizedException e) {
-            throw e;
-        } catch (JwtException | IllegalArgumentException e) {
+        AccessTokenPayload payload = jwtProvider.parseAccessToken(token);
+        if (tokenBlacklist.exists(payload.jti())) {
+            log.warn("블랙리스트에 등록된 AT 사용 시도(로그아웃된 토큰). jti={}", payload.jti());
             throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
         }
+        if (payload.fid() != null && sessionBlacklist.exists(payload.fid())) {
+            log.warn("폐기된 세션의 AT 사용 시도. fid={}", payload.fid());
+            throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
+        }
+        AuthMember authMember = payload.toAuthMember();
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(
+                        authMember, null, List.of(new SimpleGrantedAuthority(authMember.role())));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        filterChain.doFilter(request, response);
     }
 }

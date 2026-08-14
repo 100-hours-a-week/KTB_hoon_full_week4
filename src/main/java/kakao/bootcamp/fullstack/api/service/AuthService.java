@@ -10,6 +10,7 @@ import kakao.bootcamp.fullstack.api.dto.response.LoginResult;
 import kakao.bootcamp.fullstack.api.repository.auth.RefreshTokenRepository;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
+import kakao.bootcamp.fullstack.global.security.dto.AccessTokenPayload;
 import kakao.bootcamp.fullstack.global.security.hasher.PasswordHasher;
 import kakao.bootcamp.fullstack.global.security.jwt.SessionBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.TokenBlacklist;
@@ -69,13 +70,13 @@ public class AuthService {
         if (accessToken == null || accessToken.isBlank()) {
             return;
         }
+        AccessTokenPayload payload;
         try {
-            jwtProvider.validateToken(accessToken);
+            payload = jwtProvider.parseAccessToken(accessToken);
         } catch (UnauthorizedException e) {
             return;
         }
-        tokenBlacklist.add(
-                jwtProvider.getJti(accessToken), jwtProvider.getExpirationMillis(accessToken));
+        tokenBlacklist.add(payload.jti(), payload.expiresAtMillis());
     }
 
     private void revokeSession(String rawRefreshToken) {

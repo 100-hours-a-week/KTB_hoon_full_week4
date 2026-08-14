@@ -15,6 +15,7 @@ import javax.crypto.SecretKey;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.member.Role;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
+import kakao.bootcamp.fullstack.global.security.dto.AccessTokenPayload;
 import kakao.bootcamp.fullstack.global.security.jwt.properties.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,9 +51,17 @@ public class JjwtProvider implements JwtProvider {
     }
 
     @Override
-    public void validateToken(String token) {
+    public AccessTokenPayload parseAccessToken(String token) {
         try {
-            parseClaims(token);
+            Claims claims =
+                    Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+            return new AccessTokenPayload(
+                    Long.valueOf(claims.getSubject()),
+                    claims.get("email", String.class),
+                    Role.valueOf(claims.get("role", String.class)),
+                    claims.getId(),
+                    claims.get("fid", String.class),
+                    claims.getExpiration().getTime());
         } catch (ExpiredJwtException e) {
             // 만료는 재발급으로 자연 복구되는 정상 이벤트 → 소음 방지를 위해 debug
             log.debug("AT 만료: 재발급 대상.");
@@ -62,47 +71,6 @@ public class JjwtProvider implements JwtProvider {
             log.warn("AT 검증 실패(위변조 의심): {}", e.getMessage());
             throw new UnauthorizedException(AuthErrorCode.INVALID_TOKEN);
         }
-    }
-
-    @Override
-    public Long getMemberId(String token) {
-        Claims claims = parseClaims(token);
-        return Long.valueOf(claims.getSubject());
-    }
-
-    @Override
-    public String getEmail(String token) {
-        Claims claims = parseClaims(token);
-        return claims.get("email", String.class);
-    }
-
-    @Override
-    public String getJti(String token) {
-        Claims claims = parseClaims(token);
-        return claims.getId();
-    }
-
-    @Override
-    public String getFid(String token) {
-        Claims claims = parseClaims(token);
-        return claims.get("fid", String.class);
-    }
-
-    @Override
-    public Role getRole(String token) {
-        Claims claims = parseClaims(token);
-        String role = claims.get("role", String.class);
-        return Role.valueOf(role);
-    }
-
-    @Override
-    public long getExpirationMillis(String token) {
-        Claims claims = parseClaims(token);
-        return claims.getExpiration().getTime();
-    }
-
-    private Claims parseClaims(String token) {
-        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
     }
 
     private Date toDate(LocalDateTime localDateTime) {
