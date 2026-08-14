@@ -2,10 +2,9 @@ package kakao.bootcamp.fullstack.global.rate_limiter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
+import kakao.bootcamp.fullstack.global.fake.MutableClock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -130,34 +129,6 @@ public class InMemoryPostRateLimiterTest {
 
             assertThat(rateLimiter.trackedMembers()).isZero();
             assertThat(rateLimiter.tryAcquire(MEMBER_ID, LIMIT, WINDOW_MINUTES)).isTrue();
-        }
-    }
-
-    private static final class MutableClock extends Clock {
-
-        private Instant instant;
-
-        MutableClock(Instant instant) {
-            this.instant = instant;
-        }
-
-        void advance(Duration duration) {
-            instant = instant.plus(duration);
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return ZoneId.systemDefault();
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Instant instant() {
-            return instant;
         }
     }
 }

@@ -7,8 +7,10 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
-import kakao.bootcamp.fullstack.global.security.jwt.fake.FakeTicker;
+import kakao.bootcamp.fullstack.global.fake.FakeTicker;
+import kakao.bootcamp.fullstack.global.fake.MutableClock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +23,7 @@ public class CaffeineTokenBlacklistTest {
     private static final Duration TTL = Duration.ofSeconds(600);
     private static final long MAX_SIZE = 10;
 
+    private MutableClock clock;
     private FakeTicker ticker;
     private CaffeineTokenBlacklist tokenBlacklist;
     private ListAppender<ILoggingEvent> appender;
@@ -28,8 +31,9 @@ public class CaffeineTokenBlacklistTest {
 
     @BeforeEach
     void setUp() {
+        clock = new MutableClock(Instant.parse("2026-01-01T00:00:00Z"));
         ticker = new FakeTicker();
-        tokenBlacklist = new CaffeineTokenBlacklist(ticker, MAX_SIZE);
+        tokenBlacklist = new CaffeineTokenBlacklist(clock, ticker, MAX_SIZE);
         monitorLogger = (Logger) LoggerFactory.getLogger(CacheUsageMonitor.class);
         appender = new ListAppender<>();
         appender.start();
@@ -46,7 +50,7 @@ public class CaffeineTokenBlacklistTest {
     }
 
     private long expiresAfter(Duration duration) {
-        return System.currentTimeMillis() + duration.toMillis();
+        return clock.millis() + duration.toMillis();
     }
 
     @Test

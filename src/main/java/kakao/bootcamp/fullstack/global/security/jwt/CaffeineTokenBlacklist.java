@@ -6,8 +6,10 @@ import com.github.benmanes.caffeine.cache.Expiry;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.github.benmanes.caffeine.cache.Scheduler;
 import com.github.benmanes.caffeine.cache.Ticker;
+import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -18,15 +20,19 @@ public class CaffeineTokenBlacklist implements TokenBlacklist {
 
     private static final long MAX_SIZE = 100_000;
 
+    private final Clock clock;
+
     private final CacheUsageMonitor usageMonitor;
 
     private final Cache<String, Long> blacklist;
 
-    public CaffeineTokenBlacklist() {
-        this(Ticker.systemTicker(), MAX_SIZE);
+    @Autowired
+    public CaffeineTokenBlacklist(Clock clock) {
+        this(clock, Ticker.systemTicker(), MAX_SIZE);
     }
 
-    CaffeineTokenBlacklist(Ticker ticker, long maxSize) {
+    CaffeineTokenBlacklist(Clock clock, Ticker ticker, long maxSize) {
+        this.clock = clock;
         this.usageMonitor = new CacheUsageMonitor("토큰 블랙리스트", maxSize);
         this.blacklist =
                 Caffeine.newBuilder()
@@ -36,7 +42,7 @@ public class CaffeineTokenBlacklist implements TokenBlacklist {
                         .expireAfter(
                                 new Expiry<String, Long>() {
                                     long ttlNanos(Long expiresAt) {
-                                        long remain = expiresAt - System.currentTimeMillis();
+                                        long remain = expiresAt - clock.millis();
                                         return TimeUnit.MILLISECONDS.toNanos(Math.max(0, remain));
                                     }
 
