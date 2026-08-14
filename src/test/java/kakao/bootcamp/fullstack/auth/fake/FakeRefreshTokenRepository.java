@@ -1,5 +1,6 @@
 package kakao.bootcamp.fullstack.auth.fake;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,6 +28,17 @@ public class FakeRefreshTokenRepository implements RefreshTokenRepository {
                 .filter(token -> !token.isDeleted())
                 .filter(token -> Objects.equals(token.getTokenHash(), tokenHash))
                 .findFirst();
+    }
+
+    @Override
+    public List<String> findNotRevokedFamilyIdsByMemberId(Long memberId) {
+        return store.values().stream()
+                .filter(token -> !token.isDeleted())
+                .filter(token -> !token.isRevoked())
+                .filter(token -> Objects.equals(token.getMemberId(), memberId))
+                .map(RefreshToken::getFamilyId)
+                .distinct()
+                .toList();
     }
 
     @Override

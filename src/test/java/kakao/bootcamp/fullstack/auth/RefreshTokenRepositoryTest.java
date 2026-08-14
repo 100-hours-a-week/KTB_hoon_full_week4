@@ -3,10 +3,12 @@ package kakao.bootcamp.fullstack.auth;
 import static kakao.bootcamp.fullstack.auth.fixture.RefreshTokenFixture.active;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.auth.RefreshToken;
 import kakao.bootcamp.fullstack.api.repository.auth.RefreshTokenRepository;
 import kakao.bootcamp.fullstack.api.repository.auth.jpa.JpaRefreshTokenRepositoryAdapter;
+import kakao.bootcamp.fullstack.auth.fixture.RefreshTokenFixture;
 import kakao.bootcamp.fullstack.global.config.JpaConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -96,6 +98,38 @@ public class RefreshTokenRepositoryTest {
                                 .orElseThrow()
                                 .isRevoked())
                 .isFalse();
+    }
+
+    @Test
+    @DisplayName("회원의 폐기되지 않은 RT family id를 중복 없이 조회한다")
+    void findsNotRevokedFamilyIdsByMemberId() {
+        // given
+        refreshTokenRepository.save(active("family-a", "hash-a1"));
+        refreshTokenRepository.save(active("family-a", "hash-a2"));
+        refreshTokenRepository.save(active("family-b", "hash-b1"));
+        refreshTokenRepository.save(active("family-c", "hash-c1"));
+        refreshTokenRepository.revokeAllByFamilyId("family-c");
+
+        // when
+        List<String> familyIds =
+                refreshTokenRepository.findNotRevokedFamilyIdsByMemberId(
+                        RefreshTokenFixture.MEMBER_ID);
+
+        // then
+        assertThat(familyIds).containsExactlyInAnyOrder("family-a", "family-b");
+    }
+
+    @Test
+    @DisplayName("다른 회원의 family id는 조회되지 않는다")
+    void doesNotFindFamilyIdsOfOtherMember() {
+        // given
+        refreshTokenRepository.save(active("family-a", "hash-a1"));
+
+        // when
+        List<String> familyIds = refreshTokenRepository.findNotRevokedFamilyIdsByMemberId(999L);
+
+        // then
+        assertThat(familyIds).isEmpty();
     }
 
     @Test

@@ -324,9 +324,9 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | password        | string | O  | NotBlank, `@ValidPassword`  |
 | passwordConfirm | string | O  | NotBlank, `password`와 일치     |
 
-> **변경에 성공하면 해당 회원의 RT가 전부 폐기된다.** 기존 RT로는 재발급이 불가하므로
-> (401 `INVALID_REFRESH_TOKEN`) 변경 후에는 재로그인을 유도해야 한다.
-> 이미 발급된 AT는 만료 전까지 유효하다.
+> **변경에 성공하면 해당 회원의 RT가 전부 폐기되고, 그 세션(family)들이 세션 블랙리스트에 등록된다.**
+> 기존 RT로는 재발급이 불가하고(401 `INVALID_REFRESH_TOKEN`), **이미 발급된 AT도 즉시 무효화**되어
+> 401 `INVALID_TOKEN`을 받는다. 변경 후에는 재로그인을 유도해야 한다.
 >
 > 검증 순서상 `currentPassword` 불일치가 `passwordConfirm` 불일치보다 먼저 감지된다.
 
@@ -350,8 +350,9 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 
 소프트 삭제로 처리된다. 탈퇴 후 이 회원이 쓴 글·댓글은 남고, 작성자 닉네임만 `"알수없음"`으로 표시된다.
 
-> 탈퇴 시 토큰을 자동으로 폐기하지는 않으므로, 클라이언트에서 **탈퇴 직후 로그아웃(1.3)을 호출**해
-> AT/RT를 정리하는 것을 권장한다. (탈퇴 후 남은 AT로 API를 호출하면 404 `MEMBER_NOT_FOUND`가 내려온다.)
+> **탈퇴에 성공하면 해당 회원의 RT가 전부 폐기되고, 그 세션(family)들이 세션 블랙리스트에 등록된다.**
+> 이미 발급된 AT도 즉시 무효화되어 401 `INVALID_TOKEN`을 받는다. 클라이언트는 탈퇴 직후
+> 저장한 토큰을 지우고 로그인 화면으로 보내면 된다.
 
 **Response 200 OK**
 ```json

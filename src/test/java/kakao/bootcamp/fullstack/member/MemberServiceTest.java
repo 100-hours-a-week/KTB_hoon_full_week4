@@ -12,10 +12,12 @@ import kakao.bootcamp.fullstack.api.dto.response.MemberProfileResDto;
 import kakao.bootcamp.fullstack.api.service.MemberService;
 import kakao.bootcamp.fullstack.auth.fake.FakePasswordHasher;
 import kakao.bootcamp.fullstack.auth.fake.FakeRefreshTokenRepository;
+import kakao.bootcamp.fullstack.auth.fake.FakeSessionBlacklist;
 import kakao.bootcamp.fullstack.auth.fixture.RefreshTokenFixture;
 import kakao.bootcamp.fullstack.global.exception.BadRequestException;
 import kakao.bootcamp.fullstack.global.exception.BusinessException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
+import kakao.bootcamp.fullstack.global.security.jwt.properties.JwtProperties;
 import kakao.bootcamp.fullstack.member.fake.FakeMemberRepository;
 import kakao.bootcamp.fullstack.member.fixture.MemberFixture;
 import kakao.bootcamp.fullstack.member.fixture.dto.PasswordUpdateReqDtoFixture;
@@ -36,6 +38,7 @@ public class MemberServiceTest {
 
     private FakeMemberRepository memberRepository;
     private FakeRefreshTokenRepository refreshTokenRepository;
+    private FakeSessionBlacklist sessionBlacklist;
     private FakePasswordHasher passwordHasher;
     private MemberService memberService;
 
@@ -43,8 +46,16 @@ public class MemberServiceTest {
     void setUp() {
         memberRepository = new FakeMemberRepository();
         refreshTokenRepository = new FakeRefreshTokenRepository();
+        sessionBlacklist = new FakeSessionBlacklist();
         passwordHasher = new FakePasswordHasher();
-        memberService = new MemberService(memberRepository, refreshTokenRepository, passwordHasher);
+        JwtProperties jwtProperties = new JwtProperties("test-secret", 600, 1209600);
+        memberService =
+                new MemberService(
+                        memberRepository,
+                        refreshTokenRepository,
+                        sessionBlacklist,
+                        passwordHasher,
+                        jwtProperties);
     }
 
     @Nested
@@ -158,6 +169,25 @@ public class MemberServiceTest {
         }
 
         @Test
+        @DisplayName("탈퇴하면 해당 회원의 RT를 전부 폐기하고 family 를 세션 블랙리스트에 올린다")
+        void revokesAllSessionsOnDelete() {
+            // given
+            memberRepository.save(MemberFixture.activeMember(MEMBER_ID));
+            refreshTokenRepository.save(RefreshTokenFixture.active("family-1", "hash-1"));
+            refreshTokenRepository.save(RefreshTokenFixture.active("family-2", "hash-2"));
+
+            // when
+            memberService.deleteMember(MEMBER_ID);
+
+            // then
+            assertThat(refreshTokenRepository.findNotDeletedByTokenHash("hash-1").orElseThrow())
+                    .extracting(RefreshToken::isRevoked)
+                    .isEqualTo(true);
+            assertThat(sessionBlacklist.exists("family-1")).isTrue();
+            assertThat(sessionBlacklist.exists("family-2")).isTrue();
+        }
+
+        @Test
         @DisplayName("존재하지 않는 회원이면 예외를 던진다")
         void throwsExceptionWhenMemberNotFound() {
             // when & then
@@ -265,6 +295,44 @@ public class MemberServiceTest {
             assertThat(refreshTokenRepository.findNotDeletedByTokenHash("hash-1").orElseThrow())
                     .extracting(RefreshToken::isRevoked)
                     .isEqualTo(true);
+        }
+
+        @Test
+        @DisplayName("폐기한 RT의 family 를 전부 세션 블랙리스트에 올려 남은 AT 를 차단한다")
+        void blacklistsAllSessionsOfMember() {
+            // given
+            memberRepository.save(
+                    MemberFixture.withEncodedPassword(
+                            MEMBER_ID, PasswordUpdateReqDtoFixture.CURRENT_PASSWORD));
+            refreshTokenRepository.save(RefreshTokenFixture.active("family-1", "hash-1"));
+            refreshTokenRepository.save(RefreshTokenFixture.active("family-2", "hash-2"));
+            PasswordUpdateReqDto request = PasswordUpdateReqDtoFixture.valid();
+
+            // when
+            memberService.updatePassword(MEMBER_ID, request);
+
+            // then
+            assertThat(sessionBlacklist.exists("family-1")).isTrue();
+            assertThat(sessionBlacklist.exists("family-2")).isTrue();
+        }
+
+        @Test
+        @DisplayName("이미 폐기된 RT 의 family 는 세션 블랙리스트에 올리지 않는다")
+        void doesNotBlacklistAlreadyRevokedFamily() {
+            // given
+            memberRepository.save(
+                    MemberFixture.withEncodedPassword(
+                            MEMBER_ID, PasswordUpdateReqDtoFixture.CURRENT_PASSWORD));
+            RefreshToken revoked = RefreshTokenFixture.active("family-revoked", "hash-1");
+            revoked.revoke();
+            refreshTokenRepository.save(revoked);
+            PasswordUpdateReqDto request = PasswordUpdateReqDtoFixture.valid();
+
+            // when
+            memberService.updatePassword(MEMBER_ID, request);
+
+            // then
+            assertThat(sessionBlacklist.exists("family-revoked")).isFalse();
         }
 
         @Test

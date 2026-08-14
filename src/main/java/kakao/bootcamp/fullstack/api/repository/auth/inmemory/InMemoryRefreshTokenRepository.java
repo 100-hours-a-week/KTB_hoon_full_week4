@@ -1,5 +1,6 @@
 package kakao.bootcamp.fullstack.api.repository.auth.inmemory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,6 +34,17 @@ public class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
                 .filter(token -> !token.isDeleted())
                 .filter(token -> Objects.equals(token.getTokenHash(), tokenHash))
                 .findFirst();
+    }
+
+    @Override
+    public List<String> findNotRevokedFamilyIdsByMemberId(Long memberId) {
+        return refreshTokens.values().stream()
+                .filter(token -> !token.isDeleted())
+                .filter(token -> !token.isRevoked())
+                .filter(token -> Objects.equals(token.getMemberId(), memberId))
+                .map(RefreshToken::getFamilyId)
+                .distinct()
+                .toList();
     }
 
     @Override

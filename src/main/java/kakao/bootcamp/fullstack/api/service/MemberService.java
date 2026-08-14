@@ -1,5 +1,6 @@
 package kakao.bootcamp.fullstack.api.service;
 
+import java.util.List;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.dto.request.PasswordUpdateReqDto;
@@ -11,6 +12,8 @@ import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.global.exception.BadRequestException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import kakao.bootcamp.fullstack.global.security.hasher.PasswordHasher;
+import kakao.bootcamp.fullstack.global.security.jwt.SessionBlacklist;
+import kakao.bootcamp.fullstack.global.security.jwt.properties.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +25,9 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final SessionBlacklist sessionBlacklist;
     private final PasswordHasher passwordHasher;
+    private final JwtProperties jwtProperties;
 
     @Transactional
     public void signup(SignupReqDto request) {
@@ -48,6 +53,7 @@ public class MemberService {
     public void deleteMember(Long memberId) {
         Member member = loadMemberOrThrow(memberId);
         member.delete();
+        revokeAllSessions(memberId);
     }
 
     @Transactional
@@ -65,7 +71,15 @@ public class MemberService {
         validateCurrentPasswordMatch(request.currentPassword(), member.getEncodedPassword());
         validatePasswordConfirmMatch(request.password(), request.passwordConfirm());
         member.updatePassword(passwordHasher.hash(request.password()));
+        revokeAllSessions(memberId);
+    }
+
+    private void revokeAllSessions(Long memberId) {
+        List<String> familyIds = refreshTokenRepository.findNotRevokedFamilyIdsByMemberId(memberId);
         refreshTokenRepository.revokeAllByMemberId(memberId);
+        long sessionBlockExpiresAt =
+                System.currentTimeMillis() + jwtProperties.accessTokenExpireSeconds() * 1000;
+        familyIds.forEach(familyId -> sessionBlacklist.add(familyId, sessionBlockExpiresAt));
     }
 
     private Member loadMemberOrThrow(Long memberId) {

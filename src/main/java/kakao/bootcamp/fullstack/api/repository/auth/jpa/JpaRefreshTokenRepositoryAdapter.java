@@ -1,5 +1,6 @@
 package kakao.bootcamp.fullstack.api.repository.auth.jpa;
 
+import java.util.List;
 import java.util.Optional;
 import kakao.bootcamp.fullstack.api.domain.auth.RefreshToken;
 import kakao.bootcamp.fullstack.api.repository.auth.RefreshTokenRepository;
@@ -22,6 +23,11 @@ public class JpaRefreshTokenRepositoryAdapter implements RefreshTokenRepository 
     @Override
     public Optional<RefreshToken> findNotDeletedByTokenHash(String tokenHash) {
         return jpaRefreshTokenRepository.findByTokenHashAndDeletedFalse(tokenHash);
+    }
+
+    @Override
+    public List<String> findNotRevokedFamilyIdsByMemberId(Long memberId) {
+        return jpaRefreshTokenRepository.findNotRevokedFamilyIdsByMemberId(memberId);
     }
 
     @Override
