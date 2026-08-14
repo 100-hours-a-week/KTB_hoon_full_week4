@@ -69,6 +69,7 @@ public class CaffeineTokenBlacklist implements TokenBlacklist {
                                     if (cause == RemovalCause.EXPIRED) {
                                         log.info("토큰 블랙리스트 만료 제거: jti={}", jti);
                                     }
+                                    sampleUsage();
                                 })
                         .build();
     }
@@ -76,6 +77,10 @@ public class CaffeineTokenBlacklist implements TokenBlacklist {
     @Override
     public void add(String jti, long tokenExpiresAt) {
         blacklist.put(jti, tokenExpiresAt);
+        sampleUsage();
+    }
+
+    private void sampleUsage() {
         usageMonitor.check(blacklist.estimatedSize());
     }
 

@@ -69,6 +69,7 @@ public class CaffeineSessionBlacklist implements SessionBlacklist {
                                     if (cause == RemovalCause.EXPIRED) {
                                         log.info("세션 블랙리스트 만료 제거: familyId={}", familyId);
                                     }
+                                    sampleUsage();
                                 })
                         .build();
     }
@@ -76,6 +77,10 @@ public class CaffeineSessionBlacklist implements SessionBlacklist {
     @Override
     public void add(String familyId, long tokenExpiresAt) {
         blacklist.put(familyId, tokenExpiresAt);
+        sampleUsage();
+    }
+
+    private void sampleUsage() {
         usageMonitor.check(blacklist.estimatedSize());
     }
 

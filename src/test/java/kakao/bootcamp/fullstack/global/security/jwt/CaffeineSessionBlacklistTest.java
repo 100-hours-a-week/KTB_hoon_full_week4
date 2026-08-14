@@ -1,12 +1,19 @@
 package kakao.bootcamp.fullstack.global.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import java.time.Duration;
+import java.util.List;
 import kakao.bootcamp.fullstack.global.security.jwt.fake.FakeTicker;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 public class CaffeineSessionBlacklistTest {
 
@@ -16,11 +23,26 @@ public class CaffeineSessionBlacklistTest {
 
     private FakeTicker ticker;
     private CaffeineSessionBlacklist sessionBlacklist;
+    private ListAppender<ILoggingEvent> appender;
+    private Logger monitorLogger;
 
     @BeforeEach
     void setUp() {
         ticker = new FakeTicker();
         sessionBlacklist = new CaffeineSessionBlacklist(ticker, MAX_SIZE);
+        monitorLogger = (Logger) LoggerFactory.getLogger(CacheUsageMonitor.class);
+        appender = new ListAppender<>();
+        appender.start();
+        monitorLogger.addAppender(appender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        monitorLogger.detachAppender(appender);
+    }
+
+    private List<String> monitorLogs() {
+        return appender.list.stream().map(ILoggingEvent::getFormattedMessage).toList();
     }
 
     private long expiresAfter(Duration duration) {
@@ -97,6 +119,29 @@ public class CaffeineSessionBlacklistTest {
 
         // then
         assertThat(sessionBlacklist.exists(FAMILY_ID)).isTrue();
+    }
+
+    @Test
+    @DisplayName("TTL로 엔트리가 사라지면 사용량 경보가 정상으로 복귀한다")
+    void usageReturnsToNormalAfterExpiry() {
+        // given
+        for (int i = 0; i < MAX_SIZE; i++) {
+            sessionBlacklist.add("family-" + i, expiresAfter(TTL));
+        }
+        assertThat(monitorLogs()).anyMatch(message -> message.contains("포화"));
+
+        // when
+        ticker.advance(TTL.plusSeconds(1));
+        for (int i = 0; i < MAX_SIZE; i++) {
+            sessionBlacklist.exists("family-" + i);
+        }
+
+        // then
+        await().atMost(Duration.ofSeconds(2))
+                .untilAsserted(
+                        () ->
+                                assertThat(monitorLogs())
+                                        .anyMatch(message -> message.contains("정상 복귀")));
     }
 
     @Test
