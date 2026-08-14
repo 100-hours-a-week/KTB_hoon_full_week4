@@ -3,12 +3,6 @@ package kakao.bootcamp.fullstack.global.security.jwt;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * 로컬 캐시 사용량이 상한(maximumSize)에 근접·도달하는지 관측한다.
- *
- * <p>상태 전이(정상↔경고↔포화) 시에만 로그를 남기는 엣지 트리거 방식이라, 포화 상황에서 매 연산마다 로그가 쏟아지는 것을 막는다. 80% 이상이면 경고, 상한 도달이면
- * 에러를 남기고, 다시 내려오면 복귀를 알린다.
- */
 @Slf4j
 public class CacheUsageMonitor {
 
