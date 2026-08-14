@@ -14,6 +14,7 @@ import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import kakao.bootcamp.fullstack.global.security.hasher.PasswordHasher;
 import kakao.bootcamp.fullstack.global.security.jwt.SessionBlacklist;
 import kakao.bootcamp.fullstack.global.security.jwt.properties.JwtProperties;
+import kakao.bootcamp.fullstack.global.utils.ExpiryTimeCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,7 +79,7 @@ public class MemberService {
         List<String> familyIds = refreshTokenRepository.findNotRevokedFamilyIdsByMemberId(memberId);
         refreshTokenRepository.revokeAllByMemberId(memberId);
         long sessionBlockExpiresAt =
-                System.currentTimeMillis() + jwtProperties.accessTokenExpireSeconds() * 1000;
+                ExpiryTimeCalculator.afterSeconds(jwtProperties.accessTokenExpireSeconds());
         familyIds.forEach(familyId -> sessionBlacklist.add(familyId, sessionBlockExpiresAt));
     }
 

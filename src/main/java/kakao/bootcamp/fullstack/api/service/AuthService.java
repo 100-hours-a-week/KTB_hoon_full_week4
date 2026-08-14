@@ -1,7 +1,6 @@
 package kakao.bootcamp.fullstack.api.service;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.UUID;
 import kakao.bootcamp.fullstack.api.domain.auth.AuthErrorCode;
 import kakao.bootcamp.fullstack.api.domain.auth.RefreshToken;
@@ -18,6 +17,7 @@ import kakao.bootcamp.fullstack.global.security.jwt.properties.JwtProperties;
 import kakao.bootcamp.fullstack.global.security.jwt.provider.JwtProvider;
 import kakao.bootcamp.fullstack.global.security.token.RefreshTokenGenerator;
 import kakao.bootcamp.fullstack.global.security.token.RefreshTokenHasher;
+import kakao.bootcamp.fullstack.global.utils.ExpiryTimeCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -89,7 +89,7 @@ public class AuthService {
 
     private void revokeFamilyForLogout(RefreshToken refreshToken) {
         String familyId = refreshToken.getFamilyId();
-        sessionBlacklist.add(familyId, toEpochMillis(refreshToken.getExpiresAt()));
+        sessionBlacklist.add(familyId, ExpiryTimeCalculator.of(refreshToken.getExpiresAt()));
         refreshTokenRepository.revokeAllByFamilyId(familyId);
     }
 
@@ -139,9 +139,9 @@ public class AuthService {
 
     private void revokeFamily(String familyId) {
         refreshTokenRepository.revokeAllByFamilyId(familyId);
-        long sessionBlockExpiresAt =
-                System.currentTimeMillis() + jwtProperties.accessTokenExpireSeconds() * 1000;
-        sessionBlacklist.add(familyId, sessionBlockExpiresAt);
+        sessionBlacklist.add(
+                familyId,
+                ExpiryTimeCalculator.afterSeconds(jwtProperties.accessTokenExpireSeconds()));
     }
 
     private void validateNotExpired(RefreshToken refreshToken) {
@@ -166,9 +166,5 @@ public class AuthService {
         if (!passwordHasher.matches(rawPassword, encodedPassword)) {
             throw new UnauthorizedException(AuthErrorCode.LOGIN_FAILED);
         }
-    }
-
-    private long toEpochMillis(LocalDateTime dateTime) {
-        return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 }
