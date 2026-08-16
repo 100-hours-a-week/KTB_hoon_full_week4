@@ -178,7 +178,7 @@ kakao.bootcamp.fullstack
 
 원인은 FULLTEXT가 느려서가 아니라 **`ORDER BY`가 조기 종료를 막기 때문**이었습니다. `ORDER BY`만 제거하면 같은 쿼리가 21,573ms → 18.2ms(약 1,185배)로 끝납니다. FULLTEXT는 정렬 개념이 없어(`SHOW INDEX`의 `Collation`이 `NULL`) 최신순 11건을 고르려면 매치 전량을 받아 정렬해야 하고, `LIMIT`을 줄여도 이 비용은 그대로입니다.
 
-반대로 `LIKE`는 PK 역순 스캔 방향이 정렬 방향과 같아 337행에서 조기 종료됐습니다(로컬 16ms). **두 방식의 최악 케이스가 정반대**라 — `LIKE`는 매치가 없을 때, FULLTEXT는 매치가 많을 때 무너집니다 — 한쪽으로 되돌리는 건 문제를 옮기는 것에 가깝습니다. 측정 근거와 선택지 정리는 `docs/fulltext-search-experiment.md`에 남겼고, 아직 결론을 내지 않았습니다.
+반대로 `LIKE`는 PK 역순 스캔 방향이 정렬 방향과 같아 337행에서 조기 종료됐습니다(로컬 16ms). **두 방식의 최악 케이스가 정반대**라 — `LIKE`는 매치가 없을 때, FULLTEXT는 매치가 많을 때 무너집니다 — 한쪽으로 되돌리는 건 문제를 옮기는 것에 가깝습니다. 측정 근거와 선택지 정리는 `docs/search/fulltext-search-experiment.md`에 남겼고, 아직 결론을 내지 않았습니다.
 
 ### 3. 날짜 범위 검색 : 정렬 축을 인덱스에 맞추고 커서를 복합으로
 
@@ -195,7 +195,7 @@ kakao.bootcamp.fullstack
 | `ORDER BY id DESC` | `PRIMARY` 역순 | 777,756 | **4,944ms** |
 | `ORDER BY created_at DESC, id DESC` | 복합 인덱스 범위 역순 | **11** | **1.24ms** |
 
-한 줄로 줄이면 **정렬 축·필터 축·커서 축이 전부 같아야 인덱스가 일한다**는 것이었고, 세 축이 어긋날 때마다 같은 증상이 반복됐습니다. 전 과정은 `docs/date-range-search-troubleshooting.md`에 순서대로 남겼습니다.
+한 줄로 줄이면 **정렬 축·필터 축·커서 축이 전부 같아야 인덱스가 일한다**는 것이었고, 세 축이 어긋날 때마다 같은 증상이 반복됐습니다. 전 과정은 `docs/search/date-range-search-troubleshooting.md`에 순서대로 남겼습니다.
 
 > 정렬 옵션(인기순·조회수순)을 늘리지 않은 것도 같은 이유입니다. 커서 페이지네이션은 **정렬 키가 변하지 않는다**를 전제로 하는데, `like_count`는 페이지를 넘기는 사이에 바뀌어 글이 누락되거나 중복될 수 있습니다.
 

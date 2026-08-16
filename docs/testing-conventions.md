@@ -147,7 +147,7 @@ assertThat(sessionBlacklist.exists("family-1")).isFalse();
 - 사용량 경보를 검증하려면 상한을 채워야 하므로 시드 생성자로 `maxSize`를 낮춘다(실제 값은 100,000).
 
 동작 원리(왜 ticker만 바꿔도 되는지, Scheduler·타이머 휠이 어떻게 얽히는지)는
-`docs/caffeine-blacklist.md` 참고.
+`docs/rtr/caffeine-blacklist.md` 참고.
 
 참고: `src/test/.../global/security/jwt/CaffeineSessionBlacklistTest.java`,
 `CaffeineTokenBlacklistTest.java`, fake는 `.../global/fake/FakeTicker.java`.

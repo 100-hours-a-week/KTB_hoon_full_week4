@@ -1,7 +1,7 @@
 # FULLTEXT 키워드 검색과 `ORDER BY id DESC`
 
 성능 측정 실험 기록이다. 프로덕션 기능 변경이 아니며, 이 문서 자체도 결과 아카이빙 목적이다.
-`docs/created-at-index-experiment.md`(날짜 범위 인덱스 실험)의 후속이다.
+`docs/search/created-at-index-experiment.md`(날짜 범위 인덱스 실험)의 후속이다.
 
 > 용어가 낯설면 **[읽기 전에 — 비유와 용어](#읽기-전에--비유와-용어)** 를 먼저 보면 된다.
 > 비유 한 문단 + 용어표 + `EXPLAIN ANALYZE` 출력 읽는 법이 있다.

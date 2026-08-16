@@ -79,7 +79,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 - **RT 쿠키 `Path`는 `/api/v1`**(`AuthCookieConstants`). 재발급뿐 아니라 **로그아웃에서도 쿠키를 받아 family를 폐기**하므로 `/api/v1/reissue`로 좁히면 안 된다.
 - 공개 엔드포인트는 `PublicEndpointConstants.PUBLIC_ENDPOINTS`. **로그아웃도 포함**(permitAll)이라 토큰이 없거나 무효해도 200인 멱등 동작.
 - **RTR(Refresh Token Rotation)** + RT family. 이미 회전된 RT 재사용 감지 시 family 전체 폐기.
-- **블랙리스트 2종**(`global/security/jwt/`): `TokenBlacklist`(jti 기준), `SessionBlacklist`(familyId 기준). **Caffeine 로컬 캐시** 구현(`Caffeine*Blacklist`, `@Profile({"local","prod","test"})`)이 활성. 값(만료 epoch millis) 기반 **per-entry TTL**(`expireAfter(Expiry)`)로 각 엔트리가 자기 만료시각에 자동 제거 → 별도 정리 스케줄러 없음. 만료 원리(Ticker·타이머 휠·`Scheduler`)와 테스트 방법은 `docs/caffeine-blacklist.md` 참고.
+- **블랙리스트 2종**(`global/security/jwt/`): `TokenBlacklist`(jti 기준), `SessionBlacklist`(familyId 기준). **Caffeine 로컬 캐시** 구현(`Caffeine*Blacklist`, `@Profile({"local","prod","test"})`)이 활성. 값(만료 epoch millis) 기반 **per-entry TTL**(`expireAfter(Expiry)`)로 각 엔트리가 자기 만료시각에 자동 제거 → 별도 정리 스케줄러 없음. 만료 원리(Ticker·타이머 휠·`Scheduler`)와 테스트 방법은 `docs/rtr/caffeine-blacklist.md` 참고.
 - `JwtAuthenticationFilter`가 AT 검증→블랙리스트 확인. 컨트롤러는 `@LoginMember AuthMember`(`LoginMemberArgumentResolver`)로 인증 회원 주입.
 - 설정은 `jwt.*`(yaml) → `JwtProperties`.
 
@@ -87,7 +87,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 
 - **레이트리밋**: `@RateLimited(limit, windowMinutes)` + `RateLimitInterceptor`(인메모리 **sliding window** — 회원별 요청 타임스탬프 deque에서 창 밖 항목을 제거하며 카운트, `InMemoryPostRateLimiter`). 기본값은 1분 3건이며 애노테이션 인자로 메서드별 조정 가능. 현재 `POST /posts`, `POST /posts/drafts/{id}/publish`에 적용되며 **회원 단위 카운터를 공유**한다.
 - **커서 기반 페이지네이션**: 목록 조회는 `ORDER BY created_at DESC, id DESC` + **`(createdAt, id)` 복합 커서**(offset 아님). `size`는 1~10.
-  정렬 축과 커서 축을 일치시켜야 인덱스 `(created_at, deleted, blinded)` 로 커서 위치를 바로 찾는다 — 둘이 어긋나면 커서까지 걸어가느라 무너진다(측정: `docs/date-range-search-troubleshooting.md`).
+  정렬 축과 커서 축을 일치시켜야 인덱스 `(created_at, deleted, blinded)` 로 커서 위치를 바로 찾는다 — 둘이 어긋나면 커서까지 걸어가느라 무너진다(측정: `docs/search/date-range-search-troubleshooting.md`).
   `nextCursor`는 `SearchCursor`가 만드는 **불투명 base64 문자열**이라 프론트가 해석하지 않는다. 파싱 실패는 `INVALID_CURSOR`.
 - **목록·검색은 `GET /api/v1/posts` 하나로 통합**되어 있고 `SearchController`/`SearchService`/`SearchRepository`가
   담당한다(`PostController` 는 CRUD 만). 조건이 없으면 목록, 있으면 검색이며 **모든 조건이 선택**이다.
@@ -97,7 +97,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
   네이티브 쿼리는 JPQL과 달리 enum을 못 읽어 category/meetingType/recruitStatus를 문자열로 변환해 넘기고,
   Pageable에 Sort를 싣지 않는다(임의 SQL에 안전하게 ORDER BY를 주입할 수 없음). 날짜 범위 조건에는
   `posts`에 `(created_at, deleted, blinded)` 복합 인덱스가 있지만 넓은 range에서는 옵티마이저가 힌트 없이
-  자연 선택하지 않는 것이 확인됐다 — 실험 기록은 `docs/created-at-index-experiment.md` 참고.
+  자연 선택하지 않는 것이 확인됐다 — 실험 기록은 `docs/search/created-at-index-experiment.md` 참고.
 - **마스킹**: 블라인드/탈퇴 치환은 엔티티가 아니라 **응답 DTO의 `from(...)`에서** 상수로 처리(`BLINDED_POST`/`BLINDED_COMMENT`/`UNKNOWN_WRITER`) + `isBlind` 노출.
 - **시간은 주입받는다**: 벽시계가 필요한 컴포넌트(`Caffeine*Blacklist`, `InMemoryPostRateLimiter`)는 `System.currentTimeMillis()`를 직접 부르지 않고 `ClockConfig`의 `Clock` 빈을 생성자로 받는다. Caffeine 의 **만료 판정만은 `Clock` 이 아니라 `Ticker`** 를 통하므로 둘 다 주입 대상이다. 테스트 fake는 `global/fake/MutableClock`·`FakeTicker`.
 - 설정 클래스는 `global/config/`(Security/Jwt/Cors/Jpa/Web/Clock). **스케줄러는 없다** — `@EnableScheduling`/`@Scheduled`를 쓰는 코드가 한 곳도 없고, 만료·정리는 전부 캐시의 per-entry TTL 이나 요청 시점 계산으로 처리한다.
@@ -113,14 +113,16 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 
 `docs/api-specification.md`는 **프론트에 전달하는 계약 문서**다. 엔드포인트·요청/응답 필드·검증 규칙·에러 코드를 바꾸면 **같은 변경에서 함께 갱신**할 것(응답 필드 추가도 프론트 타입에 영향).
 
+주제별 문서는 하위 디렉터리로 나눈다 — `docs/rtr/`(인증·토큰), `docs/search/`(목록·검색). 프로젝트 전역 문서만 `docs/` 바로 아래에 둔다.
+
 | 문서 | 내용 |
 |---|---|
 | `api-specification.md` | 프론트 계약. 코드와 함께 갱신 |
 | `testing-conventions.md` | fake 조립·`@Nested`·`Ticker` 주입 등 테스트 규칙 |
-| `caffeine-blacklist.md` | 블랙리스트 만료 원리(Ticker/타이머 휠/Scheduler)와 테스트 방법 |
-| `created-at-index-experiment.md` | `(created_at, deleted, blinded)` 인덱스 실험 기록 + 운영 재현 |
-| `fulltext-search-experiment.md` | 키워드 검색 34초의 원인(`ORDER BY` 가 FT 조기종료를 막음) 측정 기록 |
-| `date-range-search-troubleshooting.md` | 날짜 범위 검색 6.4초 → `ORDER BY` 수정 → 커서 회귀까지, 진행 중인 기록 |
+| `rtr/caffeine-blacklist.md` | 블랙리스트 만료 원리(Ticker/타이머 휠/Scheduler)와 테스트 방법 |
+| `search/created-at-index-experiment.md` | `(created_at, deleted, blinded)` 인덱스 실험 기록 + 운영 재현 |
+| `search/fulltext-search-experiment.md` | 키워드 검색 34초의 원인(`ORDER BY` 가 FT 조기종료를 막음) 측정 기록 |
+| `search/date-range-search-troubleshooting.md` | 날짜 범위 검색 6.4초 → `ORDER BY` 수정 → 커서 회귀 → 복합 커서까지의 기록 |
 | `cicd.md` | CI/CD 워크플로우 스텝 + 인프라 구성 |
 | `postman-test-data.md` | 수동 테스트용 요청/데이터 |
 | `backlog.md` | 로컬 전용 작업 목록 — **커밋·푸시하지 않는다** |

@@ -4,8 +4,8 @@
 또 다른 문제를 만난 과정을 순서대로 적는다. **아직 해결 못 했고, 현재 상태까지 기록한다.**
 
 관련 문서
-- `docs/created-at-index-experiment.md` — `(created_at, deleted, blinded)` 인덱스를 만들 때의 실험
-- `docs/fulltext-search-experiment.md` — 키워드 검색 34초 문제 (별개 사건)
+- `docs/search/created-at-index-experiment.md` — `(created_at, deleted, blinded)` 인덱스를 만들 때의 실험
+- `docs/search/fulltext-search-experiment.md` — 키워드 검색 34초 문제 (별개 사건)
 
 ## 측정 환경
 
