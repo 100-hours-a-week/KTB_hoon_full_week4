@@ -21,9 +21,11 @@ public interface JpaSearchRepository extends JpaRepository<Post, Long> {
                     + " AND (:sigungu IS NULL OR p.address.sigungu = :sigungu)"
                     + " AND (:createdFrom IS NULL OR p.createdAt >= :createdFrom)"
                     + " AND (:createdTo IS NULL OR p.createdAt < :createdTo)"
-                    + " AND (:cursor IS NULL OR p.id < :cursor)"
+                    + " AND (:cursorCreatedAt IS NULL"
+                    + " OR p.createdAt < :cursorCreatedAt"
+                    + " OR (p.createdAt = :cursorCreatedAt AND p.id < :cursorId))"
                     + " AND p.deleted = false AND p.blinded = false"
-                    + " ORDER BY p.id DESC";
+                    + " ORDER BY p.createdAt DESC, p.id DESC";
 
     String NATIVE_FILTERS =
             " AND (:category IS NULL OR p.category = :category)"
@@ -33,9 +35,11 @@ public interface JpaSearchRepository extends JpaRepository<Post, Long> {
                     + " AND (:sigungu IS NULL OR p.sigungu = :sigungu)"
                     + " AND (:createdFrom IS NULL OR p.created_at >= :createdFrom)"
                     + " AND (:createdTo IS NULL OR p.created_at < :createdTo)"
-                    + " AND (:cursor IS NULL OR p.id < :cursor)"
+                    + " AND (:cursorCreatedAt IS NULL"
+                    + " OR p.created_at < :cursorCreatedAt"
+                    + " OR (p.created_at = :cursorCreatedAt AND p.id < :cursorId))"
                     + " AND p.deleted = false AND p.blinded = false"
-                    + " ORDER BY p.id DESC";
+                    + " ORDER BY p.created_at DESC, p.id DESC";
 
     @Query(
             value =
@@ -52,7 +56,8 @@ public interface JpaSearchRepository extends JpaRepository<Post, Long> {
             @Param("sigungu") String sigungu,
             @Param("createdFrom") LocalDateTime createdFrom,
             @Param("createdTo") LocalDateTime createdTo,
-            @Param("cursor") Long cursor,
+            @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
+            @Param("cursorId") Long cursorId,
             Pageable pageable);
 
     @Query("SELECT p FROM Post p JOIN FETCH p.member WHERE 1 = 1" + FILTERS)
@@ -64,6 +69,7 @@ public interface JpaSearchRepository extends JpaRepository<Post, Long> {
             @Param("sigungu") String sigungu,
             @Param("createdFrom") LocalDateTime createdFrom,
             @Param("createdTo") LocalDateTime createdTo,
-            @Param("cursor") Long cursor,
+            @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
+            @Param("cursorId") Long cursorId,
             Pageable pageable);
 }

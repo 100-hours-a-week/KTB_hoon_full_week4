@@ -29,7 +29,8 @@ public class JpaSearchRepositoryAdapter implements SearchRepository {
                     cond.sigungu(),
                     cond.createdFrom(),
                     cond.createdTo(),
-                    cond.cursor(),
+                    cond.cursorCreatedAt(),
+                    cond.cursorId(),
                     pageable);
         }
         return jpaSearchRepository.searchActivePostPage(
@@ -41,7 +42,8 @@ public class JpaSearchRepositoryAdapter implements SearchRepository {
                 cond.sigungu(),
                 cond.createdFrom(),
                 cond.createdTo(),
-                cond.cursor(),
+                cond.cursorCreatedAt(),
+                cond.cursorId(),
                 pageable);
     }
 

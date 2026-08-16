@@ -6,6 +6,7 @@ import kakao.bootcamp.fullstack.api.domain.member.MemberErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
 import kakao.bootcamp.fullstack.api.domain.post.PostCategory;
 import kakao.bootcamp.fullstack.api.domain.post.RecruitStatus;
+import kakao.bootcamp.fullstack.api.domain.search.SearchCursor;
 import kakao.bootcamp.fullstack.api.domain.search.SearchErrorCode;
 import kakao.bootcamp.fullstack.api.dto.response.PostSummaryPageResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
@@ -35,10 +36,11 @@ public class SearchService {
             String sigungu,
             LocalDate from,
             LocalDate to,
-            Long cursor,
+            String cursor,
             Long size) {
         loadMemberOrThrow(memberId);
         checkDateRange(from, to);
+        SearchCursor searchCursor = decodeCursor(cursor);
         PostSearchCond cond =
                 new PostSearchCond(
                         blankToNull(keyword),
@@ -49,9 +51,14 @@ public class SearchService {
                         blankToNull(sigungu),
                         startOfDay(from),
                         startOfNextDay(to),
-                        cursor,
+                        searchCursor == null ? null : searchCursor.createdAt(),
+                        searchCursor == null ? null : searchCursor.id(),
                         size + 1);
         return PostSummaryPageResDto.of(searchRepository.searchPostPage(cond), size);
+    }
+
+    private SearchCursor decodeCursor(String cursor) {
+        return blankToNull(cursor) == null ? null : SearchCursor.decode(cursor.trim());
     }
 
     private void checkDateRange(LocalDate from, LocalDate to) {

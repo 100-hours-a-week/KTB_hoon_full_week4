@@ -62,7 +62,7 @@ assertThatExceptionOfType(UnauthorizedException.class)
 
 **서비스/도메인 유닛 테스트는 Mockito 목이 아니라 손으로 쓴 fake로 포트를 구현한다**. 컨테이너 없이 `new XxxService(...)`로 조립한다.
 
-- fake는 `.../<domain>/fake/`에 두고, 리포지토리 **포트 인터페이스를 직접 구현**한다.
+- fake는 `.../<domain>/fake/`에 두고, 리포지토리 **포트 인터페이스를 직접 구현**한다. 도메인에 매이지 않는 공용 더블(`MutableClock`, `FakeTicker`)만 `.../global/fake/`에 둔다.
 - **소프트삭제/active 필터링을 fake 안에서 재현**한다 (`.filter(e -> !e.isDeleted())`). 프로덕션 인메모리 구현(`InMemoryXxxRepository`)이 그대로 참고 원본이 된다.
 - 상태를 재사용한다면 `clear()` 헬퍼를 제공한다. (예: `FakeMemberRepository`)
 - **순수 로직 협력자(암호화·해싱·생성기 등)는 fake 대신 실제 인스턴스를 쓴다.** 예: `RefreshTokenGenerator`, `RefreshTokenHasher`는 `new`로 실제 객체를 넣어 raw↔hash 왕복이 실제로 맞물리게 한다.
@@ -123,6 +123,34 @@ public class RefreshTokenRepositoryTest {
 - `revoked`(상태 플래그)와 `deleted`(소프트삭제)는 별개다 — revoke돼도 삭제되지 않았으면 여전히 조회되어야 한다.
 
 참고: `src/test/.../member/MemberRepositoryTest.java`, `src/test/.../auth/RefreshTokenRepositoryTest.java`.
+
+## 시간 기반 만료 테스트 — `Ticker` 주입
+
+Caffeine 블랙리스트의 만료를 검증하려고 `Thread.sleep(600_000)`을 할 수는 없으므로,
+**캐시가 시간을 읽는 통로인 `Ticker`를 생성자로 주입**해 시간을 앞당긴다.
+
+```java
+ticker = new FakeTicker();
+sessionBlacklist = new CaffeineSessionBlacklist(ticker, MAX_SIZE);
+sessionBlacklist.add("family-1", System.currentTimeMillis() + 600_000);
+
+ticker.advance(Duration.ofSeconds(599));   // 만료 직전
+assertThat(sessionBlacklist.exists("family-1")).isTrue();
+ticker.advance(Duration.ofSeconds(2));     // 만료 직후
+assertThat(sessionBlacklist.exists("family-1")).isFalse();
+```
+
+- **경계에서 `advance(TTL)`로 딱 맞추지 않는다.** 등록과 `advance` 사이의 실제 경과 시간(수 ms)이
+  TTL에서 이미 빠져 있어 플래키해진다. 앞뒤로 1초씩 여유를 둔다.
+- `removalListener`는 비동기(`ForkJoinPool.commonPool`)라, 만료 로그나 사용량 경보를 단언할 때는
+  Awaitility(`await().atMost(...).untilAsserted(...)`)로 기다린다.
+- 사용량 경보를 검증하려면 상한을 채워야 하므로 시드 생성자로 `maxSize`를 낮춘다(실제 값은 100,000).
+
+동작 원리(왜 ticker만 바꿔도 되는지, Scheduler·타이머 휠이 어떻게 얽히는지)는
+`docs/rtr/caffeine-blacklist.md` 참고.
+
+참고: `src/test/.../global/security/jwt/CaffeineSessionBlacklistTest.java`,
+`CaffeineTokenBlacklistTest.java`, fake는 `.../global/fake/FakeTicker.java`.
 
 ## 프로파일 빈 배선 (중요)
 

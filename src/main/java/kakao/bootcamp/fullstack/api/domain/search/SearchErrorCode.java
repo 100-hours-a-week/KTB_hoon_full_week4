@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum SearchErrorCode implements BaseCode {
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "INVALID_DATE_RANGE", "invalid_date_range"),
+    INVALID_CURSOR(HttpStatus.BAD_REQUEST, "INVALID_CURSOR", "invalid_cursor"),
     ;
 
     private final HttpStatus httpStatus;

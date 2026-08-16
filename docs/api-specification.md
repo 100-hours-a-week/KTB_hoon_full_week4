@@ -389,11 +389,11 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | sigungu | string | X | - | 시군구 **완전 일치**. 예: `강남구` |
 | from | date | X | - | 작성일 시작(`yyyy-MM-dd`). **해당 일자 00:00부터 포함** |
 | to | date | X | - | 작성일 끝(`yyyy-MM-dd`). **해당 일자를 포함**(내부적으로 다음날 00:00 미만) |
-| cursor | Long | X | - | 직전 페이지의 `nextCursor`. 첫 페이지는 생략 |
+| cursor | string | X | - | 직전 페이지의 `nextCursor`를 **그대로** 전달. 첫 페이지는 생략. 내부 형식은 서버 구현이며 해석·가공하지 말 것 |
 | size | Long | X | 10 | 한 페이지 항목 수. **1 이상 10 이하** |
 
 - 여러 조건을 함께 주면 **AND로 결합**된다.
-- 최신순(`id DESC`) 정렬이며, `cursor`보다 작은 id부터 조회한다.
+- **최신순(작성일 내림차순) 정렬**이며, 작성일이 같으면 `postId` 내림차순이다. `cursor`가 가리키는 글 **다음**부터 조회한다.
 - `sido`/`sigungu`는 공백만 있으면 미지정으로 취급한다.
 - **블라인드 게시글(`isBlind = true`)은 결과에서 제외된다.**
   본문이 가려진 글이 조건에 걸리면 매칭됐다는 사실 자체가 가려진 내용을 노출하기 때문이다.
@@ -432,7 +432,7 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
         "createdAt": "2026-06-26T10:30:00"
       }
     ],
-    "nextCursor": 12,
+    "nextCursor": "MjAyNi0wNi0yNlQxMDozMDowMF8xMg",
     "hasNext": true
   }
 }
@@ -441,8 +441,11 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | 필드 | 설명 |
 |---|---|
 | data | 모집글 요약 목록 |
-| nextCursor | 다음 페이지 요청에 쓸 커서. `hasNext`가 false면 `null` |
+| nextCursor | 다음 페이지 요청의 `cursor`에 **그대로** 실을 문자열. `hasNext`가 false면 `null` |
 | hasNext | 다음 페이지 존재 여부 |
+
+> ⚠️ **`nextCursor`는 불투명(opaque) 값이다.** 내부 형식은 서버 사정으로 예고 없이 바뀔 수 있으므로,
+> 프론트는 이 값을 파싱하거나 계산에 쓰지 말고 **받은 그대로 되돌려주기만** 한다.
 
 | 항목 필드 | 타입 | 설명 |
 |---|---|---|
@@ -461,7 +464,8 @@ AT가 만료되어 401 `INVALID_TOKEN`을 받으면 이 API로 새 AT를 받고 
 | 400  | `INVALID_PAGE_SIZE`       | `size`가 1~10 범위 밖 |
 | 400  | `INVALID_DATE_RANGE`      | `from`이 `to`보다 뒤 |
 | 400  | `INVALID_ENUM_VALUE`      | 정의되지 않은 `category`/`meetingType`/`recruitStatus` |
-| 400  | `INVALID_PARAMETER_TYPE`  | `cursor`가 숫자가 아니거나 날짜 형식이 `yyyy-MM-dd`가 아님 |
+| 400  | `INVALID_CURSOR`          | `cursor`가 서버가 발급한 형식이 아님(직접 만들거나 가공한 경우) |
+| 400  | `INVALID_PARAMETER_TYPE`  | 날짜 형식이 `yyyy-MM-dd`가 아님 |
 
 > ⚠️ **`GET /api/v1/posts/search`는 더 이상 존재하지 않는다.** 호출하면 `search`가 3.2의
 > `postId`로 해석되어 **404가 아니라 400 `INVALID_PARAMETER_TYPE`** 이 반환되므로 주의할 것.
