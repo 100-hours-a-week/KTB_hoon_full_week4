@@ -41,7 +41,7 @@ public class SearchController {
                     LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                     LocalDate to,
-            @RequestParam(required = false) Long cursor,
+            @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "10")
                     @Min(value = 1, message = ValidationCode.INVALID_PAGE_SIZE)
                     @Max(value = 10, message = ValidationCode.INVALID_PAGE_SIZE)

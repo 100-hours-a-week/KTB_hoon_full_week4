@@ -24,7 +24,10 @@ public class InMemorySearchRepository implements SearchRepository {
         return inMemoryPostRepository.findAllActive().stream()
                 .filter(post -> !post.isBlinded())
                 .filter(matches(cond))
-                .sorted(Comparator.comparingLong(Post::getId).reversed())
+                .sorted(
+                        Comparator.comparing(Post::getCreatedAt)
+                                .thenComparing(Post::getId)
+                                .reversed())
                 .limit(cond.size())
                 .toList();
     }
@@ -46,7 +49,17 @@ public class InMemorySearchRepository implements SearchRepository {
                                 || !post.getCreatedAt().isBefore(cond.createdFrom()))
                         && (cond.createdTo() == null
                                 || post.getCreatedAt().isBefore(cond.createdTo()))
-                        && (cond.cursor() == null || post.getId() < cond.cursor());
+                        && afterCursor(cond, post);
+    }
+
+    private boolean afterCursor(PostSearchCond cond, Post post) {
+        if (cond.cursorCreatedAt() == null) {
+            return true;
+        }
+        if (post.getCreatedAt().isBefore(cond.cursorCreatedAt())) {
+            return true;
+        }
+        return post.getCreatedAt().equals(cond.cursorCreatedAt()) && post.getId() < cond.cursorId();
     }
 
     private String sido(Post post) {

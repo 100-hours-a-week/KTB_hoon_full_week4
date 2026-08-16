@@ -14,5 +14,6 @@ public record PostSearchCond(
         String sigungu,
         LocalDateTime createdFrom,
         LocalDateTime createdTo,
-        Long cursor,
+        LocalDateTime cursorCreatedAt,
+        Long cursorId,
         Long size) {}
