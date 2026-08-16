@@ -1,10 +1,12 @@
 package kakao.bootcamp.fullstack.post.fixture;
 
+import java.time.LocalDateTime;
 import kakao.bootcamp.fullstack.api.domain.member.Member;
 import kakao.bootcamp.fullstack.api.domain.post.Address;
 import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post.PostCategory;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class PostFixture {
 
@@ -40,6 +42,12 @@ public class PostFixture {
     public static Post post(Long id, Member writer) {
         Post post = post(writer);
         post.assignId(id);
+        return post;
+    }
+
+    public static Post post(Long id, Member writer, LocalDateTime createdAt) {
+        Post post = post(id, writer);
+        ReflectionTestUtils.setField(post, "createdAt", createdAt);
         return post;
     }
 
