@@ -95,9 +95,18 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
   인덱스(`bench/sql/06_fulltext_index.sql`)에 `MATCH ... AGAINST(... IN BOOLEAN MODE)` 네이티브 쿼리(`searchActivePostPage`)를,
   없으면 JPQL(`findActivePostPage`)을 탄다 — 키워드 없는 요청까지 FULLTEXT 매치 비용을 치르지 않기 위한 분리.
   네이티브 쿼리는 JPQL과 달리 enum을 못 읽어 category/meetingType/recruitStatus를 문자열로 변환해 넘기고,
-  Pageable에 Sort를 싣지 않는다(임의 SQL에 안전하게 ORDER BY를 주입할 수 없음). 날짜 범위 조건에는
-  `posts`에 `(created_at, deleted, blinded)` 복합 인덱스가 있지만 넓은 range에서는 옵티마이저가 힌트 없이
-  자연 선택하지 않는 것이 확인됐다 — 실험 기록은 `docs/search/created-at-index-experiment.md` 참고.
+  Pageable에 Sort를 싣지 않는다(임의 SQL에 안전하게 ORDER BY를 주입할 수 없음).
+  날짜 범위 조건은 `posts`의 `(created_at, deleted, blinded)` 인덱스가 받는다. 예전 `ORDER BY id DESC`
+  시절엔 옵티마이저가 이 인덱스를 안 골라 11건 뽑는 데 777,756행을 읽었는데(4,944ms), 정렬 축을 맞추면서
+  1.24ms 로 해소됐다 — `docs/search/date-range-search-troubleshooting.md`.
+- **검색에 남아 있는 성능 함정 2개** (둘 다 **미해결**. 검색을 건드리기 전에 읽을 것):
+  - **키워드 검색은 매치가 많은 키워드에서 34초**가 걸린다. FULLTEXT는 정렬 개념이 없어(`SHOW INDEX`의 `Collation`이 `NULL`)
+    `ORDER BY`가 붙으면 매치 전량을 받아야 하고, `LIMIT` 축소·필터 추가·커서 범위·날짜 결합·`FORCE INDEX`(→ `ERROR 1191`)
+    **여섯 가지 우회가 전부 막혔다**. 매치가 3,478건 이하면 0.15초로 멀쩡하다. `docs/search/fulltext-search-experiment.md`.
+  - **결과가 0건인 필터 조합은 첫 페이지에서 100만 행을 훑는다**(8.7초). `LIMIT`을 못 채워 끝까지 걷기 때문이다.
+    대표적으로 `meetingType=ONLINE` + `sido`(온라인 모임은 주소가 `null`이라 결과가 나올 수 없다).
+    `category`/`sido` 등 필터 컬럼에는 인덱스가 하나도 없어 인덱스를 걸으며 행 단위로 버린다.
+    `docs/search/date-range-search-troubleshooting.md` 12절.
 - **마스킹**: 블라인드/탈퇴 치환은 엔티티가 아니라 **응답 DTO의 `from(...)`에서** 상수로 처리(`BLINDED_POST`/`BLINDED_COMMENT`/`UNKNOWN_WRITER`) + `isBlind` 노출.
 - **시간은 주입받는다**: 벽시계가 필요한 컴포넌트(`Caffeine*Blacklist`, `InMemoryPostRateLimiter`)는 `System.currentTimeMillis()`를 직접 부르지 않고 `ClockConfig`의 `Clock` 빈을 생성자로 받는다. Caffeine 의 **만료 판정만은 `Clock` 이 아니라 `Ticker`** 를 통하므로 둘 다 주입 대상이다. 테스트 fake는 `global/fake/MutableClock`·`FakeTicker`.
 - 설정 클래스는 `global/config/`(Security/Jwt/Cors/Jpa/Web/Clock). **스케줄러는 없다** — `@EnableScheduling`/`@Scheduled`를 쓰는 코드가 한 곳도 없고, 만료·정리는 전부 캐시의 per-entry TTL 이나 요청 시점 계산으로 처리한다.
@@ -125,7 +134,6 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 | `search/date-range-search-troubleshooting.md` | 날짜 범위 검색 6.4초 → `ORDER BY` 수정 → 커서 회귀 → 복합 커서까지의 기록 |
 | `cicd.md` | CI/CD 워크플로우 스텝 + 인프라 구성 |
 | `postman-test-data.md` | 수동 테스트용 요청/데이터 |
-| `backlog.md` | 로컬 전용 작업 목록 — **커밋·푸시하지 않는다** |
 
 ## 배포
 
