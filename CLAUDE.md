@@ -100,9 +100,14 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
   시절엔 옵티마이저가 이 인덱스를 안 골라 11건 뽑는 데 777,756행을 읽었는데(4,944ms), 정렬 축을 맞추면서
   1.24ms 로 해소됐다 — `docs/search/date-range-search-troubleshooting.md`.
 - **검색에 남아 있는 성능 함정 2개** (둘 다 **미해결**. 검색을 건드리기 전에 읽을 것):
-  - **키워드 검색은 매치가 많은 키워드에서 34초**가 걸린다. FULLTEXT는 정렬 개념이 없어(`SHOW INDEX`의 `Collation`이 `NULL`)
-    `ORDER BY`가 붙으면 매치 전량을 받아야 하고, `LIMIT` 축소·필터 추가·커서 범위·날짜 결합·`FORCE INDEX`(→ `ERROR 1191`)
-    **여섯 가지 우회가 전부 막혔다**. 매치가 3,478건 이하면 0.15초로 멀쩡하다. `docs/search/fulltext-search-experiment.md`.
+  - **키워드 검색은 매치가 많으면 수십 초**다. `EXPLAIN ANALYZE` 를 보면 FT 노드의 `rows` 가
+    **언제나 매치 전량**이고 `Limit: 11` 이 아래로 전파되지 않는다 — 이게 근거다.
+    (`포핸드` 3,478건 0.07~1.26초 / `복식` 49,685건 22.97~30.50초 / `라켓` 69,237건 32.61~41.94초 /
+    `테니스` 41,679건 33.19~51.80초 / 매치 0건 즉시). `LIMIT` 축소·필터 추가·커서 범위·날짜 결합·
+    `FORCE INDEX`(→ `ERROR 1191`) **일곱 가지 우회가 전부 막혔고**, 행 페치도 원인이 아니다.
+    측정할 땐 **`ORDER BY`까지 붙인 운영 쿼리 형태로, 반복해서** 잴 것 — 빼고 재다 한 번,
+    한 번씩만 재다 또 한 번 결론이 뒤집혔다(같은 쿼리가 22.97~30.50초로 흔들린다).
+    `docs/search/fulltext-search-experiment.md`.
   - **결과가 0건인 필터 조합은 첫 페이지에서 100만 행을 훑는다**(8.7초). `LIMIT`을 못 채워 끝까지 걷기 때문이다.
     대표적으로 `meetingType=ONLINE` + `sido`(온라인 모임은 주소가 `null`이라 결과가 나올 수 없다).
     `category`/`sido` 등 필터 컬럼에는 인덱스가 하나도 없어 인덱스를 걸으며 행 단위로 버린다.
@@ -130,7 +135,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 | `testing-conventions.md` | fake 조립·`@Nested`·`Ticker` 주입 등 테스트 규칙 |
 | `rtr/caffeine-blacklist.md` | 블랙리스트 만료 원리(Ticker/타이머 휠/Scheduler)와 테스트 방법 |
 | `search/created-at-index-experiment.md` | `(created_at, deleted, blinded)` 인덱스 실험 기록 + 운영 재현 |
-| `search/fulltext-search-experiment.md` | 키워드 검색 34초의 원인(`ORDER BY` 가 FT 조기종료를 막음) 측정 기록 |
+| `search/fulltext-search-experiment.md` | 키워드 검색이 느린 원인(phrase 검증 + `ORDER BY`) 측정 기록 |
 | `search/date-range-search-troubleshooting.md` | 날짜 범위 검색 6.4초 → `ORDER BY` 수정 → 커서 회귀 → 복합 커서까지의 기록 |
 | `cicd.md` | CI/CD 워크플로우 스텝 + 인프라 구성 |
 | `postman-test-data.md` | 수동 테스트용 요청/데이터 |
