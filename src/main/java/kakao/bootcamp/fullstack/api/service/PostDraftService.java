@@ -8,6 +8,7 @@ import kakao.bootcamp.fullstack.api.domain.post.MeetingType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraft;
 import kakao.bootcamp.fullstack.api.domain.post_draft.PostDraftErrorCode;
+import kakao.bootcamp.fullstack.api.domain.search.PostSearchOutbox;
 import kakao.bootcamp.fullstack.api.dto.request.PostCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostDraftCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostDraftUpdateReqDto;
@@ -18,7 +19,7 @@ import kakao.bootcamp.fullstack.api.dto.response.PostDraftsSummaryResDto;
 import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import kakao.bootcamp.fullstack.api.repository.post_draft.PostDraftRepository;
-import kakao.bootcamp.fullstack.api.repository.search.PostSearchIndex;
+import kakao.bootcamp.fullstack.api.repository.search.PostSearchOutboxRepository;
 import kakao.bootcamp.fullstack.global.exception.ForbiddenException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import kakao.bootcamp.fullstack.global.exception.UnauthorizedException;
@@ -34,7 +35,7 @@ public class PostDraftService {
     private final PostDraftRepository postDraftRepository;
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
-    private final PostSearchIndex postSearchIndex;
+    private final PostSearchOutboxRepository postSearchOutboxRepository;
 
     public List<PostDraftsSummaryResDto> getPostDrafts(Long memberId) {
         Member member = loadMemberOrThrow(memberId);
@@ -88,7 +89,7 @@ public class PostDraftService {
                         request.placeName(),
                         request.capacity());
         postRepository.save(post);
-        postSearchIndex.index(post);
+        postSearchOutboxRepository.save(PostSearchOutbox.create(post.getId()));
         postDraft.publish();
         return PostCreateResDto.from(post);
     }

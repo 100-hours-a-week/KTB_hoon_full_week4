@@ -15,6 +15,7 @@ import kakao.bootcamp.fullstack.api.repository.search.PostSearchIndex;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 @Slf4j
@@ -54,19 +55,16 @@ public class OpenSearchPostSearchIndex implements PostSearchIndex {
         return ids;
     }
 
+    // index/delete 는 예외를 그대로 던진다. 실패를 알아야 아웃박스 폴러가 재시도한다.
     @Override
     public void index(Post post) {
-        try {
-            restClient
-                    .put()
-                    .uri("/{index}/_doc/{id}", indexName, post.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(buildDocument(post).toString())
-                    .retrieve()
-                    .toBodilessEntity();
-        } catch (RuntimeException e) {
-            log.warn("OpenSearch 색인 실패: postId={}", post.getId(), e);
-        }
+        restClient
+                .put()
+                .uri("/{index}/_doc/{id}", indexName, post.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(buildDocument(post).toString())
+                .retrieve()
+                .toBodilessEntity();
     }
 
     @Override
@@ -77,8 +75,8 @@ public class OpenSearchPostSearchIndex implements PostSearchIndex {
                     .uri("/{index}/_doc/{id}", indexName, postId)
                     .retrieve()
                     .toBodilessEntity();
-        } catch (RuntimeException e) {
-            log.warn("OpenSearch 색인 삭제 실패: postId={}", postId, e);
+        } catch (HttpClientErrorException.NotFound e) {
+            // 색인에 애초에 없던 문서 — 삭제 완료와 같은 상태이므로 성공으로 본다
         }
     }
 

@@ -3,8 +3,9 @@ package kakao.bootcamp.fullstack.api.service.report;
 import kakao.bootcamp.fullstack.api.domain.common.TargetType;
 import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
+import kakao.bootcamp.fullstack.api.domain.search.PostSearchOutbox;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
-import kakao.bootcamp.fullstack.api.repository.search.PostSearchIndex;
+import kakao.bootcamp.fullstack.api.repository.search.PostSearchOutboxRepository;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class PostReportHandler implements ReportTargetHandler {
 
     private final PostRepository postRepository;
-    private final PostSearchIndex postSearchIndex;
+    private final PostSearchOutboxRepository postSearchOutboxRepository;
 
     @Override
     public TargetType getTargetType() {
@@ -32,7 +33,7 @@ public class PostReportHandler implements ReportTargetHandler {
         post.increaseReportCount();
         postRepository.save(post);
         if (post.isBlinded()) {
-            postSearchIndex.index(post);
+            postSearchOutboxRepository.save(PostSearchOutbox.create(post.getId()));
         }
     }
 

@@ -11,6 +11,8 @@ public class FakePostSearchIndex implements PostSearchIndex {
     private final List<Post> indexedPosts = new ArrayList<>();
     private final List<Long> deletedIds = new ArrayList<>();
     private List<Long> searchResultIds = List.of();
+    private RuntimeException failure;
+    private int indexAttempts = 0;
 
     @Override
     public boolean isEnabled() {
@@ -24,16 +26,35 @@ public class FakePostSearchIndex implements PostSearchIndex {
 
     @Override
     public void index(Post post) {
+        indexAttempts++;
+        if (failure != null) {
+            throw failure;
+        }
         indexedPosts.add(post);
     }
 
     @Override
     public void delete(Long postId) {
+        if (failure != null) {
+            throw failure;
+        }
         deletedIds.add(postId);
     }
 
     public void givenSearchResultIds(List<Long> ids) {
         this.searchResultIds = ids;
+    }
+
+    public void failWith(RuntimeException failure) {
+        this.failure = failure;
+    }
+
+    public void recover() {
+        this.failure = null;
+    }
+
+    public int indexAttempts() {
+        return indexAttempts;
     }
 
     public List<Post> indexedPosts() {
