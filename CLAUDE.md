@@ -95,10 +95,15 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
   (`PostSearchIndex` 포트 — 색인에서 최신순 id만 받아 MySQL `JOIN FETCH`로 본문을 채움), 없으면 JPQL(`findActivePostPage`).
   OpenSearch 호출이 실패하거나 `opensearch.enabled=false`(test/inmemory 기본)면 예전 `FULLTEXT ... MATCH AGAINST`
   네이티브 쿼리(`searchActivePostPage`)로 폴백한다. 스위치는 prod 에선 EC2 `~/app/.env` 의 `OPENSEARCH_ENABLED`.
-  **색인에 실리는 필드(제목·본문·category/meetingType/recruitStatus/sido/sigungu·deleted/blinded)를 바꾸면
-  동기화 호출 6곳(생성·발행·수정·마감·삭제·블라인드)과 색인 매핑(`bench/opensearch/01_create_index.sh`)·
-  재적재(`03_initial_load_ec2.sh`)까지 같이 챙겨야 한다.** 새 글은 refresh 주기 때문에
-  약 1초 뒤에 검색에 노출된다(목록·상세는 MySQL이라 즉시).
+  **색인 동기화는 트랜잭셔널 아웃박스**: 글이 바뀌는 6곳(생성·발행·수정·마감·삭제·블라인드)이
+  `post_search_outbox` 에 post_id 만 저장하고(게시글과 같은 트랜잭션), `PostSearchOutboxProcessor`
+  폴러(1초 주기)가 처리 시점의 DB 상태를 재조회해 색인에 upsert/delete 한다. 실패는 지수 백오프
+  재시도, 20회 초과 시 FAILED 격리 — `docs/search/search-index-outbox.md`.
+  **색인에 실리는 필드(제목·본문·category/meetingType/recruitStatus/sido/sigungu·deleted/blinded)를
+  바꾸면 색인 매핑(`bench/opensearch/01_create_index.sh`)·재적재(`03_initial_load_ec2.sh`)까지 같이
+  챙겨야 한다.** 새 글은 폴링(≤1초) + refresh(1초) 때문에 최대 ~2초 뒤에 검색에 노출된다
+  (목록·상세는 MySQL이라 즉시). ⚠️ `post_search_outbox` DDL(`bench/sql/08_post_search_outbox.sql`)은
+  **배포 전에 RDS 에 먼저** 적용해야 한다 — 테이블 없이 새 코드가 뜨면 글쓰기가 500 이다.
   네이티브 폴백 쿼리는 JPQL과 달리 enum을 못 읽어 category/meetingType/recruitStatus를 문자열로 변환해 넘기고,
   Pageable에 Sort를 싣지 않는다(임의 SQL에 안전하게 ORDER BY를 주입할 수 없음).
   날짜 범위 조건은 `posts`의 `(created_at, deleted, blinded)` 인덱스가 받는다. 예전 `ORDER BY id DESC`
@@ -115,7 +120,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
     `docs/search/date-range-search-troubleshooting.md` 12절.
 - **마스킹**: 블라인드/탈퇴 치환은 엔티티가 아니라 **응답 DTO의 `from(...)`에서** 상수로 처리(`BLINDED_POST`/`BLINDED_COMMENT`/`UNKNOWN_WRITER`) + `isBlind` 노출.
 - **시간은 주입받는다**: 벽시계가 필요한 컴포넌트(`Caffeine*Blacklist`, `InMemoryPostRateLimiter`)는 `System.currentTimeMillis()`를 직접 부르지 않고 `ClockConfig`의 `Clock` 빈을 생성자로 받는다. Caffeine 의 **만료 판정만은 `Clock` 이 아니라 `Ticker`** 를 통하므로 둘 다 주입 대상이다. 테스트 fake는 `global/fake/MutableClock`·`FakeTicker`.
-- 설정 클래스는 `global/config/`(Security/Jwt/Cors/Jpa/Web/Clock). **스케줄러는 없다** — `@EnableScheduling`/`@Scheduled`를 쓰는 코드가 한 곳도 없고, 만료·정리는 전부 캐시의 per-entry TTL 이나 요청 시점 계산으로 처리한다.
+- 설정 클래스는 `global/config/`(Security/Jwt/Cors/Jpa/Web/Clock/Scheduling/OpenSearch). **스케줄러는 색인 아웃박스 폴러 한 곳뿐이다**(`PostSearchOutboxProcessor`). 원래 블랙리스트 만료 정리에 쓰던 스케줄러는 Caffeine per-entry TTL 로 대체되어 사라졌고, 만료·정리는 지금도 TTL 이나 요청 시점 계산으로 처리한다 — 스케줄러는 "쌓인 일 처리"(작업 큐)에만 쓴다.
 
 ## 테스트 컨벤션
 
@@ -138,6 +143,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 | `search/created-at-index-experiment.md` | `(created_at, deleted, blinded)` 인덱스 실험 기록 + 운영 재현 |
 | `search/fulltext-search-experiment.md` | 키워드 검색이 느린 원인(phrase 검증 + `ORDER BY`) 측정 기록 |
 | `search/opensearch-keyword-search.md` | OpenSearch 도입 기록 — 원리, 로컬 검증(1단계), 연동 설계(2단계), 재현 절차 |
+| `search/search-index-outbox.md` | 색인 동기화 아웃박스 전환 — 구멍 3개, id-only 설계, 장애 주입 검증, 운영 반영 순서 |
 | `search/date-range-search-troubleshooting.md` | 날짜 범위 검색 6.4초 → `ORDER BY` 수정 → 커서 회귀 → 복합 커서까지의 기록 |
 | `cicd.md` | CI/CD 워크플로우 스텝 + 인프라 구성 |
 | `postman-test-data.md` | 수동 테스트용 요청/데이터 |
