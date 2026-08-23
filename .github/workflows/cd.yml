@@ -78,4 +78,6 @@ jobs:
             export BACKEND_TAG="$TAG"
             docker compose pull backend
             docker compose up -d backend
-            docker image prune -f
+            # SHA 태그 이미지가 배포마다 쌓여 디스크를 채우므로(-f 는 태그 없는 것만 지움)
+            # 미사용 + 7일 지난 이미지까지 정리한다. 최근 롤백 후보는 남는다.
+            docker image prune -af --filter "until=168h"

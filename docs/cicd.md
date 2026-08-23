@@ -74,8 +74,12 @@ CI 가 성공해야만 CD 가 이어진다.
      export BACKEND_TAG="$TAG"         # compose 의 image 태그를 이번 커밋 SHA 로 고정 → 불변 배포
      docker compose pull backend
      docker compose up -d backend      # backend 컨테이너만 교체
-     docker image prune -f
+     docker image prune -af --filter "until=168h"
      ```
+     이미지 정리가 `-af --filter until=168h` 인 이유: CD 는 배포마다 `:<SHA>` 태그 이미지를
+     만드는데 `-f`(태그 없는 것만)로는 이게 안 지워져 디스크가 찬다. 실제로 6.7GB 루트 볼륨이
+     backend 27개 + frontend 15개 이미지로 가득 찬 적이 있다(2026-08-22). `-a` 는 실행 중인
+     컨테이너가 쓰는 이미지는 건드리지 않고, 7일 필터로 최근 롤백 후보는 남긴다.
      배포 디렉터리는 하드코딩이 아니라 워크플로우 상단 `env.APP_DIR` 로 빠져 있다.
 
 ## 3. 백엔드 Dockerfile (멀티스테이지)

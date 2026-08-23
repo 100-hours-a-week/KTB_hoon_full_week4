@@ -60,6 +60,11 @@ public interface JpaSearchRepository extends JpaRepository<Post, Long> {
             @Param("cursorId") Long cursorId,
             Pageable pageable);
 
+    @Query(
+            "SELECT p FROM Post p JOIN FETCH p.member"
+                    + " WHERE p.id IN :ids AND p.deleted = false AND p.blinded = false")
+    List<Post> findActiveWithMemberByIdIn(@Param("ids") List<Long> ids);
+
     @Query("SELECT p FROM Post p JOIN FETCH p.member WHERE 1 = 1" + FILTERS)
     List<Post> findActivePostPage(
             @Param("category") PostCategory category,

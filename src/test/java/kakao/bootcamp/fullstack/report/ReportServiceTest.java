@@ -28,6 +28,7 @@ import kakao.bootcamp.fullstack.member.fixture.MemberFixture;
 import kakao.bootcamp.fullstack.post.fake.FakePostRepository;
 import kakao.bootcamp.fullstack.post.fixture.PostFixture;
 import kakao.bootcamp.fullstack.report.fake.FakeReportRepository;
+import kakao.bootcamp.fullstack.search.fake.FakePostSearchIndex;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -45,6 +46,7 @@ public class ReportServiceTest {
     private final FakeMemberRepository memberRepository = new FakeMemberRepository();
     private final FakePostRepository postRepository = new FakePostRepository();
     private final FakeCommentRepository commentRepository = new FakeCommentRepository();
+    private final FakePostSearchIndex postSearchIndex = new FakePostSearchIndex();
 
     private ReportService reportService;
     private Member writer;
@@ -62,7 +64,7 @@ public class ReportServiceTest {
                         reportRepository,
                         memberRepository,
                         List.of(
-                                new PostReportHandler(postRepository),
+                                new PostReportHandler(postRepository, postSearchIndex),
                                 new CommentReportHandler(commentRepository)));
 
         writer = MemberFixture.activeMember(WRITER_ID);
@@ -198,6 +200,28 @@ public class ReportServiceTest {
             // then
             assertThat(post.getReportCount()).isEqualTo(threshold);
             assertThat(post.isBlinded()).isTrue();
+        }
+
+        @Test
+        @DisplayName("블라인드되는 순간에만 검색 색인에 다시 반영한다")
+        void reindexesOnceWhenBlinded() {
+            // given
+            givenPostBy(writer);
+            long threshold = PostConstants.BLIND_THRESHOLD;
+
+            // when
+            for (long i = 0; i < threshold; i++) {
+                Long reporterId = REPORTER_ID + i;
+                memberRepository.save(
+                        MemberFixture.withEmailAndNickname(
+                                reporterId, "reporter" + i + "@example.com", "리포터" + i));
+                reportService.report(reporterId, reportPost(POST_ID));
+            }
+
+            // then
+            assertThat(postSearchIndex.indexedPosts())
+                    .singleElement()
+                    .satisfies(indexed -> assertThat(indexed.isBlinded()).isTrue());
         }
     }
 }

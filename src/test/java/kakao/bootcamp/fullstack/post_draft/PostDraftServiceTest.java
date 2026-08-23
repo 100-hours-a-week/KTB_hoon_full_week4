@@ -17,6 +17,7 @@ import kakao.bootcamp.fullstack.post.fake.FakePostRepository;
 import kakao.bootcamp.fullstack.post.fixture.dto.PostCreateReqDtoFixture;
 import kakao.bootcamp.fullstack.post_draft.fake.FakePostDraftRepository;
 import kakao.bootcamp.fullstack.post_draft.fixture.PostDraftFixture;
+import kakao.bootcamp.fullstack.search.fake.FakePostSearchIndex;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,6 +33,7 @@ public class PostDraftServiceTest {
     private final FakePostDraftRepository postDraftRepository = new FakePostDraftRepository();
     private final FakeMemberRepository memberRepository = new FakeMemberRepository();
     private final FakePostRepository postRepository = new FakePostRepository();
+    private final FakePostSearchIndex postSearchIndex = new FakePostSearchIndex();
 
     private PostDraftService postDraftService;
     private Member writer;
@@ -43,7 +45,8 @@ public class PostDraftServiceTest {
         postRepository.clear();
 
         postDraftService =
-                new PostDraftService(postDraftRepository, memberRepository, postRepository);
+                new PostDraftService(
+                        postDraftRepository, memberRepository, postRepository, postSearchIndex);
 
         writer = MemberFixture.activeMember(WRITER_ID);
         memberRepository.save(writer);
@@ -81,6 +84,23 @@ public class PostDraftServiceTest {
             // then
             assertThat(postDraft.isPublished()).isTrue();
             assertThat(postRepository.findActiveById(response.postId())).isPresent();
+        }
+
+        @Test
+        @DisplayName("발행하면 새 게시글을 검색 색인에 반영한다")
+        void indexesOnPublish() {
+            // given
+            givenDraft();
+
+            // when
+            PostCreateResDto response =
+                    postDraftService.publishPostDraft(
+                            WRITER_ID, DRAFT_ID, PostCreateReqDtoFixture.valid());
+
+            // then
+            assertThat(postSearchIndex.indexedPosts())
+                    .singleElement()
+                    .satisfies(post -> assertThat(post.getId()).isEqualTo(response.postId()));
         }
 
         @Test
