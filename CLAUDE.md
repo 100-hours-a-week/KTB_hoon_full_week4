@@ -102,8 +102,9 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
   **색인에 실리는 필드(제목·본문·category/meetingType/recruitStatus/sido/sigungu·deleted/blinded)를
   바꾸면 색인 매핑(`bench/opensearch/01_create_index.sh`)·재적재(`03_initial_load_ec2.sh`)까지 같이
   챙겨야 한다.** 새 글은 폴링(≤1초) + refresh(1초) 때문에 최대 ~2초 뒤에 검색에 노출된다
-  (목록·상세는 MySQL이라 즉시). ⚠️ `post_search_outbox` DDL(`bench/sql/08_post_search_outbox.sql`)은
-  **배포 전에 RDS 에 먼저** 적용해야 한다 — 테이블 없이 새 코드가 뜨면 글쓰기가 500 이다.
+  (목록·상세는 MySQL이라 즉시). `post_search_outbox` DDL(`bench/sql/08_post_search_outbox.sql`)은
+  운영 RDS 에 적용돼 있다. ⚠️ 새 환경을 세울 땐 **배포보다 먼저** 이 DDL 을 적용할 것 —
+  테이블 없이 코드가 뜨면 아웃박스 INSERT 가 실패해 글쓰기 전체가 500 이다.
   네이티브 폴백 쿼리는 JPQL과 달리 enum을 못 읽어 category/meetingType/recruitStatus를 문자열로 변환해 넘기고,
   Pageable에 Sort를 싣지 않는다(임의 SQL에 안전하게 ORDER BY를 주입할 수 없음).
   날짜 범위 조건은 `posts`의 `(created_at, deleted, blinded)` 인덱스가 받는다. 예전 `ORDER BY id DESC`
@@ -142,8 +143,8 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 | `rtr/caffeine-blacklist.md` | 블랙리스트 만료 원리(Ticker/타이머 휠/Scheduler)와 테스트 방법 |
 | `search/created-at-index-experiment.md` | `(created_at, deleted, blinded)` 인덱스 실험 기록 + 운영 재현 |
 | `search/fulltext-search-experiment.md` | 키워드 검색이 느린 원인(phrase 검증 + `ORDER BY`) 측정 기록 |
-| `search/opensearch-keyword-search.md` | OpenSearch 도입 기록 — 원리, 로컬 검증(1단계), 연동 설계(2단계), 재현 절차 |
-| `search/search-index-outbox.md` | 색인 동기화 아웃박스 전환 — 구멍 3개, id-only 설계, 장애 주입 검증, 운영 반영 순서 |
+| `search/opensearch-keyword-search.md` | 키워드 검색 OpenSearch 전환 — 배경·결정·색인 설계·검증·운영 측정 |
+| `search/search-index-outbox.md` | 색인 동기화 아웃박스 전환 — 결함 3개, id-only 설계, 장애 주입 검증 |
 | `search/date-range-search-troubleshooting.md` | 날짜 범위 검색 6.4초 → `ORDER BY` 수정 → 커서 회귀 → 복합 커서까지의 기록 |
 | `cicd.md` | CI/CD 워크플로우 스텝 + 인프라 구성 |
 | `postman-test-data.md` | 수동 테스트용 요청/데이터 |

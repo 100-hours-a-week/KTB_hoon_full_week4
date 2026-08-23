@@ -34,59 +34,6 @@ Controller-Service-Repository(포트/어댑터) 패턴으로 구현했으며, �
 
 - [링크](https://drive.google.com/file/d/1CeZ0o2Df8Yvj8D9igZE8vzPVAVCOf9M2/view?usp=drive_link)
 
-### 폴더 구조
-
-<details>
-<summary>폴더 구조 보기/숨기기</summary>
-
-```
-kakao.bootcamp.fullstack
-├── api
-│   ├── controller                 # REST 컨트롤러
-│   ├── domain                     # 엔티티 + 도메인별 에러코드
-│   │   ├── auth
-│   │   ├── comment
-│   │   ├── common
-│   │   ├── edit_revision
-│   │   ├── member
-│   │   ├── post
-│   │   ├── post_draft
-│   │   ├── report
-│   │   └── search
-│   ├── dto
-│   │   ├── request
-│   │   └── response
-│   ├── repository                 # 포트 인터페이스 + jpa/inmemory 구현
-│   │   ├── auth        {jpa, inmemory}
-│   │   ├── comment      {jpa, inmemory}
-│   │   ├── edit_revision{jpa, inmemory}
-│   │   ├── member       {jpa, inmemory}
-│   │   ├── post         {jpa, inmemory}
-│   │   ├── post_draft   {jpa, inmemory}
-│   │   ├── report       {jpa, inmemory}
-│   │   └── search       {jpa, inmemory}
-│   └── service
-│       └── report
-└── global
-    ├── config                     # Security/Jwt/Cors/Jpa/Web/Clock
-    ├── constants
-    ├── exception                  # BusinessException 계층 + GlobalExceptionHandler
-    ├── generator
-    ├── init                       # 프로파일별 시드 러너
-    ├── rate_limiter                # @RateLimited + sliding window
-    ├── resolver                    # @LoginMember
-    ├── response                    # ApiResponse 공통 응답
-    ├── security
-    │   ├── dto
-    │   ├── filter                  # JwtAuthenticationFilter 등
-    │   ├── hasher
-    │   ├── jwt                     # Blacklist(Caffeine), JwtProvider
-    │   └── token                   # RefreshToken 생성/해싱
-    └── utils
-```
-
-</details>
-
 ## 서버 설계
 
 ### 인프라 구조
@@ -97,51 +44,10 @@ kakao.bootcamp.fullstack
 - `main` push 하나만 트리거로 쓰며(PR 없음), CI가 성공한 커밋만 CD로 이어져 GHCR에 이미지를 올리고 EC2의 backend 컨테이너만 교체합니다. nginx/frontend는 이 파이프라인이 건드리지 않습니다.
 - 연속 push 시 이전 배포는 취소하고 최신 커밋만 배포합니다(`concurrency: cancel-in-progress`).
 
-### 구현 기능
-
-**Auth**
-- 이메일/비밀번호 로그인, JWT 기반 무상태 인증 (AT: `Authorization` 헤더 / RT: HttpOnly 쿠키)
-- RTR(Refresh Token Rotation) 기반 토큰 재발급, 로그아웃 시 세션 폐기
-
-**Member**
-- 회원가입 / 프로필 조회·수정 / 비밀번호 변경 / 회원탈퇴(소프트 삭제)
-
-**Post / PostDraft**
-- 모집글 CRUD, 모집 마감 처리, 좋아요, 조회수 집계
-- 임시저장(Draft) 후 게시(publish)하는 작성 플로우
-
-**Comment**
-- 댓글 CRUD
-
-**Search**
-- 카테고리·모임형태·지역·기간·키워드 조건의 모집글 검색 + 커서 기반 페이지네이션(`GET /posts` 하나로 목록/검색 통합)
-
-**Report / EditRevision**
-- 게시글·댓글 신고, 누적 시 자동 블라인드 처리
-- 수정 시마다 이전 내용을 스냅샷으로 보관(수정 이력 조회용)
-
-**공통**
-- 모든 도메인에 소프트 삭제(`@SQLDelete` + `deleted` 플래그) 정책 적용
-- `{ message, code, data }` 형태로 통일된 응답 형식과 에러코드 체계
-
 ## 데이터베이스 설계
 
 ### E-R Diagram
 ![erd](docs/images/erd.png)
-
-### 도메인 역할
-
-| 도메인 | 역할 |
-|---|---|
-| Member | 회원 계정, 인증의 주체 |
-| Post | 모집글 — 카테고리/모임형태/지역/모집상태/정원을 갖는 핵심 도메인 |
-| PostDraft | 게시 전 임시 저장본. `publish` 시 `Post`로 전환 |
-| Comment | 게시글에 달리는 댓글 |
-| PostLike | 회원-게시글 좋아요 조인 엔티티 |
-| PostViewLog | 게시글 조회 기록 로그 |
-| RefreshToken | RTR용 갱신 토큰(해시 저장), family 단위로 회전·폐기 |
-| Report | 게시글/댓글 신고. 누적 시 자동 블라인드 트리거 |
-| EditRevision | 게시글/댓글 수정 이력 스냅샷 |
 
 ## 고도화
 
@@ -185,7 +91,7 @@ kakao.bootcamp.fullstack
 측정 기록과 폐기한 주장은 `docs/search/fulltext-search-experiment.md`에 남겼습니다. 옮길 수 있는 결론은 "매치가 많아지면 무너지고, MySQL 안에 막을 수단이 없다"까지였고, 그래서 **OpenSearch를 키워드 경로에만 붙여 해결했습니다.**
 
 - **왜 여기서는 되는가** : 색인 자체를 최신순으로 정렬해두는 index sorting 덕에 위에서부터 걷다가 11건이 차면 멈춥니다. FULLTEXT에 없던 조기 종료가 생기는 겁니다. profile로 실측하면 매치 4만 건짜리 `테니스` 검색이 문서 **35건**만 읽고 끝납니다 — MySQL이 41,679건을 읽던 자리입니다.
-- **구조** : 의존성 추가 없이 스프링 내장 `RestClient`로 붙였고, 색인은 최신순 id만 돌려주고 본문·작성자는 MySQL `JOIN FETCH`로 채웁니다(원본은 계속 MySQL). `(createdAt, id)` 복합 커서는 `search_after`로 그대로 이어지고, 글 생성·발행·수정·마감·삭제·블라인드 6곳에서 색인을 동기화합니다. OpenSearch 장애 시엔 FULLTEXT로 폴백해 검색이 죽는 대신 느려집니다.
+- **구조** : 의존성 추가 없이 스프링 내장 `RestClient`로 붙였고, 색인은 최신순 id만 돌려주고 본문·작성자는 MySQL `JOIN FETCH`로 채웁니다(원본은 계속 MySQL). `(createdAt, id)` 복합 커서는 `search_after`로 그대로 이어집니다. OpenSearch 장애 시엔 FULLTEXT로 폴백해 검색이 죽는 대신 느려집니다. 색인 동기화는 처음엔 저장 직후 직접 호출이었는데, 유실 가능성이 있어 트랜잭셔널 아웃박스로 개선했습니다(5절).
 - **운영 실측(같은 날, 같은 요청)** : `테니스` **34.83초 → 0.17~0.21초 (약 200배)**. 매치 6.9만 건 `라켓`도 0.15초 수준으로, 매치 건수와 응답 시간의 상관이 사라졌습니다. 검증 과정과 배포 기록(t3.small에 스왑·EBS 증설까지)은 `docs/search/opensearch-keyword-search.md`에 있습니다.
 
 ### 3. 날짜 범위 검색 : 정렬 축을 인덱스에 맞추고 커서를 복합으로
@@ -217,3 +123,17 @@ kakao.bootcamp.fullstack
 - **sliding window로 전환** : 회원별로 최근 요청 타임스탬프를 `Deque`에 기록합니다. 요청이 올 때마다 현재 시각 기준 `windowMinutes` 이전 타임스탬프를 큐 앞에서 모두 제거하고, 남은 개수가 `limit` 이상이면 거부, 아니면 현재 시각을 큐에 추가하고 허용합니다. 항상 "지금 시점 기준 최근 N분"을 정확히 보므로 경계 burst가 사라집니다.
 - **선언적 정책 부여** : `@RateLimited(limit, windowMinutes)` 애노테이션 + `RateLimitInterceptor`로 엔드포인트마다 다른 제한치를 선언적으로 붙일 수 있습니다(기본값 1분 3건). 카운터는 회원 단위로 공유됩니다.
 - **한계** : 인메모리(`synchronized` + `HashMap`) 구현이라 인스턴스를 여러 대로 늘리면 인스턴스별로 카운터가 분리됩니다. 현재는 backend 컨테이너가 단일 인스턴스로 배포돼 있어 문제가 없지만, 스케일 아웃 시에는 Redis 등 공유 저장소로 옮겨야 합니다.
+
+### 5. 색인 동기화 : 직접 호출 → 트랜잭셔널 아웃박스
+
+OpenSearch 도입 초기의 색인 동기화는 글을 저장한 직후 같은 스레드에서 색인 HTTP를 직접 쏘고, 실패하면 로그만 남기는 방식이었습니다. 여기엔 구멍이 셋 있었습니다 — 색인 쓰기가 실패하면 그 글이 검색에서 **영구 누락**되고(유실), 색인 호출이 커밋 전에 실행되므로 색인 성공 후 트랜잭션이 롤백되면 DB에 없는 문서가 색인에 남으며(유령), 같은 글을 거의 동시에 수정하면 색인 도착 순서가 DB 커밋 순서와 어긋날 수 있습니다(순서 역전).
+
+**트랜잭셔널 아웃박스**로 셋을 한 번에 닫았습니다.
+
+- 글이 바뀌는 6곳(생성/발행/수정/마감/삭제/블라인드)이 `post_search_outbox` 테이블에 **post_id만** INSERT합니다. 게시글과 같은 트랜잭션이라 롤백되면 요청도 함께 사라집니다.
+- 폴러(`@Scheduled` 1초)가 미처리 행을 집어 **처리 시점의 글 상태를 다시 읽어** 색인에 upsert/delete합니다. "무엇을 하라"를 저장하지 않으므로 순서가 꼬여도 항상 최종 상태로 수렴하고, 같은 글의 요청 여러 건은 한 번으로 접힙니다. 색인이 문서 전체를 덮어쓰는 upsert라 몇 번을 반영해도 안전합니다(at-least-once + 멱등).
+- 실패한 행은 지수 백오프(1→300초)로 재시도하고, 20회를 넘기면 FAILED로 격리해 다음 행 진행을 막지 않습니다.
+
+**장애 주입으로 검증했습니다.** OpenSearch를 내린 채 글을 쓰면 — 글쓰기는 정상(200), 아웃박스 행이 백오프로 재시도를 쌓다가, 컨테이너를 복구하자 다섯 번째 시도에 DONE으로 전환되고 검색에 노출됐습니다. 이전 구조에서는 영구 유실이던 시나리오입니다. 운영 반영 후에도 생성 +1초 검색 노출, 삭제 시 색인 제거까지 확인했습니다.
+
+대가는 새 글의 검색 노출이 refresh 1초에서 폴링+refresh 최대 ~2초로 늘어난 것입니다. 전 과정은 `docs/search/search-index-outbox.md`에 있습니다.
