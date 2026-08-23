@@ -108,6 +108,9 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
     측정할 땐 **`ORDER BY`까지 붙인 운영 쿼리 형태로, 반복해서** 잴 것 — 빼고 재다 한 번,
     한 번씩만 재다 또 한 번 결론이 뒤집혔다(같은 쿼리가 22.97~30.50초로 흔들린다).
     `docs/search/fulltext-search-experiment.md`.
+    해법으로 **OpenSearch 를 키워드 경로에만 붙이는 작업이 진행 중**이다(`PostSearchIndex` 포트,
+    `opensearch.enabled` 속성 스위치, 색인은 id 만 주고 본문은 MySQL 로 채움, 실패 시 FULLTEXT 폴백,
+    동기화 지점 6곳). 로컬 검증 완료·**운영 미반영** — `docs/search/opensearch-keyword-search.md`.
   - **결과가 0건인 필터 조합은 첫 페이지에서 100만 행을 훑는다**(8.7초). `LIMIT`을 못 채워 끝까지 걷기 때문이다.
     대표적으로 `meetingType=ONLINE` + `sido`(온라인 모임은 주소가 `null`이라 결과가 나올 수 없다).
     `category`/`sido` 등 필터 컬럼에는 인덱스가 하나도 없어 인덱스를 걸으며 행 단위로 버린다.
@@ -136,6 +139,7 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
 | `rtr/caffeine-blacklist.md` | 블랙리스트 만료 원리(Ticker/타이머 휠/Scheduler)와 테스트 방법 |
 | `search/created-at-index-experiment.md` | `(created_at, deleted, blinded)` 인덱스 실험 기록 + 운영 재현 |
 | `search/fulltext-search-experiment.md` | 키워드 검색이 느린 원인(phrase 검증 + `ORDER BY`) 측정 기록 |
+| `search/opensearch-keyword-search.md` | OpenSearch 도입 기록 — 원리, 로컬 검증(1단계), 연동 설계(2단계), 재현 절차 |
 | `search/date-range-search-troubleshooting.md` | 날짜 범위 검색 6.4초 → `ORDER BY` 수정 → 커서 회귀 → 복합 커서까지의 기록 |
 | `cicd.md` | CI/CD 워크플로우 스텝 + 인프라 구성 |
 | `postman-test-data.md` | 수동 테스트용 요청/데이터 |
