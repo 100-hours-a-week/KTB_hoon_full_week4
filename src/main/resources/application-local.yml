@@ -18,6 +18,10 @@ jwt:
   access-token-expire-seconds: 600
   refresh-token-expire-seconds: 12000
 
+opensearch:
+  enabled: true
+  uri: http://localhost:9200
+
 #logging:
 #  level:
 #    org.hibernate.SQL: debug

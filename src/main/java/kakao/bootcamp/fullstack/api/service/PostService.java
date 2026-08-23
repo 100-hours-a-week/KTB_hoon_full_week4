@@ -29,6 +29,7 @@ import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostLikeRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostViewLogRepository;
+import kakao.bootcamp.fullstack.api.repository.search.PostSearchIndex;
 import kakao.bootcamp.fullstack.global.exception.ConflictException;
 import kakao.bootcamp.fullstack.global.exception.ForbiddenException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
@@ -48,6 +49,7 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final EditRevisionRepository editRevisionRepository;
     private final PostViewLogRepository postViewLogRepository;
+    private final PostSearchIndex postSearchIndex;
 
     @Transactional
     public PostDetailsResDto getPostDetails(Long memberId, Long postId) {
@@ -87,6 +89,7 @@ public class PostService {
                         request.placeName(),
                         request.capacity());
         postRepository.save(post);
+        postSearchIndex.index(post);
         return PostCreateResDto.from(post);
     }
 
@@ -107,6 +110,7 @@ public class PostService {
                 address,
                 request.placeName(),
                 request.capacity());
+        postSearchIndex.index(post);
         return PostUpdateResDto.from(post);
     }
 
@@ -116,6 +120,7 @@ public class PostService {
         Post post = loadPostOrThrow(postId);
         checkPostWriter(memberId, post);
         post.closeRecruiting();
+        postSearchIndex.index(post);
         return PostRecruitStatusResDto.from(post);
     }
 
@@ -125,6 +130,7 @@ public class PostService {
         Post post = loadPostOrThrow(postId);
         checkPostWriter(memberId, post);
         post.delete();
+        postSearchIndex.delete(postId);
     }
 
     @Transactional
