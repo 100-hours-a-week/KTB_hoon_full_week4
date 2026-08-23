@@ -32,6 +32,11 @@ public class InMemoryPostRepository implements PostRepository {
         return Optional.ofNullable(posts.get(id)).filter(post -> !post.isDeleted());
     }
 
+    @Override
+    public Optional<Post> findById(Long id) {
+        return Optional.ofNullable(posts.get(id));
+    }
+
     public List<Post> findAllActive() {
         return posts.values().stream().filter(post -> !post.isDeleted()).toList();
     }

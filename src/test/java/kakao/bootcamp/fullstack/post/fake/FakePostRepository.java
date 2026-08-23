@@ -25,6 +25,11 @@ public class FakePostRepository implements PostRepository {
         return Optional.ofNullable(store.get(id)).filter(post -> !post.isDeleted());
     }
 
+    @Override
+    public Optional<Post> findById(Long id) {
+        return Optional.ofNullable(store.get(id));
+    }
+
     public void clear() {
         store.clear();
         sequence.set(0);

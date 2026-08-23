@@ -25,7 +25,7 @@ import kakao.bootcamp.fullstack.post.fake.FakePostLikeRepository;
 import kakao.bootcamp.fullstack.post.fake.FakePostRepository;
 import kakao.bootcamp.fullstack.post.fake.FakePostViewLogRepository;
 import kakao.bootcamp.fullstack.post.fixture.PostFixture;
-import kakao.bootcamp.fullstack.search.fake.FakePostSearchIndex;
+import kakao.bootcamp.fullstack.search.fake.FakePostSearchOutboxRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -45,7 +45,8 @@ public class PostServiceTest {
     private final FakeEditRevisionRepository editRevisionRepository =
             new FakeEditRevisionRepository();
     private final FakePostViewLogRepository postViewLogRepository = new FakePostViewLogRepository();
-    private final FakePostSearchIndex postSearchIndex = new FakePostSearchIndex();
+    private final FakePostSearchOutboxRepository postSearchOutboxRepository =
+            new FakePostSearchOutboxRepository();
 
     private PostService postService;
     private Member writer;
@@ -67,7 +68,7 @@ public class PostServiceTest {
                         postLikeRepository,
                         editRevisionRepository,
                         postViewLogRepository,
-                        postSearchIndex);
+                        postSearchOutboxRepository);
 
         writer = MemberFixture.activeMember(WRITER_ID);
         memberRepository.save(writer);
@@ -86,8 +87,8 @@ public class PostServiceTest {
     class SearchIndexSync {
 
         @Test
-        @DisplayName("모집을 마감하면 바뀐 상태로 색인에 다시 반영한다")
-        void reindexesOnCloseRecruiting() {
+        @DisplayName("모집을 마감하면 색인 동기화 요청을 남긴다")
+        void enqueuesOnCloseRecruiting() {
             // given
             givenPost();
 
@@ -95,18 +96,12 @@ public class PostServiceTest {
             postService.closeRecruiting(WRITER_ID, POST_ID);
 
             // then
-            assertThat(postSearchIndex.indexedPosts())
-                    .singleElement()
-                    .satisfies(
-                            post -> {
-                                assertThat(post.getId()).isEqualTo(POST_ID);
-                                assertThat(post.getRecruitStatus()).isEqualTo(RecruitStatus.CLOSED);
-                            });
+            assertThat(postSearchOutboxRepository.savedPostIds()).containsExactly(POST_ID);
         }
 
         @Test
-        @DisplayName("글을 삭제하면 색인에서도 제거한다")
-        void removesFromIndexOnDelete() {
+        @DisplayName("글을 삭제하면 색인 동기화 요청을 남긴다")
+        void enqueuesOnDelete() {
             // given
             givenPost();
 
@@ -114,7 +109,7 @@ public class PostServiceTest {
             postService.deletePost(WRITER_ID, POST_ID);
 
             // then
-            assertThat(postSearchIndex.deletedIds()).containsExactly(POST_ID);
+            assertThat(postSearchOutboxRepository.savedPostIds()).containsExactly(POST_ID);
         }
     }
 

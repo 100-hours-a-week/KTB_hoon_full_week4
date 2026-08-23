@@ -12,6 +12,7 @@ import kakao.bootcamp.fullstack.api.domain.post.Post;
 import kakao.bootcamp.fullstack.api.domain.post.PostErrorCode;
 import kakao.bootcamp.fullstack.api.domain.post.PostLike;
 import kakao.bootcamp.fullstack.api.domain.post.PostViewLog;
+import kakao.bootcamp.fullstack.api.domain.search.PostSearchOutbox;
 import kakao.bootcamp.fullstack.api.dto.request.CommentCreateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.CommentUpdateReqDto;
 import kakao.bootcamp.fullstack.api.dto.request.PostCreateReqDto;
@@ -29,7 +30,7 @@ import kakao.bootcamp.fullstack.api.repository.member.MemberRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostLikeRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostRepository;
 import kakao.bootcamp.fullstack.api.repository.post.PostViewLogRepository;
-import kakao.bootcamp.fullstack.api.repository.search.PostSearchIndex;
+import kakao.bootcamp.fullstack.api.repository.search.PostSearchOutboxRepository;
 import kakao.bootcamp.fullstack.global.exception.ConflictException;
 import kakao.bootcamp.fullstack.global.exception.ForbiddenException;
 import kakao.bootcamp.fullstack.global.exception.NotFoundException;
@@ -49,7 +50,7 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final EditRevisionRepository editRevisionRepository;
     private final PostViewLogRepository postViewLogRepository;
-    private final PostSearchIndex postSearchIndex;
+    private final PostSearchOutboxRepository postSearchOutboxRepository;
 
     @Transactional
     public PostDetailsResDto getPostDetails(Long memberId, Long postId) {
@@ -89,7 +90,7 @@ public class PostService {
                         request.placeName(),
                         request.capacity());
         postRepository.save(post);
-        postSearchIndex.index(post);
+        postSearchOutboxRepository.save(PostSearchOutbox.create(post.getId()));
         return PostCreateResDto.from(post);
     }
 
@@ -110,7 +111,7 @@ public class PostService {
                 address,
                 request.placeName(),
                 request.capacity());
-        postSearchIndex.index(post);
+        postSearchOutboxRepository.save(PostSearchOutbox.create(post.getId()));
         return PostUpdateResDto.from(post);
     }
 
@@ -120,7 +121,7 @@ public class PostService {
         Post post = loadPostOrThrow(postId);
         checkPostWriter(memberId, post);
         post.closeRecruiting();
-        postSearchIndex.index(post);
+        postSearchOutboxRepository.save(PostSearchOutbox.create(post.getId()));
         return PostRecruitStatusResDto.from(post);
     }
 
@@ -130,7 +131,7 @@ public class PostService {
         Post post = loadPostOrThrow(postId);
         checkPostWriter(memberId, post);
         post.delete();
-        postSearchIndex.delete(postId);
+        postSearchOutboxRepository.save(PostSearchOutbox.create(postId));
     }
 
     @Transactional

@@ -23,4 +23,9 @@ public class JpaPostRepositoryAdapter implements PostRepository {
     public Optional<Post> findActiveById(Long id) {
         return jpaPostRepository.findActiveById(id);
     }
+
+    @Override
+    public Optional<Post> findById(Long id) {
+        return jpaPostRepository.findById(id);
+    }
 }

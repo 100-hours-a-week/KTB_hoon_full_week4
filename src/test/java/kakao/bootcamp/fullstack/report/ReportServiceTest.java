@@ -28,7 +28,7 @@ import kakao.bootcamp.fullstack.member.fixture.MemberFixture;
 import kakao.bootcamp.fullstack.post.fake.FakePostRepository;
 import kakao.bootcamp.fullstack.post.fixture.PostFixture;
 import kakao.bootcamp.fullstack.report.fake.FakeReportRepository;
-import kakao.bootcamp.fullstack.search.fake.FakePostSearchIndex;
+import kakao.bootcamp.fullstack.search.fake.FakePostSearchOutboxRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -46,7 +46,8 @@ public class ReportServiceTest {
     private final FakeMemberRepository memberRepository = new FakeMemberRepository();
     private final FakePostRepository postRepository = new FakePostRepository();
     private final FakeCommentRepository commentRepository = new FakeCommentRepository();
-    private final FakePostSearchIndex postSearchIndex = new FakePostSearchIndex();
+    private final FakePostSearchOutboxRepository postSearchOutboxRepository =
+            new FakePostSearchOutboxRepository();
 
     private ReportService reportService;
     private Member writer;
@@ -64,7 +65,7 @@ public class ReportServiceTest {
                         reportRepository,
                         memberRepository,
                         List.of(
-                                new PostReportHandler(postRepository, postSearchIndex),
+                                new PostReportHandler(postRepository, postSearchOutboxRepository),
                                 new CommentReportHandler(commentRepository)));
 
         writer = MemberFixture.activeMember(WRITER_ID);
@@ -203,8 +204,8 @@ public class ReportServiceTest {
         }
 
         @Test
-        @DisplayName("블라인드되는 순간에만 검색 색인에 다시 반영한다")
-        void reindexesOnceWhenBlinded() {
+        @DisplayName("블라인드되는 순간에만 색인 동기화 요청을 남긴다")
+        void enqueuesOnceWhenBlinded() {
             // given
             givenPostBy(writer);
             long threshold = PostConstants.BLIND_THRESHOLD;
@@ -219,9 +220,7 @@ public class ReportServiceTest {
             }
 
             // then
-            assertThat(postSearchIndex.indexedPosts())
-                    .singleElement()
-                    .satisfies(indexed -> assertThat(indexed.isBlinded()).isTrue());
+            assertThat(postSearchOutboxRepository.savedPostIds()).containsExactly(POST_ID);
         }
     }
 }
