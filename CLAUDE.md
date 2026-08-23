@@ -91,26 +91,24 @@ Spring Boot 3.4.5 / Java 17 기반의 커뮤니티(당근 "모집글" 성격) AP
   `nextCursor`는 `SearchCursor`가 만드는 **불투명 base64 문자열**이라 프론트가 해석하지 않는다. 파싱 실패는 `INVALID_CURSOR`.
 - **목록·검색은 `GET /api/v1/posts` 하나로 통합**되어 있고 `SearchController`/`SearchService`/`SearchRepository`가
   담당한다(`PostController` 는 CRUD 만). 조건이 없으면 목록, 있으면 검색이며 **모든 조건이 선택**이다.
-  `keyword` 유무로 `JpaSearchRepository`가 쿼리를 분기한다: 키워드가 있으면 `FULLTEXT(title, content) WITH PARSER ngram`
-  인덱스(`bench/sql/06_fulltext_index.sql`)에 `MATCH ... AGAINST(... IN BOOLEAN MODE)` 네이티브 쿼리(`searchActivePostPage`)를,
-  없으면 JPQL(`findActivePostPage`)을 탄다 — 키워드 없는 요청까지 FULLTEXT 매치 비용을 치르지 않기 위한 분리.
-  네이티브 쿼리는 JPQL과 달리 enum을 못 읽어 category/meetingType/recruitStatus를 문자열로 변환해 넘기고,
+  `keyword` 유무로 `JpaSearchRepositoryAdapter`가 경로를 가른다: **키워드가 있으면 OpenSearch**
+  (`PostSearchIndex` 포트 — 색인에서 최신순 id만 받아 MySQL `JOIN FETCH`로 본문을 채움), 없으면 JPQL(`findActivePostPage`).
+  OpenSearch 호출이 실패하거나 `opensearch.enabled=false`(test/inmemory 기본)면 예전 `FULLTEXT ... MATCH AGAINST`
+  네이티브 쿼리(`searchActivePostPage`)로 폴백한다. 스위치는 prod 에선 EC2 `~/app/.env` 의 `OPENSEARCH_ENABLED`.
+  **색인에 실리는 필드(제목·본문·category/meetingType/recruitStatus/sido/sigungu·deleted/blinded)를 바꾸면
+  동기화 호출 6곳(생성·발행·수정·마감·삭제·블라인드)과 색인 매핑(`bench/opensearch/01_create_index.sh`)·
+  재적재(`03_initial_load_ec2.sh`)까지 같이 챙겨야 한다.** 새 글은 refresh 주기 때문에
+  약 1초 뒤에 검색에 노출된다(목록·상세는 MySQL이라 즉시).
+  네이티브 폴백 쿼리는 JPQL과 달리 enum을 못 읽어 category/meetingType/recruitStatus를 문자열로 변환해 넘기고,
   Pageable에 Sort를 싣지 않는다(임의 SQL에 안전하게 ORDER BY를 주입할 수 없음).
   날짜 범위 조건은 `posts`의 `(created_at, deleted, blinded)` 인덱스가 받는다. 예전 `ORDER BY id DESC`
   시절엔 옵티마이저가 이 인덱스를 안 골라 11건 뽑는 데 777,756행을 읽었는데(4,944ms), 정렬 축을 맞추면서
   1.24ms 로 해소됐다 — `docs/search/date-range-search-troubleshooting.md`.
-- **검색에 남아 있는 성능 함정 2개** (둘 다 **미해결**. 검색을 건드리기 전에 읽을 것):
-  - **키워드 검색은 매치가 많으면 수십 초**다. `EXPLAIN ANALYZE` 를 보면 FT 노드의 `rows` 가
-    **언제나 매치 전량**이고 `Limit: 11` 이 아래로 전파되지 않는다 — 이게 근거다.
-    (`포핸드` 3,478건 0.07~1.26초 / `복식` 49,685건 22.97~30.50초 / `라켓` 69,237건 32.61~41.94초 /
-    `테니스` 41,679건 33.19~51.80초 / 매치 0건 즉시). `LIMIT` 축소·필터 추가·커서 범위·날짜 결합·
-    `FORCE INDEX`(→ `ERROR 1191`) **일곱 가지 우회가 전부 막혔고**, 행 페치도 원인이 아니다.
-    측정할 땐 **`ORDER BY`까지 붙인 운영 쿼리 형태로, 반복해서** 잴 것 — 빼고 재다 한 번,
-    한 번씩만 재다 또 한 번 결론이 뒤집혔다(같은 쿼리가 22.97~30.50초로 흔들린다).
-    `docs/search/fulltext-search-experiment.md`.
-    해법으로 **OpenSearch 를 키워드 경로에만 붙이는 작업이 진행 중**이다(`PostSearchIndex` 포트,
-    `opensearch.enabled` 속성 스위치, 색인은 id 만 주고 본문은 MySQL 로 채움, 실패 시 FULLTEXT 폴백,
-    동기화 지점 6곳). 로컬 검증 완료·**운영 미반영** — `docs/search/opensearch-keyword-search.md`.
+- **키워드 검색이 수십 초 걸리던 문제는 OpenSearch 도입으로 해결됐다**(2026-08-23 운영 반영,
+    테니스 34.83초 → 0.17~0.21초). MySQL FULLTEXT 에서 왜 안 됐는지(매치 전량 읽기, 우회 일곱 가지 실패)와
+    측정 방법론은 `docs/search/fulltext-search-experiment.md`, 도입 전 과정은 `docs/search/opensearch-keyword-search.md`.
+    폴백 경로(FULLTEXT)를 측정할 일이 있으면 **`ORDER BY`까지 붙인 운영 쿼리 형태로, 반복해서** 잴 것.
+- **검색에 남은 성능 함정 1개** (미해결. 검색을 건드리기 전에 읽을 것):
   - **결과가 0건인 필터 조합은 첫 페이지에서 100만 행을 훑는다**(8.7초). `LIMIT`을 못 채워 끝까지 걷기 때문이다.
     대표적으로 `meetingType=ONLINE` + `sido`(온라인 모임은 주소가 `null`이라 결과가 나올 수 없다).
     `category`/`sido` 등 필터 컬럼에는 인덱스가 하나도 없어 인덱스를 걸으며 행 단위로 버린다.
