@@ -1,8 +1,14 @@
-## 🌱 Let's Meet!
+<div align="center">
 
-### Back-end 소개
+<img src="docs/images/logo.svg" width="72" alt="Let's Meet 로고" />
 
-관심사·활동을 주제로 소모임을 만들고 모집하는 커뮤니티 프로젝트입니다.
+# Let's Meet!
+
+**같이 할 사람들을 지금 만나다 — 소모임 모집 커뮤니티의 Back-end**
+
+</div>
+
+## 📌 소개
 
 Spring Boot로 서버를 구현하고, MySQL(RDS)을 DB로 사용했습니다.
 
@@ -10,31 +16,47 @@ Spring Boot로 서버를 구현하고, MySQL(RDS)을 DB로 사용했습니다.
 
 Controller-Service-Repository(포트/어댑터) 패턴으로 구현했으며, 저장소는 포트 인터페이스에 JPA/InMemory 두 구현체를 두어 프로파일별로 배선을 바꿉니다.
 
-### 개발 인원 및 기간
+| | |
+|---|---|
+| 개발 기간 | 2026-06-04 ~ (진행 중) |
+| 개발 인원 | Back-end 1명 (본인) |
+| Front-end | [저장소](https://github.com/100-hours-a-week/KTB_hoon_full_week7) |
+| 시연 영상 | [링크](https://drive.google.com/file/d/1CeZ0o2Df8Yvj8D9igZE8vzPVAVCOf9M2/view?usp=drive_link) |
 
-- 개발기간 : 2026-06-04 ~ (진행중)
-- 개발 인원 : Back-end 1명 (본인)
+## 🛠 기술 스택
 
-### 사용 기술 및 tools
+**Backend**
 
-- Java 17, Spring Boot 3.4.5
-- Spring Data JPA, Spring Security, Spring Validation
-- MySQL 8 (RDS) / H2 (test)
-- JWT (jjwt 0.13.0)
-- Caffeine (로컬 캐시)
-- Gradle, Spotless(google-java-format aosp)
-- JUnit5, AssertJ
-- Docker, GitHub Actions, nginx, GHCR, EC2
+![Java 17](https://img.shields.io/badge/Java_17-007396?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot 3.4.5](https://img.shields.io/badge/Spring_Boot_3.4.5-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![Spring Data JPA](https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=flat-square&logo=spring&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=flat-square&logo=springsecurity&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT_%28jjwt_0.13.0%29-000000?style=flat-square&logo=jsonwebtokens&logoColor=white)
+![Caffeine](https://img.shields.io/badge/Caffeine-6F4E37?style=flat-square)
 
-### Front-end
+**Data & Search**
 
-- [Front-end Github](https://github.com/100-hours-a-week/KTB_hoon_full_week7)
+![MySQL 8](https://img.shields.io/badge/MySQL_8_%28RDS%29-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![OpenSearch 2.19](https://img.shields.io/badge/OpenSearch_2.19-005EB8?style=flat-square&logo=opensearch&logoColor=white)
+![H2](https://img.shields.io/badge/H2_%28test%29-1E5B96?style=flat-square)
 
-### 서비스 시연 영상
+**Infra & CI/CD**
 
-- [링크](https://drive.google.com/file/d/1CeZ0o2Df8Yvj8D9igZE8vzPVAVCOf9M2/view?usp=drive_link)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![nginx](https://img.shields.io/badge/nginx-009639?style=flat-square&logo=nginx&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
+![GHCR](https://img.shields.io/badge/GHCR-181717?style=flat-square&logo=github&logoColor=white)
+![AWS EC2](https://img.shields.io/badge/AWS_EC2-FF9900?style=flat-square&logo=amazonec2&logoColor=white)
+![AWS RDS](https://img.shields.io/badge/AWS_RDS-527FFF?style=flat-square&logo=amazonrds&logoColor=white)
 
-## 서버 설계
+**Test & Tools**
+
+![JUnit5](https://img.shields.io/badge/JUnit5-25A162?style=flat-square&logo=junit5&logoColor=white)
+![AssertJ](https://img.shields.io/badge/AssertJ-CB2E44?style=flat-square)
+![Gradle](https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=gradle&logoColor=white)
+![Spotless](https://img.shields.io/badge/Spotless_%28google--java--format_aosp%29-4B32C3?style=flat-square)
+
+## 🏗️ 서버 설계
 
 ### 인프라 구조
 
@@ -44,12 +66,20 @@ Controller-Service-Repository(포트/어댑터) 패턴으로 구현했으며, �
 - `main` push 하나만 트리거로 쓰며(PR 없음), CI가 성공한 커밋만 CD로 이어져 GHCR에 이미지를 올리고 EC2의 backend 컨테이너만 교체합니다. nginx/frontend는 이 파이프라인이 건드리지 않습니다.
 - 연속 push 시 이전 배포는 취소하고 최신 커밋만 배포합니다(`concurrency: cancel-in-progress`).
 
-## 데이터베이스 설계
+## 🗄️ 데이터베이스 설계
 
 ### E-R Diagram
 ![erd](docs/images/erd.png)
 
-## 고도화
+## 🚀 고도화
+
+| # | 주제 | 성과 |
+|---|---|---|
+| 1 | RTR + Caffeine 블랙리스트 | RT 탈취·재사용 감지 시 세션 전체 폐기. 스케줄러 없이 per-entry TTL로 만료 처리 |
+| 2 | 검색 : LIKE → FULLTEXT → OpenSearch | 운영 키워드 검색 34.83초 → 0.17~0.21초 (약 200배) |
+| 3 | 날짜 범위 검색 + 복합 커서 | 6.39초 → 0.105초. 60페이지 깊이에서도 응답 시간 증가 없음 |
+| 4 | Rate Limit sliding window | 고정 창 경계의 burst 통과 차단 |
+| 5 | 색인 동기화 아웃박스 | 검색엔진 장애 중에도 색인 유실 0 — 복구 시 자동 따라잡기 |
 
 ### 1. RTR(Refresh Token Rotation) + Caffeine Cache
 
