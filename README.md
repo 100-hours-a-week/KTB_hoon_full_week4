@@ -156,7 +156,7 @@ kakao.bootcamp.fullstack
 - **Caffeine 캐시** : `jti` 기준 `TokenBlacklist`와 `familyId` 기준 `SessionBlacklist` 2종을 Caffeine 로컬 캐시로 구현했습니다. value로 토큰의 만료 epoch millis를 저장하고 `Expiry`를 커스텀 구현해 엔트리별 TTL을 실제 토큰 만료 시각에 정확히 맞췄습니다(`expireAfter`). 그 덕분에 별도 정리 스케줄러 없이 각 엔트리가 자기 만료 시점에 자동으로 제거됩니다. `maximumSize`와 사용량 모니터링(`CacheUsageMonitor`)으로 무한 증가도 방지합니다.
 - **보안 원칙** : 인증/토큰 관련 실패는 원인(만료/서명불일치/재사용감지 등)에 관계없이 동일한 에러코드로 응답해 공격자가 실패 사유로 내부 상태를 추측하지 못하게 하고, 실제 원인은 서버 로그로만 남깁니다.
 
-### 2. 검색 : LIKE → FULLTEXT(ngram) 매치
+### 2. 검색 : LIKE → FULLTEXT(ngram) → OpenSearch
 
 `LIKE '%keyword%'`는 선행 와일드카드 때문에 인덱스를 타지 못하고 매번 풀스캔이었습니다. `posts(title, content)`에 `WITH PARSER ngram` FULLTEXT 인덱스를 추가하고 `MATCH ... AGAINST(... IN BOOLEAN MODE)` 네이티브 쿼리로 전환했습니다.
 
@@ -164,7 +164,7 @@ kakao.bootcamp.fullstack
 - **키워드 정제** : 입력의 `"`를 제거해 phrase 구문이 중간에 닫히는 걸 막습니다(`sanitizeKeyword`). 따옴표 안에서는 boolean 연산자가 리터럴로 취급돼 연산자 주입도 함께 막힙니다. 다만 `ngram_token_size`가 2라 **1글자 키워드는 매치되지 않습니다** — `LIKE` 시절과 달라진 지점입니다.
 - **쿼리 분기** : 키워드가 있을 때만 FULLTEXT 쿼리를 타고 없으면 기존 JPQL 목록 쿼리를 씁니다. 네이티브 쿼리에는 enum 매핑이 적용되지 않아 문자열로 변환해 넘기고, 동적 정렬을 실을 수 없어 `ORDER BY`는 쿼리 문자열에 고정했습니다.
 
-그런데 운영 100만 건에서 다시 재보니 일부 키워드가 크게 느렸습니다. 아직 해결하지 못한 문제입니다. 아래는 운영과 동일한 쿼리(`SELECT p.* ... ORDER BY created_at DESC, id DESC LIMIT 11`)의 `EXPLAIN ANALYZE`와 실측입니다.
+그런데 운영 100만 건에서 다시 재보니 일부 키워드가 크게 느렸습니다. 아래는 운영과 동일한 쿼리(`SELECT p.* ... ORDER BY created_at DESC, id DESC LIMIT 11`)의 `EXPLAIN ANALYZE`와 실측입니다.
 
 | 키워드 | 토큰 | 매치 | FT 노드 `rows` | 반환 | 실측 |
 |---|---|---|---|---|---|
@@ -182,7 +182,11 @@ kakao.bootcamp.fullstack
 
 측정 과정에서도 두 번 크게 틀렸습니다. FULLTEXT 쿼리에서 `EXPLAIN ANALYZE`의 노드 시간이 실제와 최대 234배 어긋나는 걸 모르고 결론을 세웠고(노드 108ms, 실제 25.29초), 대조군을 단순하게 만들려고 `ORDER BY`를 빼고 측정한 결론을 정렬이 있는 운영 쿼리에 그대로 적용했습니다. 반복 측정을 하고 나서야 같은 쿼리가 22.97~30.50초로 흔들린다는 것을 알았고, 그 폭보다 작은 차이로 세웠던 모델(매치당 비용·토큰 배수)은 전부 접었습니다.
 
-측정 기록과 폐기한 주장은 `docs/search/fulltext-search-experiment.md`에 남겼습니다. 다만 측정 대상이 합성 데이터라 실제 서비스에서 매치 수만 건짜리 검색어가 얼마나 흔할지는 알 수 없고, 옮길 수 있는 결론은 "매치가 많아지면 무너지고, MySQL 안에 막을 수단이 없다"까지입니다. 해결 방향은 OpenSearch 도입으로 잡고 진행 중입니다 — 같은 100만 건에서 결과 동일성과 "11건만 필요하면 35건만 읽고 멈춘다"는 것까지 로컬에서 확인했고(`docs/search/opensearch-keyword-search.md`), 운영 반영이 남아 있습니다.
+측정 기록과 폐기한 주장은 `docs/search/fulltext-search-experiment.md`에 남겼습니다. 옮길 수 있는 결론은 "매치가 많아지면 무너지고, MySQL 안에 막을 수단이 없다"까지였고, 그래서 **OpenSearch를 키워드 경로에만 붙여 해결했습니다.**
+
+- **왜 여기서는 되는가** : 색인 자체를 최신순으로 정렬해두는 index sorting 덕에 위에서부터 걷다가 11건이 차면 멈춥니다. FULLTEXT에 없던 조기 종료가 생기는 겁니다. profile로 실측하면 매치 4만 건짜리 `테니스` 검색이 문서 **35건**만 읽고 끝납니다 — MySQL이 41,679건을 읽던 자리입니다.
+- **구조** : 의존성 추가 없이 스프링 내장 `RestClient`로 붙였고, 색인은 최신순 id만 돌려주고 본문·작성자는 MySQL `JOIN FETCH`로 채웁니다(원본은 계속 MySQL). `(createdAt, id)` 복합 커서는 `search_after`로 그대로 이어지고, 글 생성·발행·수정·마감·삭제·블라인드 6곳에서 색인을 동기화합니다. OpenSearch 장애 시엔 FULLTEXT로 폴백해 검색이 죽는 대신 느려집니다.
+- **운영 실측(같은 날, 같은 요청)** : `테니스` **34.83초 → 0.17~0.21초 (약 200배)**. 매치 6.9만 건 `라켓`도 0.15초 수준으로, 매치 건수와 응답 시간의 상관이 사라졌습니다. 검증 과정과 배포 기록(t3.small에 스왑·EBS 증설까지)은 `docs/search/opensearch-keyword-search.md`에 있습니다.
 
 ### 3. 날짜 범위 검색 : 정렬 축을 인덱스에 맞추고 커서를 복합으로
 
